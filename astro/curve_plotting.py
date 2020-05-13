@@ -3,6 +3,8 @@ import pymc3 as pm
 import theano.tensor as tt
 from pymc3.math import logsumexp
 from matplotlib import pyplot as plt
+import sys
+
 
 def mixture_density(w, mu, sd, x):
     logp = tt.log(w) + pm.Normal.dist(mu, sd).logp(x)

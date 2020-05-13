@@ -1,41 +1,19 @@
 import numpy as np
 import pandas as pd
-import astropy.io.fits as astrofits
 from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
-from src.specsyzer.physical_model.line_tools import LineMeasurer
-
-def import_fits_data(file_address, frame_idx):
-
-    # Open fits file
-    with astrofits.open(data_folder / fileList[0]) as hdul:
-        idx_frame = 0
-        data, header = hdul[idx_frame].data, hdul[idx_frame].header
-
-    # Check instrument
-    if 'INSTRUME' in header:
-        if 'ISIS' in header['INSTRUME']:
-            instrument = 'ISIS'
-
-    # William Herschel Telescope ISIS instrument
-    if instrument == 'ISIS':
-        w_min = header['CRVAL1']
-        dw = header['CD1_1']  # dw = 0.862936 INDEF (Wavelength interval per pixel)
-        pixels = header['NAXIS1']  # nw = 3801 number of output pixels
-        w_max = w_min + dw * pixels
-        wave = np.linspace(w_min, w_max, pixels, endpoint=False)
-
-    return wave, data, header
+import src.specsyzer as ss
 
 
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsyzer/literature_data/lines_data.xlsx')
 linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
 data_folder = Path('D:/Dropbox/Astrophysics/Data/WHT-Ricardo/')
 fileList = ['COMBINED_blue.0001.fits', 'combined_red.0001.fits']
+addressList = list(data_folder/file for file in fileList)
 
 # Get the fits file data
-wave_blue, flux_blue, header_blue = import_fits_data(fileList[0], 0)
-wave_red, flux_red, header_red = import_fits_data(fileList[1], 0)
+wave_blue, flux_blue, header_blue = ss.import_fits_data(addressList[0], 0)
+wave_red, flux_red, header_red = ss.import_fits_data(addressList[1], 0)
 
 # Redshift correction
 redshift, blue_limits = 1.1735, (3600, 5100)
@@ -46,7 +24,7 @@ wave_red = wave_red/redshift
 idcs_limit = (blue_limits[0] <= wave_blue) & (wave_blue <= blue_limits[1])
 wave_blue, flux_blue = wave_blue[idcs_limit], flux_blue[idcs_limit]
 
-lm = LineMeasurer(wave_blue, flux_blue)
+lm = ss.LineMeasurer(wave_blue, flux_blue)
 
 # Remove the continuum
 flux_noContinuum = lm.continuum_remover(noiseWaveLim=(4150, 4300))

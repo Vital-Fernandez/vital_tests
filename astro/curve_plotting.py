@@ -4,21 +4,21 @@ import theano.tensor as tt
 from pymc3.math import logsumexp
 from matplotlib import pyplot as plt
 import sys
+pm.distributions.continuous.HalfCauchy
 
-
-def mixture_density(w, mu, sd, x):
-    logp = tt.log(w) + pm.Normal.dist(mu, sd).logp(x)
-    return tt.sum(tt.exp(logp), axis=1)
-
-x = np.linspace(-5, 10, 100)[:, None]
-mu0 = np.array([-1., 2.6])
-sd0 = np.array([.5, 1.4])
-w0 =np.array([10, 60])
-yhat = mixture_density(w0, mu0, sd0, x).eval()
-y = yhat + np.random.randn(100)
-plt.plot(x, yhat);
-plt.scatter(x, y);
-plt.show()
+# def mixture_density(w, mu, sd, x):
+#     logp = tt.log(w) + pm.Normal.dist(mu, sd).logp(x)
+#     return tt.sum(tt.exp(logp), axis=1)
+#
+# x = np.linspace(-5, 10, 100)[:, None]
+# mu0 = np.array([-1., 2.6])
+# sd0 = np.array([.5, 1.4])
+# w0 =np.array([10, 60])
+# yhat = mixture_density(w0, mu0, sd0, x).eval()
+# y = yhat + np.random.randn(100)
+# plt.plot(x, yhat);
+# plt.scatter(x, y);
+# plt.show()
 
 # import numpy as np
 # import pymc3 as pm
@@ -112,15 +112,81 @@ plt.show()
 # plt.legend(loc=1)
 # plt.show()
 
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats as st
+plt.style.use('seaborn-darkgrid')
+x = np.linspace(0, 5, 200)
+for b in [0.5, 2.0, 5.0]:
+    pdf = st.cauchy.pdf(x, scale=b)
+    plt.plot(x, pdf, label=r'$\beta$ = {}'.format(b))
+plt.xlabel('x', fontsize=12)
+plt.ylabel('f(x)', fontsize=12)
+plt.legend(loc=1)
+plt.show()
+
+# np.random.standard_cauchy()
+#
 # import matplotlib.pyplot as plt
 # import numpy as np
 # import scipy.stats as st
+#
 # plt.style.use('seaborn-darkgrid')
-# x = np.linspace(0, 5, 200)
-# for b in [0.5, 2.0, 5.0]:
-#     pdf = st.cauchy.pdf(x, scale=b)
-#     plt.plot(x, pdf, label=r'$\beta$ = {}'.format(b))
+# x = np.linspace(-5000, 20000, 10000)
+# alphas = [0., 0., 0., -2.]
+# betas = [3, 1., 2., 1.]
+# param0, param1 = 1000, 15000
+# for a, b in zip(alphas, betas):
+#     pdf = st.cauchy.pdf(x, loc=a, scale=b)
+#     plt.plot(x, pdf * param0 + param1, label=r'$\alpha$ = {}, $\beta$ = {}'.format(a, b))
 # plt.xlabel('x', fontsize=12)
 # plt.ylabel('f(x)', fontsize=12)
 # plt.legend(loc=1)
 # plt.show()
+
+
+from scipy.stats import cauchy
+# import matplotlib.pyplot as plt
+# fig, ax = plt.subplots(1, 1)
+
+
+
+# Author: Jake VanderPlas
+# License: BSD
+#   The figure produced by this code is published in the textbook
+#   "Statistics, Data Mining, and Machine Learning in Astronomy" (2013)
+#   For more information, see http://astroML.github.com
+#   To report a bug or issue, use the following forum:
+#    https://groups.google.com/forum/#!forum/astroml-general
+# import numpy as np
+# from scipy.stats import cauchy
+# from matplotlib import pyplot as plt
+#
+#
+# #------------------------------------------------------------
+# # Define the distribution parameters to be plotted
+# gamma_values = [500, 1000, 2000]
+# linestyles = ['-', '--', ':']
+# mu = 0
+# x = np.linspace(-5000, 20000, 10000)
+# param0, param1 = 1000, 15000
+# #------------------------------------------------------------
+# # plot the distributions
+# fig, ax = plt.subplots(figsize=(5, 3.75))
+#
+# for gamma, ls in zip(gamma_values, linestyles):
+#     dist = cauchy(12000, gamma)
+#     #y = 1 / (np.pi * gamma * (1 + np.power((x - mu)/gamma, 2)))
+#     # plt.plot(x + param1, y * param0 , ls=ls, label=f'Mine {mu} {gamma}')
+#     hist = 12000 + gamma * np.random.standard_cauchy(size=1000000)
+#     hist = hist[(hist > 8000) & (hist < 20000)]
+#     plt.hist(hist, bins=1000, normed=True)
+#     plt.plot(x, dist.pdf(x), ls=ls, color='black', label=r'$\mu=%i,\ \gamma=%.1f$' % (mu, gamma))
+#
+# plt.xlabel('$x$')
+# plt.ylabel(r'$p(x|\mu,\gamma)$')
+# plt.title('Cauchy Distribution')
+#
+# plt.legend()
+# plt.show()
+

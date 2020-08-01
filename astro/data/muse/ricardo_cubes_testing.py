@@ -1,5 +1,5 @@
 import numpy as np
-import src.specsyzer as sr
+import src.specsiser as sr
 from pathlib import Path
 from mpdaf.obj import Cube
 import matplotlib.pyplot as plt

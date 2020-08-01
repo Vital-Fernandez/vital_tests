@@ -1,5 +1,5 @@
 # import numpy as np
-# from src.specsyzer.physical_model.line_tools import LineMeasurer, gaussFunc
+# from src.specsiser.physical_model.line_tools import LineMeasurer, gaussFunc
 # from scipy import integrate
 # from matplotlib import pyplot as plt, rcParams
 # import lmfit
@@ -164,7 +164,7 @@
 # plt.show()
 
 import numpy as np
-from src.specsyzer.physical_model.line_tools import LineMeasurer, gaussFunc
+from src.specsiser.physical_model.line_tools import LineMeasurer, gauss_func
 from scipy import integrate
 from matplotlib import pyplot as plt, rcParams
 import lmfit
@@ -176,19 +176,19 @@ wave = np.linspace(4950, 5050, 300)
 m, n, noise = 0.0, 2.0, np.random.normal(0, 0.05, wave.size)
 zero_level = (m * wave + n) #+ noise
 ampTrue, muTrue, sigmaTrue = 10, 5007, 2.3
-fluxObs = gaussFunc((wave, zero_level), ampTrue, muTrue, sigmaTrue)
+fluxObs = gauss_func((wave, zero_level), ampTrue, muTrue, sigmaTrue)
 wave_regions = np.array([4960, 4980, 4996, 5015, 5030, 5045])
 areaTrue = np.sqrt(2 * np.pi * sigmaTrue ** 2) * ampTrue
 
 equivFLux = np.log(ampTrue) - 0.5 * np.power((wave - muTrue)/sigmaTrue, 2)
-fluxLine = gaussFunc((wave, np.zeros(wave.size)), ampTrue, muTrue, sigmaTrue)
+fluxLine = gauss_func((wave, np.zeros(wave.size)), ampTrue, muTrue, sigmaTrue)
 
 flux = 0.850 #np.sqrt(2 * np.pi * sigmaTrue ** 2) * ampTrue
 flux_err = flux * 0.05
 
 logFlux = np.log10(flux)
 logFluxErr = np.log10(flux + flux_err) - np.log10(flux)
-
+np.log10(1 + flux_err/flux)
 fig, ax = plt.subplots()
 ax.plot(wave, fluxObs, label='Gauss Curve')
 ax.plot(wave, zero_level, ':', label='Zero level')

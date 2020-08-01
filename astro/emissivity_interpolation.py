@@ -3,6 +3,9 @@ import pyneb as pn
 import scipy as spy
 import exoplanet as xo
 
+def ftau_func(tau, temp, den, a, b, c, d):
+    return 1 + tau / 2.0 * (a + (b + c * den + d * den * den) * temp / 10000.0)
+
 # Exoplanet 2D RegularGridInterpolator example
 print('\n -- Exoplanet example interpolation')
 
@@ -39,4 +42,24 @@ print('Scipy interpolation', spy_interp(ne_true, Te_true))
 # Exoplanet interpolation
 exop_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range], emisValues[:, :, None], nout=1)
 coordB = np.stack(([Te_true], [ne_true]), axis=-1)
-print
+print('Exoplanet interpolation', exop_interp.evaluate(coordB).eval())
+
+# Ftau function
+print('\n -- f_tau interpolation:')
+tau_true = 0.2
+Te_true, ne_true = 14567.0, 275.0
+a, b, c, d = np.array([3.590e-01, -3.460e-02, -1.840e-04,  3.039e-07])
+ftau_true = ftau_func(tau_true, Te_true, ne_true, a, b, c, d)
+print('ftau_true', ftau_true)
+
+# Compute the temperature grid
+den_matrix, temp_matrix = np.meshgrid(ne_range, Te_range)
+ftau_grid = ftau_func(tau_true, temp_matrix, den_matrix, a, b, c, d)
+
+# Scipy interpolation
+spy_ftau_interp = spy.interpolate.interp2d(ne_range, Te_range, ftau_grid, kind='linear')
+print('ftau scipy', spy_ftau_interp(ne_true, Te_true))
+
+# Exoplanet interpolation
+ftau_xo_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range], ftau_grid[:, :, None], nout=1)
+print('ftau xo interpolation', ftau_xo_interp.evaluate(coordB).eval())

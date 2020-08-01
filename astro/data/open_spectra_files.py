@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
-import src.specsyzer as ss
+import src.specsiser as ss
 
 
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsyzer/literature_data/lines_data.xlsx')
+linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
 data_folder = Path('D:/Dropbox/Astrophysics/Data/WHT-Ricardo/')
 fileList = ['COMBINED_blue.0001.fits', 'combined_red.0001.fits']
@@ -36,17 +36,16 @@ linesTable = lm.line_finder(flux_noContinuum, intLineThreshold=4, noiseWaveLim=(
 linesDb = lm.match_lines(linesTable, linesDb)
 
 # Plot the complete spectrum
-lm.spectrum_components(lm.flux - flux_noContinuum, linesTable, linesDb)
+lm.plot_spectrum_components(lm.flux - flux_noContinuum, linesTable, linesDb)
 
 # Plot the matched lines:
-# lm.detected_lines(linesDb)
+lm.plot_detected_lines(linesDb)
 
 # Measure line fluxes
 idcsObsLines = (linesDb.observation == 'detected')
 obsLines = linesDb.loc[idcsObsLines].index.values
 
 for i in np.arange(obsLines.size):
-# for i in np.arange(6):
 
     lineLabel = obsLines[i]
     print(f'- {lineLabel}:')
@@ -69,7 +68,7 @@ linesLogAddress = data_folder / fileList[0].replace('.fits', '_linesLog.txt')
 lm.save_lineslog(linesDb.loc[idcsObsLines], linesLogAddress)
 
 # Plot the matched lines:
-lm.detected_lines(linesDb)
+lm.plot_detected_lines(linesDb)
 
 
 # for label in ['H1_4861A', 'Ne3_3869A', 'H1_4341A', 'O3_5007A']:

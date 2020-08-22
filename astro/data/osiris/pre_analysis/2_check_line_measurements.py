@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
 # Import the observation data
-obsData = sr.loadConfData('gtc_greenpeas_data.ini', group_variables=False)
+obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
@@ -14,9 +14,6 @@ addressList = list(data_folder/file for file in file_list)
 
 # Analyse the spectrum
 for i, file_address in enumerate(addressList):
-
-    # Open lineslog
-    linesLogAddress = str(file_address).replace('.fits', '_rawlinesLog.txt')
 
     # Get fits data
     wave, flux, header = sr.import_fits_data(file_address, instrument='OSIRIS')
@@ -27,17 +24,15 @@ for i, file_address in enumerate(addressList):
     wave_rest = wave / (1 + z_mean)
     idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
 
+    # Open lineslog
+    fitsFolder, fitsFile = file_address.parent, file_address.name
+    logFolder, logFile = fitsFolder/'pre_analysis', fitsFile.replace('.fits', '_rawlinesLog.txt')
+
     # Load line measurer object
-    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], linesLogAddress)
-
-    # lm.plot_detected_lines(lm.linesDF)
-
-    outputLines = ['O3_5007A', 'S3_6312A', 'O3_4363A', 'H1_6563A', 'N2_6584A', 'O2_7319A']
-    idcs_lines = lm.linesDF.index.isin(outputLines)
-    print(lm.linesDF.index.values)
+    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], logFolder/logFile)
 
     # Plot the matched lines:
-    lm.plot_detected_lines(lm.linesDF.loc[idcs_lines], ncols=3)
+    lm.plot_detected_lines(lm.linesDF, ncols=10)
 
     # # Get observation data
     # objName = header['OBJECT']

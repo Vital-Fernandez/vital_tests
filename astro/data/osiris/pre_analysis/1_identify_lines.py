@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
 # Import the observation data
-obsData = sr.loadConfData('gtc_greenpeas_data.ini', group_variables=False)
+obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
 data_folder = Path(obsData['file_information']['data_folder'])
@@ -66,7 +66,7 @@ for i, file_address in enumerate(addressList):
         lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
 
         # Perform gaussian fitting
-        lm.line_fitting(idcsLinePeak, idcsContinua, bootstrap_size=500)
+        lm.gaussian_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
 
         # Store results in database
         lm.results_to_database(lineLabel, linesDb)

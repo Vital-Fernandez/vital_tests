@@ -47,7 +47,7 @@ for i_colum in range(ncols):
 
         idcsLines, idcsContinua = lm.define_masks(wave_regions)
         lm.line_properties(idcsLines, idcsContinua, bootstrap_size=500)
-        lm.line_fitting(idcsLines, idcsContinua, bootstrap_size=500)
+        lm.gaussian_mcfit(idcsLines, idcsContinua, bootstrap_size=500)
 
         line_wave = wave[idcsLines]
         resampleWaveLine = np.linspace(line_wave[0], line_wave[-1], 100)

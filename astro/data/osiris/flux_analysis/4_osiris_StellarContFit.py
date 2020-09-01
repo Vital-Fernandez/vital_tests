@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
 starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
 data_folder = Path(obsData['file_information']['data_folder'])
-addressList = list(data_folder/file for file in file_list)
 file_list = obsData['file_information']['files_list']
+addressList = list(data_folder/file for file in file_list)
 flux_norm = obsData['sample_data']['norm_flux']
 
 # Analyse the spectrum

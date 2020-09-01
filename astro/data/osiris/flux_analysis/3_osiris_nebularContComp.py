@@ -57,14 +57,14 @@ for i, file_address in enumerate(addressList):
         HeII_HII, HeIII_HeII = obsData[objName]['HeII_HII'], obsData[objName]['HeII_HII']
         neb_int = nebCalc.flux_spectrum(lm.wave, Te_low, Halpha_int, HeII_HII, HeIII_HeII)
 
+        # Save object spectrum without nebular component
+        flux_noNeb = ((int - neb_int) / red_corr) * flux_norm
+        np.savetxt(lineLogFolder / nebFluxNoNebCompFile, np.transpose(np.array([lm.wave, flux_noNeb])), fmt="%7.1f %10.4e")
+
         # Plot spectra components
         labelsDict = {'xlabel': r'Wavelength $(\AA)$',
                       'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
-                      'title': f'Galaxy {objName} spectrum components'}
-
-        # Save object spectrum without nebular component
-        flux_noNeb = ((int - neb_int)/red_corr) * flux_norm
-        np.savetxt(lineLogFolder/nebFluxNoNebCompFile, np.transpose(np.array([lm.wave, flux_noNeb])), fmt="%7.1f %10.4e")
+                      'title': f'Galaxy {objName} nebular continuum calculation'}
 
         fig, ax = plt.subplots(figsize=(12, 8))
         ax.plot(lm.wave, lm.flux, label='Object flux  spectrum')

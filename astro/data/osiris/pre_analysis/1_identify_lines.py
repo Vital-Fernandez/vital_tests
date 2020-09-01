@@ -35,46 +35,49 @@ for i, file_address in enumerate(addressList):
     wmin_array, wmax_array = obsData['sample_data']['wmin_array'], obsData['sample_data']['wmax_array']
     idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
 
-    # Analyse the spectrum
-    lm = sr.LineMeasurer(wave_rest[idx_wave], flux[idx_wave])
+    # # Analyse the spectrum
+    print(objReference)
+    lm = sr.LineMeasurer(wave_rest, flux)
+    lm.plot_spectrum_components()
 
-    # Normalize
-    noise_region = obsData['sample_data']['noiseRegion_array']
-    norm_flux = lm.continuum_remover(noise_region)
 
-    # Detect the observed lines
-    blendedLinesList = obsData['sample_data']['blendedLines_list']
-    obsLinesTable = lm.line_finder(norm_flux, noiseWaveLim=noise_region, intLineThreshold=3)
-    obsLinesDF = lm.match_lines(obsLinesTable, linesDb, blendedLineList=blendedLinesList)
-    # lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=obsLinesDF)
-
-    # Plot the matched lines:
-    lm.plot_detected_lines(obsLinesDF)
-
-    # Measure line fluxes
-    idcsObsLines = (linesDb.observation == 'detected')
-    obsLines = linesDb.loc[idcsObsLines].index.values
-
-    for lineLabel in obsLines:
-        print(f'- {lineLabel}:')
-
-        # Declare regions data
-        wave_regions = linesDb.loc[lineLabel, 'w1':'w6'].values
-        idcsLinePeak, idcsContinua = lm.define_masks(wave_regions)
-
-        # Identify line regions
-        lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
-
-        # Perform gaussian fitting
-        lm.gaussian_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
-
-        # Store results in database
-        lm.results_to_database(lineLabel, linesDb)
-
-    # Save dataframe to text file
-    linesLogAddress = str(file_address).replace('.fits', '_rawlinesLog.txt')
-    lm.save_lineslog(linesDb.loc[idcsObsLines], linesLogAddress)
-
-    # Plot the matched lines:
-    lm.plot_detected_lines(linesDb)
-
+    # # Normalize
+    # noise_region = obsData['sample_data']['noiseRegion_array']
+    # norm_flux = lm.continuum_remover(noise_region)
+    #
+    # # Detect the observed lines
+    # blendedLinesList = obsData['sample_data']['blendedLines_list']
+    # obsLinesTable = lm.line_finder(norm_flux, noiseWaveLim=noise_region, intLineThreshold=3)
+    # obsLinesDF = lm.match_lines(obsLinesTable, linesDb, blendedLineList=blendedLinesList)
+    # # lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=obsLinesDF)
+    #
+    # # Plot the matched lines:
+    # lm.plot_detected_lines(obsLinesDF)
+    #
+    # # Measure line fluxes
+    # idcsObsLines = (linesDb.observation == 'detected')
+    # obsLines = linesDb.loc[idcsObsLines].index.values
+    #
+    # for lineLabel in obsLines:
+    #     print(f'- {lineLabel}:')
+    #
+    #     # Declare regions data
+    #     wave_regions = linesDb.loc[lineLabel, 'w1':'w6'].values
+    #     idcsLinePeak, idcsContinua = lm.define_masks(wave_regions)
+    #
+    #     # Identify line regions
+    #     lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
+    #
+    #     # Perform gaussian fitting
+    #     lm.gaussian_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
+    #
+    #     # Store results in database
+    #     lm.results_to_database(lineLabel, linesDb)
+    #
+    # # Save dataframe to text file
+    # linesLogAddress = str(file_address).replace('.fits', '_rawlinesLog.txt')
+    # lm.save_lineslog(linesDb.loc[idcsObsLines], linesLogAddress)
+    #
+    # # Plot the matched lines:
+    # lm.plot_detected_lines(linesDb)
+    #

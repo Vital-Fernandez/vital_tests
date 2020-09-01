@@ -1,4 +1,5 @@
 import pyneb as pn
+import pandas as pd
 from pathlib import Path
 import src.specsiser as sr
 from src.specsiser.data_printing import PdfPrinter
@@ -23,19 +24,22 @@ for i, file_address in enumerate(addressList):
     objName = obsData['file_information']['object_list'][i]
     fitsFolder, fitsFile = file_address.parent, file_address.name
     lineLogFolder, lineLogFile = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
-    pdfLogFolder, pdfLogFile = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_linesLog')
+    pdfTableFolder, pdfTableFile = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_linesTable')
+    txtTableFolder, txtTableFile = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_linesTable.txt')
+
     print(f'-{objName}')
 
     # Load line measuerer object
     lm = sr.LineMesurerGUI(linesDF_address=lineLogFolder/lineLogFile)
     pdf = PdfPrinter()
+    tableDF = pd.DataFrame(columns=tableHeaders[1:])
 
     # Measure line fluxes
     idcs_lines = ~lm.linesDF.index.str.contains('_b')
     obsLines = lm.linesDF.loc[idcs_lines].index.values
 
     # Measure line fluxes
-    pdf.create_pdfDoc(pdfLogFolder/pdfLogFile, pdf_type='table')
+    pdf.create_pdfDoc(pdfTableFolder/pdfTableFile, pdf_type='table')
     pdf.pdf_insert_table(tableHeaders)
 
     # Normalizing flux
@@ -49,9 +53,9 @@ for i, file_address in enumerate(addressList):
 
     for lineLabel in obsLines:
 
-        label_entry = sr._linesDb.loc[lineLabel, 'latexLabel']
+        label_entry = lm.linesDF.loc[lineLabel, 'latexLabel']
         wavelength = lm.linesDF.loc[lineLabel, 'wavelength']
-
+        print(lineLabel, label_entry, wavelength)
         eqw, eqwErr = lm.linesDF.loc[lineLabel, 'eqw'], lm.linesDF.loc[lineLabel, 'eqw_err']
 
         flux_intg = lm.linesDF.loc[lineLabel, 'intg_flux'] / flux_Hbeta * scaleTable
@@ -59,7 +63,7 @@ for i, file_address in enumerate(addressList):
         flux_gauss = lm.linesDF.loc[lineLabel, 'gauss_flux'] / flux_Hbeta * scaleTable
         flux_gaussErr = lm.linesDF.loc[lineLabel, 'gauss_err'] / flux_Hbeta * scaleTable
 
-        if lm.linesDF.loc[lineLabel, 'blended'] != 'None':
+        if (lm.linesDF.loc[lineLabel, 'blended'] != 'None') and ('_m' not in lineLabel):
             flux, fluxErr = flux_gauss, flux_gaussErr
             label_entry = label_entry + '$_{gauss}$'
         else:
@@ -70,24 +74,35 @@ for i, file_address in enumerate(addressList):
         intensity, intensityErr = flux * corr, fluxErr * corr
 
         # Format the entries
-        eqw_entry = r'${:0.2f}$ $\pm$ ${:0.2f}$'.format(eqw, eqwErr)
-        flux_entry = r'${:0.2f}$ $\pm$ ${:0.2f}$'.format(flux, fluxErr)
-        intensity_entry = r'${:0.2f}$ $\pm$ ${:0.2f}$'.format(intensity, intensityErr)
+        eqw_entry = r'${:0.2f}\pm{:0.2f}$'.format(eqw, eqwErr)
+        flux_entry = r'${:0.2f}\pm{:0.2f}$'.format(flux, fluxErr)
+        intensity_entry = r'${:0.2f}\pm{:0.2f}$'.format(intensity, intensityErr)
 
+        # Add row of data
+        row_i = [label_entry, eqw_entry, flux_entry, intensity_entry]
         lastRow_check = True if lineLabel == obsLines[-1] else False
+
         pdf.addTableRow([label_entry, eqw_entry, flux_entry, intensity_entry], last_row=lastRow_check)
+        tableDF.loc[lineLabel] = row_i[1:]
 
     # Data last rows
     row_Hbetaflux = [r'$H\beta$ $(erg\,cm^{-2} s^{-1} \AA^{-1})$', '', flux_Hbeta*flux_norm, flux_Hbeta*flux_norm*rc.getCorr(4861)]
     row_cHbeta = [r'$c(H\beta)$', '', rc.cHbeta, '']
 
-    # Format last rows
     pdf.addTableRow(row_Hbetaflux, last_row=False)
     pdf.addTableRow(row_cHbeta, last_row=False)
+    tableDF.loc[row_Hbetaflux[0]] = row_Hbetaflux[1:]
+    tableDF.loc[row_cHbeta[0]] = row_cHbeta[1:]
+
+    # Format last rows
     pdf.table.add_hline()
     pdf.table.add_hline()
 
-    # Generate the table
+    # Save the pdf table
     pdf.generate_pdf(clean_tex=True)
 
-
+    # Save the txt table
+    with open(txtTableFolder/txtTableFile, 'wb') as output_file:
+        string_DF = tableDF.to_string()
+        string_DF = string_DF.replace('$', '')
+        output_file.write(string_DF.encode('UTF-8'))

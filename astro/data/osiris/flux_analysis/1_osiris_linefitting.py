@@ -12,29 +12,31 @@ flux_norm = obsData['sample_data']['norm_flux']
 # Analyse the spectrum
 for i, file_address in enumerate(addressList):
 
-    # Establish files location
-    objName = obsData['file_information']['object_list'][i]
-    fitsFolder, fitsFile = file_address.parent, file_address.name
-    masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
-    lineLogFolder, lineLogFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
-    plotFolder, plotFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_singleLines')
+    # if i == 2:
 
-    # Get fits data
-    wave, flux, header = sr.import_fits_data(file_address, instrument='OSIRIS')
-    z_mean = obsData['sample_data']['z_array'][i]
-    wmin_array, wmax_array = obsData['sample_data']['wmin_array'], obsData['sample_data']['wmax_array']
+        # Establish files location
+        objName = obsData['file_information']['object_list'][i]
+        fitsFolder, fitsFile = file_address.parent, file_address.name
+        masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
+        lineLogFolder, lineLogFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
+        plotFolder, plotFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesGrid')
 
-    # Define wave and flux ranges
-    wave_rest = wave / (1 + z_mean)
-    idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
+        # Get fits data
+        wave, flux, header = sr.import_fits_data(file_address, instrument='OSIRIS')
+        z_mean = obsData['sample_data']['z_array'][i]
+        wmin_array, wmax_array = obsData['sample_data']['wmin_array'], obsData['sample_data']['wmax_array']
 
-    # Load line measurer object
-    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], masksFolder/masksFile, normFlux=flux_norm)
+        # Define wave and flux ranges
+        wave_rest = wave / (1 + z_mean)
+        idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
 
-    # Loop through the lines
-    print(f'\n- {objName}:')
-    obsLines = lm.linesDF.index.values
-    for j, lineLabel in enumerate(obsLines):
+        # Load line measurer object
+        lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], masksFolder/masksFile, normFlux=flux_norm)
+
+        # Loop through the lines
+        print(f'\n- {objName}:')
+        obsLines = lm.linesDF.index.values
+        for j, lineLabel in enumerate(obsLines):
 
             # Declare regions data
             print(f'-- {lineLabel}:')
@@ -59,9 +61,10 @@ for i, file_address in enumerate(addressList):
                 plotBlendedFile = fitsFile.replace('.fits', f'_{lineLabel}_deblending')
                 # lm.plot_fit_components(lm.fit_output, output_address=plotFolder/plotBlendedFile)
 
-    # Save dataframe to text file
-    lm.linesDF.sort_values('mu', inplace=True)
-    lm.save_lineslog(lm.linesDF, lineLogFolder/lineLogFile)
+        # Save dataframe to text file
+        lm.linesDF.sort_values('wavelength', inplace=True)
+        lm.save_lineslog(lm.linesDF, lineLogFolder/lineLogFile)
 
-    # Plot the single lines:
-    lm.plot_detected_lines(lm.linesDF, ncols=8, output_address=plotFolder/plotFile)
+        # Plot the single lines:
+        idcs_unblended = ~lm.linesDF.index.str.contains('_b')
+        lm.plot_detected_lines(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=plotFolder/plotFile)

@@ -26,6 +26,20 @@ for i, file_address in enumerate(addressList):
 
     # Load line measurer object
     lm = sr.LineMesurerGUI(linesDF_address=logFolder/logFile)
+    print(lm.label_formatter('O3_5007A'))
+
+    # Special corrections
+    if 'He1r_4713A' in lm.linesDF.index:
+        lm.linesDF.rename(index={'He1r_4713A': 'Ar4_4711A'}, inplace=True)
+        lm.linesDF.loc['Ar4_4711A'] = sr._linesDb.loc['Ar4_4711A']
+    if 'H1_3704A' in lm.linesDF.index:
+        lm.linesDF.rename(index={'H1_3704A': 'He1_3704A'}, inplace=True)
+        lm.linesDF.loc['He1_3704A'] = sr._linesDb.loc['He1_3704A']
+    if 'H1_3704A_b' in lm.linesDF.index:
+        lm.linesDF.rename(index={'H1_3704A_b': 'He1_3704A'}, inplace=True)
+        lm.linesDF.loc['He1_3704A'] = sr._linesDb.loc['He1_3704A']
+    if 'Ar3_7751A' in lm.linesDF.index:
+        lm.linesDF.loc['Ar3_7751A', 'latexLabel'] = '$7751\,[ArIII]$'
 
     # Label the blended lines
     default_blended_groups = obsData['blended_groups']
@@ -39,10 +53,36 @@ for i, file_address in enumerate(addressList):
         else:
             line_components = default_blended_groups[line]
         lm.linesDF.loc[line, 'blended'] = line_components
+        for component in line_components.split('-'):
+            if component in lm.linesDF.index:
+                lm.linesDF.drop(component, inplace=True)
+        # print('blended', line, default_blended_groups[line], lm.label_formatter(default_blended_groups[line]))
+        lm.linesDF.loc[line, 'latexLabel'] = lm.label_formatter(default_blended_groups[line])
+
+    # Label the merged lines
+    default_merged_groups = obsData['merged_groups']
+    merged_list = list(default_merged_groups.keys())
+    conversion_dict = dict(zip(map(lambda each: each.strip('_m'), merged_list), merged_list))
+    lm.linesDF.rename(index=conversion_dict, inplace=True)
+
+    for line in default_merged_groups:
+        if line in lm.linesDF.index:
+            lm.linesDF.loc[line, 'blended'] = default_merged_groups[line]
+        components_list = default_merged_groups[line]
+        for component in default_merged_groups:
+            if component in lm.linesDF.index:
+                lm.linesDF.drop(component)
+        lm.linesDF.loc[line, 'latexLabel'] = lm.label_formatter(default_merged_groups[line])
 
     # Clear fit columns
     for column in COLUMNS_TO_CLEAR:
         lm.linesDF[column] = np.nan
+
+    # Set all lines to true detection
+    lm.linesDF['observation'] = 'detected'
+
+    # New column continuum
+    lm.linesDF.insert(loc=19, column='cont', value=np.nan)
 
     # Save dataframe to text file
     lm.save_lineslog(lm.linesDF, masksFolder/masksFile)

@@ -101,7 +101,7 @@ labelsDict = {'xlabel': r'Wavelength $(\AA)$',
               'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
               'title': f'Galaxy CGCG007 (voxel coords: {idx_voxel[0]}, {idx_voxel[1]})'}
 
-fig, ax = plt.subplots(figsize=(12, 81))
+fig, ax = plt.subplots(figsize=(12, 8))
 ax.plot(wave, voxel_int, label='Spectrum intensity')
 ax.plot(wave_masked, voxel_int_masked, label='Masked lines')
 ax.plot(wave, neb_int, label='Nebular calculation')

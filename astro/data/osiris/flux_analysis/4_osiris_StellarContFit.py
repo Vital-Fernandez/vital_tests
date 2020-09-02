@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 # Import the observation data
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
-# starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
-starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
+starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
+# starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
 addressList = list(data_folder/file for file in file_list)
@@ -50,18 +50,18 @@ for i, file_address in enumerate(addressList):
                                                                                                      specFlux,
                                                                                                      lm.linesDF)
 
-        # Launch starlight
-        # print(f'\n-Initiating starlight: {objName}')
-        # sw.starlight_launcher(gridFileName, starlightFolder)
-        # print('\n-Starlight finished succesfully ended')
+    # # Launch starlight
+    # print(f'\n-Initiating starlight: {objName}')
+    # sw.starlight_launcher(gridFileName, starlightFolder)
+    # print('\n-Starlight finished succesfully ended')
 
-        # Read output data
-        # Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(outputFolder/outputFile)
+    # Read output data
+    Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(outputFolder/outputFile)
 
-        # Plot the results
-        # sw.population_fraction_plots(fit_output, objName, 'Mass_fraction', lineLogFolder/f'{objName}_SSP_MasFrac.png')
-        # sw.population_fraction_plots(fit_output, objName, 'Light_fraction', lineLogFolder/f'{objName}_SSP_LightFrac.png')
-        # sw.stellar_fit_comparison_plot(objName, Input_Wavelength, Input_Flux, Output_Flux, lineLogFolder/stellarPlotFile)
+    # Plot the results
+    sw.population_fraction_plots(fit_output, objName, 'Mass_fraction', lineLogFolder/f'{objName}_SSP_MasFrac.png')
+    sw.population_fraction_plots(fit_output, objName, 'Light_fraction', lineLogFolder/f'{objName}_SSP_LightFrac.png')
+    sw.stellar_fit_comparison_plot(objName, Input_Wavelength, Input_Flux, Output_Flux, lineLogFolder/stellarPlotFile)
 
 
 

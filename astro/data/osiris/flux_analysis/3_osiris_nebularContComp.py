@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Import the observation data
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+# linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
 addressList = list(data_folder/file for file in file_list)
@@ -26,7 +26,8 @@ for i, file_address in enumerate(addressList):
         fitsFolder, fitsFile = file_address.parent, file_address.name
         lineLogFolder = fitsFolder/'flux_analysis'
         lineLogFile, nebPlotFile = fitsFile.replace('.fits', '_linesLog.txt'), fitsFile.replace('.fits', '_nebComp.png')
-        nebFluxNoNebCompFile = fitsFile.replace('.fits', '_NoNebFlux.txt')
+        nebFluxNoNebCompFile = fitsFile.replace('.fits', '_obs_RemoveNebularComp.txt')
+        nebCompFile = fitsFile.replace('.fits', '_NebFlux.txt')
 
         # Get fits data
         wave, flux, header = sr.import_fits_data(file_address, instrument='OSIRIS')
@@ -59,7 +60,9 @@ for i, file_address in enumerate(addressList):
 
         # Save object spectrum without nebular component
         flux_noNeb = ((int - neb_int) / red_corr) * flux_norm
+        flux_neb = (neb_int/red_corr) * flux_norm
         np.savetxt(lineLogFolder / nebFluxNoNebCompFile, np.transpose(np.array([lm.wave, flux_noNeb])), fmt="%7.1f %10.4e")
+        np.savetxt(lineLogFolder / nebCompFile, np.transpose(np.array([lm.wave, flux_neb])), fmt="%7.1f %10.4e")
 
         # Plot spectra components
         labelsDict = {'xlabel': r'Wavelength $(\AA)$',
@@ -74,8 +77,8 @@ for i, file_address in enumerate(addressList):
         ax.update(labelsDict)
         ax.legend()
         ax.set_yscale('log')
+        print('Saving', lineLogFolder/nebPlotFile)
         plt.savefig(lineLogFolder/nebPlotFile, bbox_inches='tight')
-        fig.clear()
 
         #ax.plot(lm.wave, int/red_corr, label='Going back', linestyle=':')
         # ax.set_yscale('log')

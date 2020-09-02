@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 # Import the observation data
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
-starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
-# starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
+# starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
+starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
 addressList = list(data_folder/file for file in file_list)
@@ -17,54 +17,51 @@ flux_norm = obsData['sample_data']['norm_flux']
 # Analyse the spectrum
 for i, file_address in enumerate(addressList):
 
-    if i == 2:
+    # Establish files location
+    objName = obsData['file_information']['object_list'][i]
+    fitsFolder, fitsFile = file_address.parent, file_address.name
+    masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
+    lineLogFolder = fitsFolder/'flux_analysis'
+    lineLogFile, stellarPlotFile = fitsFile.replace('.fits', '_linesLog.txt'), fitsFile.replace('.fits', '_stellarFit.png')
+    nebFluxNoNebCompFile = fitsFile.replace('.fits', '_obs_RemoveNebularComp.txt')
+    print(f'\n-{objName}')
 
-        # Establish files location
-        objName = obsData['file_information']['object_list'][i]
-        fitsFolder, fitsFile = file_address.parent, file_address.name
-        masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
-        lineLogFolder = fitsFolder/'flux_analysis'
-        lineLogFile, stellarPlotFile = fitsFile.replace('.fits', '_linesLog.txt'), fitsFile.replace('.fits', '_stellarComp.png')
-        nebFluxNoNebCompFile = fitsFile.replace('.fits', '_NoNebFlux.txt')
-        print(f'-{objName}')
+    # Get fits data
+    wave, flux, header = sr.import_fits_data(file_address, instrument='OSIRIS')
+    z_mean = obsData['sample_data']['z_array'][i]
+    wmin_array, wmax_array = obsData['sample_data']['wmin_array'], obsData['sample_data']['wmax_array']
 
-        # Load the data
-        specWave, specFlux = np.loadtxt(lineLogFolder/nebFluxNoNebCompFile, unpack=True)
+    # Define wave and flux ranges
+    wave_rest = wave / (1 + z_mean)
+    idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
 
-        # Measuring objects
-        lm = sr.LineMesurerGUI(specWave, specFlux, lineLogFolder/lineLogFile, normFlux=flux_norm)
-        sw = StarlightWrapper()
+    # Load the data
+    obsWave, obsFlux = wave_rest[idx_wave], flux[idx_wave]
+    specWave, specFlux = np.loadtxt(lineLogFolder/nebFluxNoNebCompFile, unpack=True)
 
-        # Generate starlight files
-        gridFileName, outputFile, outputFolder, waveResample, fluxResample = sw.generate_starlight_files(starlightFolder,
-                                                                                                         objName,
-                                                                                                         specWave,
-                                                                                                         specFlux,
-                                                                                                         lm.linesDF)
+    # Measuring objects
+    lm = sr.LineMesurerGUI(specWave, specFlux, lineLogFolder/lineLogFile, normFlux=flux_norm)
+    sw = StarlightWrapper()
 
-        # # Launch starlight
+    # Generate starlight files
+    gridFileName, outputFile, outputFolder, waveResample, fluxResample = sw.generate_starlight_files(starlightFolder,
+                                                                                                     objName,
+                                                                                                     specWave,
+                                                                                                     specFlux,
+                                                                                                     lm.linesDF)
+
+        # Launch starlight
         # print(f'\n-Initiating starlight: {objName}')
         # sw.starlight_launcher(gridFileName, starlightFolder)
         # print('\n-Starlight finished succesfully ended')
 
         # Read output data
-        Input_Wavelength, Input_Flux, Output_Flux, Parameters = sw.load_starlight_output(outputFolder/outputFile)
+        # Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(outputFolder/outputFile)
 
-        maskPix, clipPix, flagPix = Parameters['MaskPixels'], Parameters['ClippedPixels'], Parameters['FlagPixels']
+        # Plot the results
+        # sw.population_fraction_plots(fit_output, objName, 'Mass_fraction', lineLogFolder/f'{objName}_SSP_MasFrac.png')
+        # sw.population_fraction_plots(fit_output, objName, 'Light_fraction', lineLogFolder/f'{objName}_SSP_LightFrac.png')
+        # sw.stellar_fit_comparison_plot(objName, Input_Wavelength, Input_Flux, Output_Flux, lineLogFolder/stellarPlotFile)
 
-        # Plot spectra components
-        labelsDict = {'xlabel': r'Wavelength $(\AA)$',
-                      'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
-                      'title': f'Galaxy {objName} stellar continuum fitting'}
-
-        fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(Input_Wavelength, Input_Flux, label='Input starlight flux')
-        ax.plot(Input_Wavelength, Output_Flux, label='Output starlight fitting')
-        ax.update(labelsDict)
-        ax.legend()
-        ax.set_yscale('log')
-        # plt.savefig(lineLogFolder/nebPlotFile, bbox_inches='tight')
-        plt.show()
-        fig.clear()
 
 

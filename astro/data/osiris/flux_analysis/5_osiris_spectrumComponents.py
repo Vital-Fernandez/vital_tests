@@ -8,8 +8,8 @@ from scipy.interpolate import interp1d
 
 # Import the observation data
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
-starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
-# starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
+# starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
+starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
 addressList = list(data_folder/file for file in file_list)

@@ -1,6 +1,9 @@
 from pathlib import Path
 import src.specsiser as sr
 
+# Read line data:
+
+
 # Import the observation data
 obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')

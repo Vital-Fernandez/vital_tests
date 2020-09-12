@@ -61,7 +61,8 @@ for i, file_address in enumerate(addressList):
     Int_Stellar_Resampled = Interpolation(obsWave)
 
     # Save the non object spectrum without stellar component
-    np.savetxt(objGasSpectrumFile, np.transpose(np.array([obsWave, obsFlux-Int_Stellar_Resampled])), fmt="%7.1f %10.4e")
+    obsFluxNoStellar = obsFlux-Int_Stellar_Resampled
+    np.savetxt(objGasSpectrumFile, np.transpose(np.array([obsWave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
 
     # Plot the data
     labelsDict = {'xlabel': r'Wavelength $(\AA)$',
@@ -74,12 +75,12 @@ for i, file_address in enumerate(addressList):
     ax.plot(obsWave, nebFlux, label='Nebular component')
     ax.plot(obsWave, Int_Stellar_Resampled, label='Stellar component')
     ax.plot(obsWave, Int_Stellar_Resampled + nebFlux, label='Nebular + Stellar', linestyle=':')
-    # ax.plot(obsWave, obsFlux - Int_Stellar_Resampled, label='Emission spectrum')
+    ax.plot(obsWave, obsFluxNoStellar, label='Emission spectrum')
     # ax.plot(stellarWave[idcs_plot], inFlux[idcs_plot], label='Input starlight flux')
     # ax.plot(stellarWave[idcs_plot], stellarFlux[idcs_plot], label='Output starlight fitting')
     ax.update(labelsDict)
     ax.legend()
     ax.set_yscale('log')
-    plt.savefig(lineLogFolder/specCompPlot, bbox_inches='tight')
-    # plt.show()
+    # plt.savefig(lineLogFolder/specCompPlot, bbox_inches='tight')
+    plt.show()
     # fig.clear()

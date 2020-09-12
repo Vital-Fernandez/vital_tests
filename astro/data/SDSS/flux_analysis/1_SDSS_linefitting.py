@@ -31,7 +31,6 @@ for i, file_address in enumerate(addressList):
     masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
     lineLogFolder, lineLogFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
     plotFolder, plotFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_singleLines')
-
     objName = fitsFile.replace('.fits', '')
 
     # Set and crop the wavelength

@@ -1,78 +1,59 @@
-import os
-import numpy as np
-import pandas as pd
 import src.specsiser as sr
-from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
+from astro.data.SDSS.shared_scripts import list_objName, obsConfaddress, obsFolder
 
 
-def list_files(directory, extension):
-    output_list = []
-    for file in os.listdir(directory):
-        if file.endswith(extension):
-            output_list.append(os.path.join(directory, file))
-    return output_list
-
-
-# Import the observation data
-obsData = sr.loadConfData('D:/Pycharm Projects/vital_tests/astro/data/SDSS/flux_comparison.ini', group_variables=False)
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
-linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
+# Declare data and files location
+objList = list_objName(obsFolder, '.fits')
+obsData = sr.loadConfData(obsConfaddress, objList, group_variables=False)
 data_folder = Path(obsData['file_information']['data_folder'])
-fileList = list_files(data_folder, '.fits')
-addressList = list(data_folder / file for file in fileList)
-flux_norm = obsData['sample_data']['norm_flux']
+addressList = list(Path(f'{data_folder/objName}.fits') for objName in objList)
 
-# # Analyse the spectrum
+# Sample properties
+norm_Flux = obsData['sample_data']['norm_flux']
+wmin, wmax = obsData['sample_data']['wmin_array'], obsData['sample_data']['wmax_array']
+
+# Analyse the spectrum
 for i, file_address in enumerate(addressList):
 
-    # Open lineslog
-    fitsFolder, fitsFile = file_address.parent, file_address.name
-    masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
-    lineLogFolder, lineLogFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
-    plotFolder, plotFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_singleLines')
-    objName = fitsFile.replace('.fits', '')
+    # if i == 0:
 
-    # Set and crop the wavelength
-    wave_rest, flux, header = sr.import_fits_data(fitsFolder/fitsFile, instrument='SDSS')
-    idx_wave = (wave_rest >= obsData['sample_data']['wmin_array']) & (wave_rest <= obsData['sample_data']['wmax_array'])
+        # Open lineslog
+        objName = objList[i]
+        fitsFolder, fitsFile = file_address.parent, file_address.name
+        masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
+        lineLogFolder, lineLogFile = fitsFolder/'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
+        plotFolder, plotGrid = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_lineGrid.png')
+        print(f'\n- {i}: {objName}')
 
-    # Load line measurer object
-    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], masksFolder/masksFile, normFlux=flux_norm)
+        # Set and crop the wavelength
+        wave_rest, flux, header = sr.import_fits_data(fitsFolder/fitsFile, instrument='SDSS')
+        idx_wave = (wave_rest >= wmin) & (wave_rest <= wmax)
 
-    # Loop through the lines
-    print(f'\n- {i}: {objName}')
-    obsLines = lm.linesDF.index.values
-    for j, lineLabel in enumerate(obsLines):
+        # Load line measurer object
+        lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave], masksFolder/masksFile, normFlux=norm_Flux)
 
-        # Declare regions data
-        print(f'-- {lineLabel}:')
-        wave_regions = lm.linesDF.loc[lineLabel, 'w1':'w6'].values
-        idcsLinePeak, idcsContinua = lm.define_masks(wave_regions)
+        # Get lines and their fitting configuration
+        obsLines = lm.linesDF.index.values
+        fit_conf = obsData[f'{objName}_line_fitting']
 
-        # Measure line data
-        lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=1000)
+        # Loop through the lines
+        for j, lineLabel in enumerate(obsLines):
 
-        # Establish line and object fit configuration # TODO put all this tricks in an external method
-        fit_conf = {}
-        if lineLabel in obsData['blended_groups']:
-            fit_conf[lineLabel] = obsData['blended_groups'][lineLabel]
-        if 'default_blended_lines' in obsData:
-            fit_conf.update(obsData['default_blended_lines'])
-        if f'{objName}_blended_lines' in obsData:
-            fit_conf.update(obsData[f'{objName}_blended_lines'])
+            # if 'H1_6563' in lineLabel:
 
-        # Fit the emission lines
-        lm.line_fit('lmfit', lineLabel, idcsLinePeak, idcsContinua, continuum_check=True, user_conf=fit_conf)
+            # Fit each line regions data
+            print(f'-- {lineLabel}:')
+            wave_regions = lm.linesDF.loc[lineLabel, 'w1':'w6'].values
+            lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf)
 
-        # Save deblending fitting
-        if lineLabel in obsData['blended_groups']:
-            plotBlendedFile = fitsFile.replace('.fits', f'_{lineLabel}_deblending')
-            lm.plot_fit_components(lm.fit_output, output_address=plotFolder/plotBlendedFile)
+            if lm.blended_check:
+                plotBlend = fitsFile.replace('.fits', f'{lineLabel}_deblending.png')
+                lm.plot_fit_components(lm.fit_output, output_address=plotFolder/plotBlend)
 
-    # Save dataframe to text file
-    lm.linesDF.sort_values('mu', inplace=True)
-    lm.save_lineslog(lm.linesDF, lineLogFolder/lineLogFile)
+        lm.save_lineslog(lm.linesDF, lineLogFolder/lineLogFile)
 
-    # Plot the single lines:
-    lm.plot_detected_lines(lm.linesDF, ncols=5, output_address=plotFolder/plotFile)
+        # Plot the single lines:
+        idcs_unblended = ~lm.linesDF.index.str.contains('_b')
+        lm.plot_line_grid(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=plotFolder/plotGrid)
+

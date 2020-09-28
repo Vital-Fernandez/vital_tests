@@ -25,7 +25,7 @@ for i, file_address in enumerate(addressList):
     masksFolder, masksFile = fitsFolder, fitsFile.replace('.fits', '_masks.txt')
 
     # Load line measurer object
-    lm = sr.LineMesurerGUI(linesDF_address=logFolder/logFile)
+    lm = sr.LineMesurer(linesDF_address=logFolder / logFile)
     print(lm.label_formatter('O3_5007A'))
 
     # Special corrections

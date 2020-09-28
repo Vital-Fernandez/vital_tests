@@ -29,7 +29,7 @@ wave_rest = wave / (1 + obsData['sample_data']['z_array'][idx_file])
 idx_wave = (wave_rest >= wmin_array[idx_file]) & (wave_rest <= wmax_array[idx_file])
 
 # Analyse the spectrum
-lm = sr.LineMeasurer(wave_rest[idx_wave], flux[idx_wave] / norm_flux)
+lm = sr.EmissionFitting(wave_rest[idx_wave], flux[idx_wave] / norm_flux)
 # lm.plot_spectrum_components()
 
 # Measure line fluxes

@@ -27,7 +27,7 @@ for i, file_address in enumerate(addressList):
         wave, flux = np.loadtxt(emissionSpectrumAddress, unpack=True)
 
         # Load line measurer object
-        lm = sr.LineMesurerGUI(wave, flux, masksFolder/masksFile, normFlux=flux_norm)
+        lm = sr.LineMesurer(wave, flux, masksFolder / masksFile, normFlux=flux_norm)
 
         # Loop through the lines
         print(f'\n- {objName}:')

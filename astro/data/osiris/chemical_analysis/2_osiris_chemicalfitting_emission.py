@@ -28,7 +28,7 @@ for i, file_address in enumerate(addressList):
         # Load simulation parameters
         objParams = sr.loadConfData(simFolder/simConf)
         obj1_model = sr.SpectraSynthesizer()
-        lm = sr.LineMesurerGUI(linesDF_address=lineLogFolder / lineLogFile)
+        lm = sr.LineMesurer(linesDF_address=lineLogFolder / lineLogFile)
 
         # blended_dict = obsData['blended_groups']
         # blended_list = []

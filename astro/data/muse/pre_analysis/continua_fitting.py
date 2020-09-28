@@ -19,7 +19,7 @@ flux_voxel = flux_voxel / flux_norm
 
 # Treatment tools
 nebCalc = NebularContinua()
-lm = sr.LineMeasurer(wave, flux_voxel)
+lm = sr.EmissionFitting(wave, flux_voxel)
 
 # Remove the continuum
 flux_noContinuum = lm.continuum_remover(noiseRegionLims=(5600, 5850))
@@ -45,7 +45,7 @@ for lineLabel in listLabels:
     wave_regions = linesDb.loc[lineLabel, 'w1':'w6'].values
     idcsLinePeak, idcsContinua = lm.define_masks(wave_regions)
     lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
-    lm.gaussian_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
+    lm.gauss_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
     flux_dict[lineLabel] = lm.lineIntgFlux
 
 # Reddening correction

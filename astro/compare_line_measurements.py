@@ -1,9 +1,9 @@
 import numpy as np
 import src.specsiser as sr
 from matplotlib import pyplot as plt, rcParams
-from src.specsiser.physical_model.line_tools import LineMeasurer, gauss_func
+from src.specsiser.physical_model.line_tools import EmissionFitting, gauss_func
 
-lm = sr.LineMeasurer()
+lm = sr.EmissionFitting()
 
 STANDARD_PLOT = {'figure.figsize': (14, 14), 'axes.titlesize': 14, 'axes.labelsize': 14, 'legend.fontsize': 12,
                  'xtick.labelsize': 12, 'ytick.labelsize': 12}
@@ -43,11 +43,11 @@ for i_colum in range(ncols):
         print(i_colum, i_row)
 
         # Measure the line flux
-        lm = sr.LineMeasurer(wave, flux)
+        lm = sr.EmissionFitting(wave, flux)
 
         idcsLines, idcsContinua = lm.define_masks(wave_regions)
         lm.line_properties(idcsLines, idcsContinua, bootstrap_size=500)
-        lm.gaussian_mcfit(idcsLines, idcsContinua, bootstrap_size=500)
+        lm.gauss_mcfit(idcsLines, idcsContinua, bootstrap_size=500)
 
         line_wave = wave[idcsLines]
         resampleWaveLine = np.linspace(line_wave[0], line_wave[-1], 100)

@@ -31,7 +31,7 @@ for file_address in addressList:
     idx_wave = (wave_rest >= obsData['sample_data']['wmin_array']) & (wave_rest <= obsData['sample_data']['wmax_array'])
 
     # Analyse the spectrum
-    lm = sr.LineMeasurer(wave_rest[idx_wave], flux[idx_wave])
+    lm = sr.EmissionFitting(wave_rest[idx_wave], flux[idx_wave])
     #lm.plot_spectrum_components()
 
     # Normalize

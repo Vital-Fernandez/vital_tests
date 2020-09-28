@@ -29,7 +29,7 @@ for i, file_address in enumerate(addressList):
     logFolder, logFile = fitsFolder/'pre_analysis', fitsFile.replace('.fits', '_rawlinesLog.txt')
 
     # Load line measurer object
-    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], logFolder/logFile)
+    lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave], logFolder / logFile)
 
     # Plot the matched lines:
     lm.plot_detected_lines(lm.linesDF, ncols=10)

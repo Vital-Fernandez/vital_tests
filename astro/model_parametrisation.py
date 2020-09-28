@@ -164,12 +164,12 @@
 # plt.show()
 
 import numpy as np
-from src.specsiser.physical_model.line_tools import LineMeasurer, gauss_func
+from src.specsiser.physical_model.line_tools import EmissionFitting, gauss_func
 from scipy import integrate
 from matplotlib import pyplot as plt, rcParams
 import lmfit
 
-lm = LineMeasurer()
+lm = EmissionFitting()
 
 # Generate fake data
 wave = np.linspace(4950, 5050, 300)

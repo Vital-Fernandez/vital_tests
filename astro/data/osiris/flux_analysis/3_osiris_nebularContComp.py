@@ -39,7 +39,7 @@ for i, file_address in enumerate(addressList):
         idx_wave = (wave_rest >= wmin_array[i]) & (wave_rest <= wmax_array[i])
 
         # Load line measurer object
-        lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave], lineLogFolder/lineLogFile, normFlux=flux_norm)
+        lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave], lineLogFolder / lineLogFile, normFlux=flux_norm)
         nebCalc = NebularContinua()
 
         # Apply reddening correction

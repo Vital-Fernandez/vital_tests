@@ -30,7 +30,7 @@ for i, file_address in enumerate(addressList):
     print(f'-{objName}')
 
     # Load line measuerer object
-    lm = sr.LineMesurerGUI(linesDF_address=lineLogFolder/lineLogFile)
+    lm = sr.LineMesurer(linesDF_address=lineLogFolder / lineLogFile)
     pdf = PdfPrinter()
     tableDF = pd.DataFrame(columns=tableHeaders[1:])
 

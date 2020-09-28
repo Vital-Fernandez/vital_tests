@@ -37,7 +37,7 @@ for i, file_address in enumerate(addressList):
 
     # # Analyse the spectrum
     print(objReference)
-    lm = sr.LineMeasurer(wave_rest, flux)
+    lm = sr.EmissionFitting(wave_rest, flux)
     lm.plot_spectrum_components()
 
 

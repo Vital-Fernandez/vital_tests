@@ -24,7 +24,7 @@ wave_red = wave_red/redshift
 idcs_limit = (blue_limits[0] <= wave_blue) & (wave_blue <= blue_limits[1])
 wave_blue, flux_blue = wave_blue[idcs_limit], flux_blue[idcs_limit]
 
-lm = ss.LineMeasurer(wave_blue, flux_blue)
+lm = ss.EmissionFitting(wave_blue, flux_blue)
 
 # Remove the continuum
 flux_noContinuum = lm.continuum_remover(noiseWaveLim=(4150, 4300))
@@ -58,7 +58,7 @@ for i in np.arange(obsLines.size):
     lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
 
     # Perform gaussian fitting
-    lm.gaussian_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
+    lm.gauss_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
 
     # Store results in database
     lm.results_to_database(lineLabel, linesDb)

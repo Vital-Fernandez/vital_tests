@@ -28,7 +28,7 @@ idcsLines, idcsContinua = lm.define_masks(wave_regions)
 lm.line_properties(idcsLines, idcsContinua, bootstrap_size=1000)
 
 # Fit gaussian profile
-lm.gaussian_mcfit(idcsLines, idcsContinua, bootstrap_size=1000)
+lm.gauss_mcfit(idcsLines, idcsContinua, bootstrap_size=1000)
 
 # Comparing flux integration techniques
 lineWave, lineFlux = lm.wave[idcsLines], lm.flux[idcsLines]

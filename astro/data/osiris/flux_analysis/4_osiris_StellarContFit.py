@@ -42,7 +42,7 @@ for i, file_address in enumerate(addressList):
         specWave, specFlux = np.loadtxt(lineLogFolder/nebFluxNoNebCompFile, unpack=True)
 
         # Measuring objects
-        lm = sr.LineMesurerGUI(specWave, specFlux, lineLogFolder/lineLogFile, normFlux=flux_norm)
+        lm = sr.LineMesurer(specWave, specFlux, lineLogFolder / lineLogFile, normFlux=flux_norm)
         sw = StarlightWrapper()
 
         # Generate starlight files

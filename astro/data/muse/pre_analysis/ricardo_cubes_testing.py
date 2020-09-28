@@ -67,6 +67,7 @@ sr.plot.image_frame(flux_image, axes_conf=labelsDict)
 labelsDict = {'xlabel': r'RA',
               'ylabel': r'DEC',
               'title': r'Galaxy CGCG007 $H\alpha$'}
+print('La suma', flux_image.sum())
 sr.plot.image_frame(flux_image, wcs=wcs_cube, axes_conf=labelsDict)
 
 # Plot line image contours

@@ -35,7 +35,7 @@ for i, file_address in enumerate(addressList):
     idx_wave = (wave_rest >= obsData['sample_data']['wmin_array']) & (wave_rest <= obsData['sample_data']['wmax_array'])
 
     # Load line measurer object
-    lm = sr.LineMesurerGUI(wave_rest[idx_wave], flux[idx_wave]/fluxNorm, linesLogAddress)
+    lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave] / fluxNorm, linesLogAddress)
 
     # Measure line fluxes
     idcs_lines = (lm.linesDF['blended'] == 'None') | (lm.linesDF.index.str.contains('_b'))

@@ -27,7 +27,6 @@ flux_norm = obsData['sample_data']['norm_flux']
 noise_region = obsData['sample_data']['noiseRegion_array']
 idx_band = int(obsData['file_information']['band_flux'])
 
-
 counter = 0
 for i, obj in enumerate(objList):
 
@@ -63,19 +62,20 @@ for i, obj in enumerate(objList):
         sw = StarlightWrapper()
 
         # Generate starlight files
-        gridFileName, outputFile, outputFolder, waveResample, fluxResample = sw.generate_starlight_files(starlightFolder,
+        idcs_lines = ~lm.linesDF.index.str.contains('_b')
+        gridFileName, outputFile, saveFolder, waveResample, fluxResample = sw.generate_starlight_files(starlightFolder,
                                                                                                          f'{obj}{ext}',
                                                                                                          specWave,
                                                                                                          specFlux,
-                                                                                                         lm.linesDF)
+                                                                                                         lm.linesDF.loc[idcs_lines])
 
-        # Launch starlight
-        print(f'\n-Initiating starlight: {obj}')
-        sw.starlight_launcher(gridFileName, starlightFolder)
-        print('\n-Starlight finished succesfully ended')
+        # # Launch starlight
+        # print(f'\n-Initiating starlight: {obj}')
+        # sw.starlight_launcher(gridFileName, starlightFolder)
+        # print('\n-Starlight finished succesfully ended')
 
         # Read output data
-        Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(outputFolder/outputFile)
+        Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(starlightFolder/'Output'/outputFile)
         z_gp = obsData['sample_data']['z_array'][i]
         Mcor, Mint = fit_output['Mcor_tot'], fit_output['Mini_tot']
         mass_galaxy = computeSSP_galaxy_mass(Mcor, 1, z_gp)

@@ -12,7 +12,7 @@ COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', '
                     'pynebCode', 'pynebLabel', 'lineType', 'blended', 'comments', 'cont']
 
 # Declare data and files location
-conf_file_address = '../gtc_greenpeas_data.ini'
+conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, group_variables=False)
 objList = obsData['file_information']['object_list']
 obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)

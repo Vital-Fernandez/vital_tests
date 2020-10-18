@@ -1,12 +1,15 @@
 import numpy as np
 from pathlib import Path
 import src.specsiser as sr
+import atpy
 from src.specsiser.physical_model.starContinuum_functions import StarlightWrapper, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from astro.ext_lib.starlight.plotstarlightfits import plot_fits_and_SFH
+import astro.ext_lib.starlight
 
 objList = ['gp030321', 'gp101157', 'gp121903']
-conf_file_address = '../gtc_greenpeas_data.ini'
+conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)
 starlightFolder = Path(obsData['SSP_synthesis']['starlight_folder'])
 
@@ -39,7 +42,7 @@ for i, obj in enumerate(objList):
         lineLog_file = outputFolder/f'{obj}{ext}_linesLog.txt'
         nebFluxNoNebCompFile = outputFolder/f'{obj}{ext}_obs_RemoveNebularComp.txt'
         nebCompFile = outputFolder/f'{obj}{ext}_NebFlux.txt'
-        starlightOutput = starlightFolder/f'{obj}{ext}.slOutput'
+        starlightOutput = starlightFolder/'Output'/f'{obj}{ext}.slOutput'
         objGasSpectrumFile = outputFolder/f'{obj}{ext}_gasSpectrum.txt'
         LightFracPlotFile = outputFolder/f'{obj}{ext}_SSP_LightFrac.png'
         stellarPlotFile = outputFolder/f'{obj}{ext}_stellarFit.png'
@@ -57,6 +60,9 @@ for i, obj in enumerate(objList):
         obsNoNebWave, obsNoNebFlux = np.loadtxt(nebFluxNoNebCompFile, unpack=True)
         sw = StarlightWrapper()
         stellarWave, inFlux, stellarFlux, fit_output = sw.load_starlight_output(starlightOutput)
+        tsl = atpy.TableSet(str(starlightOutput), type='starlightv4')
+        psfh = plot_fits_and_SFH(tsl)
+        psfh.plot_fig_starlight()
 
         # Increase the range of Wave_S so it is greater than the observational range
         Wave_StellarExtension = np.linspace(3000.0, 3399.0, 200)
@@ -70,26 +76,28 @@ for i, obj in enumerate(objList):
         Interpolation = interp1d(Wave_S, Int_S, kind = 'slinear')
         Int_Stellar_Resampled = Interpolation(obsWave)
 
-        # Save the non object spectrum without stellar component
-        obsFluxNoStellar = obsFlux-Int_Stellar_Resampled
-        np.savetxt(objGasSpectrumFile, np.transpose(np.array([obsWave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
 
-        # Plot the data
-        labelsDict = {'xlabel': r'Wavelength $(\AA)$',
-                      'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
-                      'title': f'Galaxy {obj} spectrum components comparison'}
 
-        idcs_plot = inFlux > 0.0
-        fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(obsWave, obsFlux, label='Observed spectrum')
-        ax.plot(obsWave, nebFlux, label='Nebular component')
-        ax.plot(obsWave, Int_Stellar_Resampled, label='Stellar component')
-        ax.plot(obsWave, Int_Stellar_Resampled + nebFlux, label='Nebular + Stellar', linestyle=':')
-        ax.plot(obsWave, obsFluxNoStellar, label='Emission spectrum')
-        # ax.plot(stellarWave[idcs_plot], inFlux[idcs_plot], label='Input starlight flux')
-        # ax.plot(stellarWave[idcs_plot], stellarFlux[idcs_plot], label='Output starlight fitting')
-        ax.update(labelsDict)
-        ax.legend()
-        ax.set_yscale('log')
-        # plt.savefig(lineLogFolder/specCompPlot, bbox_inches='tight')
-        plt.show()
+        # # Save the non object spectrum without stellar component
+        # obsFluxNoStellar = obsFlux-Int_Stellar_Resampled
+        # np.savetxt(objGasSpectrumFile, np.transpose(np.array([obsWave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
+        #
+        # # Plot the data
+        # labelsDict = {'xlabel': r'Wavelength $(\AA)$',
+        #               'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
+        #               'title': f'Galaxy {obj} spectrum components comparison'}
+        #
+        # idcs_plot = inFlux > 0.0
+        # fig, ax = plt.subplots(figsize=(12, 8))
+        # ax.plot(obsWave, obsFlux, label='Observed spectrum')
+        # ax.plot(obsWave, nebFlux, label='Nebular component')
+        # ax.plot(obsWave, Int_Stellar_Resampled, label='Stellar component')
+        # ax.plot(obsWave, Int_Stellar_Resampled + nebFlux, label='Nebular + Stellar', linestyle=':')
+        # # ax.plot(obsWave, obsFluxNoStellar, label='Emission spectrum')
+        # # ax.plot(stellarWave[idcs_plot], inFlux[idcs_plot], label='Input starlight flux')
+        # # ax.plot(stellarWave[idcs_plot], stellarFlux[idcs_plot], label='Output starlight fitting')
+        # ax.update(labelsDict)
+        # ax.legend()
+        # ax.set_yscale('log')
+        # # plt.savefig(lineLogFolder/specCompPlot, bbox_inches='tight')
+        # plt.show()

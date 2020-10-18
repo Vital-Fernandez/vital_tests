@@ -4,7 +4,7 @@ import src.specsiser as sr
 from pathlib import Path
 
 objList = ['gp030321', 'gp101157', 'gp121903']
-conf_file_address = '../gtc_greenpeas_data.ini'
+conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)
 
 dataFolder = Path(obsData['file_information']['data_folder'])

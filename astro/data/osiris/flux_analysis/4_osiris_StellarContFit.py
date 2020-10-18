@@ -6,7 +6,7 @@ from src.specsiser.physical_model.starContinuum_functions import StarlightWrappe
 import matplotlib.pyplot as plt
 
 # Import the observation data
-obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
+obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
 # starlightFolder = Path('/home/vital/Astro-data/osiris-Ricardo/starlight')
 starlightFolder = Path('D:/Google drive/Astrophysics/Datos/osiris-Ricardo/starlight')
 data_folder = Path(obsData['file_information']['data_folder'])

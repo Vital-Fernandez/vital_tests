@@ -20,7 +20,7 @@ def lineMeanSampleProperties(label, dictDF):
             w6.append(df_voxel.loc[label, 'w6'])
     w1, w2, w3, w4, w5, w6 = np.array(w1), np.array(w2), np.array(w3), np.array(w4), np.array(w5), np.array(w6)
     print(f'-- {label}: {w1.mean():.2f} {w2.mean():.2f} {w3.mean():.2f} {w4.mean():.2f} {w5.mean():.2f} {w6.mean():.2f}')
-    return
+    return w1, w2, w3, w4, w5, w6
 
 # Declare data and files location
 conf_file_address = '../muse_greenpeas.ini'
@@ -36,6 +36,8 @@ window_box = 2
 range_box = np.arange(-window_box, window_box + 1)
 
 df_dict = {}
+larger_log = 0
+ref_lines = None
 for idx_obj, obj in enumerate(objList):
 
     if idx_obj == 0:
@@ -63,6 +65,11 @@ for idx_obj, obj in enumerate(objList):
 
                     logs_name_i = fileList[idx_obj].replace(".fits", f"_{idx_i}-{idx_j}_lineLog.txt")
                     lineslog_address_i = f'{dataFolder}/{logs_name_i}'
+                    df_i = pd.read_csv(lineslog_address_i, delim_whitespace=True, header=0, index_col=0)
+                    if len(df_i.index) > larger_log:
+                        ref_lines = df_i.index.values
+                        larger_log = len(ref_lines)
+
                     df_dict[f'{idx_i}-{idx_j}'] = pd.read_csv(lineslog_address_i, delim_whitespace=True, header=0, index_col=0)
 
                 else:
@@ -70,12 +77,27 @@ for idx_obj, obj in enumerate(objList):
 
                 counter += 1
 
-# Loop through the dicts and get the data:
-lineMeanSampleProperties('O3_5007A', df_dict)
-lineMeanSampleProperties('O3_4959A', df_dict)
-lineMeanSampleProperties('S3_6312A', df_dict)
-lineMeanSampleProperties('He1_5016A', df_dict)
-lineMeanSampleProperties('H1_8392A', df_dict)
+        mask_headers = ['wavelength', 'ion', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6']
+        mask_df = pd.DataFrame(index=ref_lines, columns=mask_headers)
+
+        # Loop through the dicts and get the data:
+        for i, lineLabel in enumerate(ref_lines):
+            line_waves = lineMeanSampleProperties(lineLabel, df_dict)
+
+            mask_df.loc[lineLabel, ['wavelength','ion']] = sr._linesDb.loc[lineLabel, ['wavelength','ion']]
+
+            try:
+                mask_df.loc[lineLabel, 'w1':'w6'] = line_waves[0].mean(), line_waves[1].mean(), line_waves[2].mean(), line_waves[3].mean(), line_waves[4].mean(), line_waves[5].mean()
+            except:
+                print('FAILURE', lineLabel)
+                print(mask_df.loc[lineLabel, 'w1':'w6'])
+                print(line_waves)
+
+        # Save the dataframe
+        mask_address_i = f'{dataFolder}/{obj}_mask.txt'
+        with open(mask_address_i, 'wb') as output_db:
+            string_DF = mask_df.to_string()
+            output_db.write(string_DF.encode('UTF-8'))
 
         # # Load the data
         # print(f'\n- {obj}')

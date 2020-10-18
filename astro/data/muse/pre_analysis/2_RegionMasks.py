@@ -39,10 +39,13 @@ for i, obj in enumerate(objList):
 
             # Get line flux region
             ion, lineWave, latexlabel = sr.label_decomposition([lineLabel])
-            lineIdcs = np.searchsorted(wave, np.array(lineLimits))
-            lineImage = cube[lineIdcs[0]:lineIdcs[1], :, :].sum(axis=0)/wave[lineIdcs[0]:lineIdcs[1]].size
-            print(lineLabel, wave[lineIdcs[0]:lineIdcs[1]].size)
-            flux_image = lineImage.data.data
+            # lineIdcs = np.searchsorted(wave, np.array(lineLimits))
+            # lineImage = cube[lineIdcs[0]:lineIdcs[1], :, :].sum(axis=0)/wave[lineIdcs[0]:lineIdcs[1]].size
+            # print(lineLabel, wave[lineIdcs[0]:lineIdcs[1]].size)
+            # flux_image = lineImage.data.data
+
+            line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)
+            flux_image = line_image.data.data
 
             # Plot line image map with coordinates
             labelsDict = {'xlabel': r'RA',
@@ -70,25 +73,22 @@ for i, obj in enumerate(objList):
             for idx, per in enumerate(percent_list):
                 levels_text[idx] = f'{levels[idx]:.2f} $P_{{{per}}}$'
 
-            # mask_90_95 = np.logical_and(flux_contours > np.percentile(flux_contours, 90),
-            #                             flux_contours < np.percentile(flux_contours, 95))
-            # flux_contours[mask_90_95] = np.ma.masked
-
-            # Axis set up for WCS
-            # fig, ax = plt.subplots(figsize=(12, 8))
-            # ax = fig.add_subplot(projection=wcs_cube, slices=('x', 'y', 1))
             fig = plt.figure(figsize=(12, 8))
             ax = fig.add_subplot(projection=wcs_cube, slices=('x', 'y', 1))
 
             CS3 = ax.contourf(X, Y, flux_contours, levels=levels)
             cbar = fig.colorbar(CS3)
             cbar.ax.set_yticklabels(levels_text)
-            ax.set_facecolor('black')
+
+            # CS3 = ax.contourf(X, Y, flux_contours)
+            # cbar = fig.colorbar(CS3)
+
+            # ax.set_facecolor('black')
             ax.update(labelsDict)
-            # plt.show()
             imageName = fileList[i].replace('.fits', f'_{lineLabel}_contours.png')
             mapAddress = file_address_i = f'{dataFolder}/{imageName}'
-            plt.savefig(mapAddress, bbox_inches='tight')
+            # plt.savefig(mapAddress, bbox_inches='tight')
+            plt.show()
 
 
 

@@ -47,7 +47,7 @@ for i, obj in enumerate(objList):
                       'ylabel': r'DEC',
                       'title': r'Galaxy {} {}'.format(obj, latexlabel[0])}
         outputFile = file_address_i.replace('.fits', f'_{lineLabel}_map.png')
-        sr.plot.image_frame(flux_image, wcs=wcs_cube, axes_conf=labelsDict, output_file=outputFile)
+        sr.plot.image_frame(flux_image, wcs=wcs_cube, axes_conf=labelsDict)#, output_file=outputFile)
 
 # # Load data
 # files_list = ['CGCG007.fits', 'UGC5205.fits']

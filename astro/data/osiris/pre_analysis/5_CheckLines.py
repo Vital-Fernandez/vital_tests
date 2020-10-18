@@ -8,7 +8,7 @@ from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
 # Declare data and files location
-conf_file_address = '../gtc_greenpeas_data.ini'
+conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, group_variables=False)
 objList = obsData['file_information']['object_list']
 obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)

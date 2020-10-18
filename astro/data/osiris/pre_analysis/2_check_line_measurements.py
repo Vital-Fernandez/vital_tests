@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
 # Import the observation data
-obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
+obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']

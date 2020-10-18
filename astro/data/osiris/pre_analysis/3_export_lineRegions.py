@@ -9,7 +9,7 @@ COLUMNS_TO_CLEAR = ['intg_flux' ,'intg_err','gauss_flux','gauss_err','eqw','eqw_
                    'std_continuum','amp','mu','sigma','amp_err','mu_err','sigma_err']
 
 # Import the observation data
-obsData = sr.loadConfData('../gtc_greenpeas_data.ini', group_variables=False)
+obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
 linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']

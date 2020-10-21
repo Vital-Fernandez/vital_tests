@@ -22,8 +22,9 @@ flux_norm = obsData['sample_data']['norm_flux']
 noise_region = obsData['sample_data']['noiseRegion_array']
 idx_band = int(obsData['file_information']['band_flux'])
 
-colors_dict = dict(zip(['_BR', '_B', '_R'], ['tab:purple', 'tab:blue', 'tab:red']))
-legend_dict = dict(zip(['_BR', '_B', '_R'], ['Combined arm', 'Blue arm', 'Red arm']))
+lineStyle_dict = dict(zip(['_BR', '_B', '_R', '_SDSS'], ['-', '-', '-', ':']))
+colors_dict = dict(zip(['_BR', '_B', '_R', '_SDSS'], ['tab:purple', 'tab:blue', 'tab:red', 'tab:grey']))
+legend_dict = dict(zip(['_BR', '_B', '_R', '_SDSS'], ['Combined arm', 'Blue arm', 'Red arm', 'SDSS dr16']))
 
 
 
@@ -41,41 +42,43 @@ for i, obj in enumerate(objList):
     # Plot the spectra
     fig = plt.figure(figsize=(16, 9))
     spec = gridspec.GridSpec(ncols=2, nrows=1, width_ratios=[16, 9])
+    ax0 = fig.add_subplot(spec[0])
+    ax1 = fig.add_subplot(spec[1])
 
-    for ext in ('_BR', '_B', '_R'):
+    for ext in ('_BR', '_B', '_R', '_SDSS'):
 
         # Declare files location
-        fits_file = dataFolder/f'{obj}{ext}.fits'
+        dataFolder = dataFolder
         objFolder = resultsFolder/f'{obj}'
-        objMask = objFolder/f'{obj}{ext}_mask.txt'
-        lineLog_file, lineGrid_file = objFolder/f'{obj}{ext}_linesLog.txt', objFolder/f'{obj}{ext}_lineGrid.png'
-        pdfTableFile, txtTableFile = objFolder/f'{obj}{ext}_linesTable', objFolder/f'{obj}{ext}_linesTable.txt'
+        fits_file = f'{obj}{ext}.fits'
 
         # Load spectrum
-        print(f'\n-- Treating {counter} :{obj}{ext}.fits')
-        wave, flux_array, header = sr.import_fits_data(fits_file, instrument='OSIRIS')
-        flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
+        print(f'\n-- Treating {counter} :{fits_file}')
+        if ext != '_SDSS':
+            wave, flux_array, header = sr.import_fits_data(dataFolder/fits_file, instrument='OSIRIS')
+            flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
+            lm = sr.LineMesurer(wave, flux, redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
+        else:
+            wave, flux, header = sr.import_fits_data(dataFolder/fits_file, instrument='SDSS')
+            lm = sr.LineMesurer(wave, flux, redshift=0, normFlux=flux_norm)
 
         # Load line measurer object
-        maskDF = pd.read_csv(objMask, delim_whitespace=True, header=0, index_col=0)
-        lm = sr.LineMesurer(wave, flux, redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
-
-
-        ax0 = fig.add_subplot(spec[0])
-        ax0.step(lm.wave, lm.flux, label=legend_dict[ext], color=colors_dict[ext])
+        print(f'-- Pixel width: {np.diff(lm.wave).mean()}')
+        ax0.step(lm.wave, lm.flux, label=legend_dict[ext], color=colors_dict[ext], linestyle=lineStyle_dict[ext])
 
         idx_inset = np.searchsorted(lm.wave, (6200, 6800))
-        ax1 = fig.add_subplot(spec[1])
         ax1.step(lm.wave[idx_inset[0]:idx_inset[1]], lm.flux[idx_inset[0]:idx_inset[1]],
                 label=legend_dict[ext], color=colors_dict[ext])
 
-    ax0.set_yscale('log')
+        counter += 1
+
+    # ax0.set_yscale('log')
     ax0.update(STANDARD_AXES)
     ax0.set_title(f'Galaxy {obj}')
     ax0.legend()
     ax0.update(STANDARD_AXES)
 
-    ax1.set_yscale('log')
+    # ax1.set_yscale('log')
     ax1.update(STANDARD_AXES)
     ax1.set_title(r'Galaxy {} $H\alpha$ region'.format(obj))
     ax1.legend()
@@ -83,5 +86,5 @@ for i, obj in enumerate(objList):
     fig.tight_layout()
 
     plotAddress = output_folder/fileList[i].replace('.fits', '_armFluxComparison.png')
-    plt.savefig(plotAddress, dpi=200, bbox_inches='tight')
-    # plt.show()
+    # plt.savefig(plotAddress, dpi=200, bbox_inches='tight')
+    plt.show()

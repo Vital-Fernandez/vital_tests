@@ -58,7 +58,7 @@ for i, obj in enumerate(objList):
         # Declare voxels to analyse
         fluxImage_6312 = lineFlux_dict['S3_6312A']
         fluxLevels_6312 = levelFlux_dict['S3_6312A']
-        int_level = fluxLevels_6312[-5]#[-4]
+        int_level = fluxLevels_6312[-4]#[-4]
         idcs_voxels = np.argwhere(fluxImage_6312 > int_level)
 
         # Loop through voxels
@@ -78,8 +78,8 @@ for i, obj in enumerate(objList):
             flux_voxel = cube[:, idx_j, idx_i].data.data * norm_flux
             flux_err = cube[:, idx_j, idx_i].var.data * norm_flux
 
-            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux,
-                                err_type='variance')
+            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
+            # lm.plot_spectrum_components(continuumFlux=1.0/np.sqrt(lm.errFlux))
 
             # Normalize
             norm_spec = lm.continuum_remover(noise_region)
@@ -116,7 +116,8 @@ for i, obj in enumerate(objList):
                 wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
                 try:
                     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf={})
-                    # lm.plot_fit_components(lm.fit_output)
+                    print(lm)
+                    lm.plot_fit_components(lm.fit_output)
                 except:
                     if lineLabel == 'H1_6563A':
                         obj_db.loc[idx_database, 'Halpha_nan_pixel'] = True

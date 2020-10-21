@@ -26,6 +26,7 @@ for i, obj in enumerate(objList):
     wmin, wmax = wmin_array[i], wmax_array[i]
     fit_conf = obsData[f'{obj}_line_fitting']
 
+    # for ext in ('_BR', '_B', '_R'):
     for ext in ('_BR', '_B', '_R'):
 
         # Declare files location
@@ -39,11 +40,12 @@ for i, obj in enumerate(objList):
         print(f'\n-- Treating {counter} :{obj}{ext}.fits')
         wave, flux_array, header = sr.import_fits_data(fits_file, instrument='OSIRIS')
         flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
+        print(header['GRISM'])
 
         # Load line measurer object
         maskDF = pd.read_csv(objMask, delim_whitespace=True, header=0, index_col=0)
-        lm = sr.LineMesurer(wave, flux, redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
-        # lm.plot_spectrum_components()
+        lm = sr.LineMesurer(wave, flux, input_err=flux_array[3][0], redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
+        lm.plot_spectrum_components(continuumFlux=lm.errFlux)
 
         # Fit and check the regions
         obsLines = maskDF.index.values
@@ -52,6 +54,8 @@ for i, obj in enumerate(objList):
             print(f'-- {lineLabel}:')
             wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
             lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=fit_conf)
+            print(lm)
+            lm.plot_fit_components(lm.fit_output)
 
             if lm.blended_check:
                 plotFile = f'{obj}{ext}_{lineLabel}.png'

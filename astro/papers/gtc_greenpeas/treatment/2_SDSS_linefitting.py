@@ -39,7 +39,7 @@ for i, obj in enumerate(objList):
         print(f'\n-- Treating {counter} :{obj}{ext}.fits')
         wave, flux, header = sr.import_fits_data(fits_file, instrument='SDSS')
 
-        # Load line measurer object
+        # # Load line measurer object
         maskDF = pd.read_csv(objMask, delim_whitespace=True, header=0, index_col=0)
         lm = sr.LineMesurer(wave, flux, redshift=0, normFlux=flux_norm)
         # lm.plot_spectrum_components(matchedLinesDF=maskDF)

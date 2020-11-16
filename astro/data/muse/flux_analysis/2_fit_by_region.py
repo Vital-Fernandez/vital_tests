@@ -106,8 +106,7 @@ for i, obj in enumerate(objList):
                 output_db.write(string_DF.encode('UTF-8'))
 
             # Reset and measure the lines
-            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux,
-                                err_type='variance')
+            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
 
             # Fit and check the regions
             obsLines = maskLinesDF.loc[idcsObsLines].index.values
@@ -143,9 +142,9 @@ for i, obj in enumerate(objList):
             lm.table_fluxes(lm.linesDF, pdfTableFile, txtTableFile, rc_pyneb)
             lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8, output_address=grid_address_i)
 
-        # Save the object database
-        with open(db_addresss, 'wb') as output_db:
-            string_DF = obj_db.to_string()
-            output_db.write(string_DF.encode('UTF-8'))
+        # # Save the object database
+        # with open(db_addresss, 'wb') as output_db:
+        #     string_DF = obj_db.to_string()
+        #     output_db.write(string_DF.encode('UTF-8'))
 
 print(dict_errs)

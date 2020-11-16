@@ -75,8 +75,8 @@ for i, obj in enumerate(objList):
         plt.savefig(objFolder/imageName, bbox_inches='tight')
         # plt.show()
 
-    # Save the dataframe
-    with open(db_addresss, 'wb') as output_db:
-        string_DF = obj_db.to_string()
-        output_db.write(string_DF.encode('UTF-8'))
+    # # Save the dataframe
+    # with open(db_addresss, 'wb') as output_db:
+    #     string_DF = obj_db.to_string()
+    #     output_db.write(string_DF.encode('UTF-8'))
 

@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import StarlightWrapper, computeSSP_galaxy_mass
+from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 
 # Import the observation data
@@ -43,7 +43,7 @@ for i, file_address in enumerate(addressList):
 
         # Measuring objects
         lm = sr.LineMesurer(specWave, specFlux, lineLogFolder / lineLogFile, normFlux=flux_norm)
-        sw = StarlightWrapper()
+        sw = SSPsynthesizer()
 
         # Generate starlight files
         gridFileName, outputFile, outputFolder, waveResample, fluxResample = sw.generate_starlight_files(starlightFolder,
@@ -73,10 +73,10 @@ for i, file_address in enumerate(addressList):
 
 
 
-        # # Plot the results
-        # sw.population_fraction_plots(fit_output, objName, 'Mass_fraction', lineLogFolder/f'{objName}_SSP_MasFrac.png')
-        # sw.population_fraction_plots(fit_output, objName, 'Light_fraction', lineLogFolder/f'{objName}_SSP_LightFrac.png')
-        # sw.stellar_fit_comparison_plot(objName, Input_Wavelength, Input_Flux, Output_Flux, lineLogFolder/stellarPlotFile)
+        # Plot the results
+        sw.population_fraction_plots(fit_output, objName, 'Mass_fraction', lineLogFolder/f'{objName}_SSP_MasFrac.png')
+        sw.population_fraction_plots(fit_output, objName, 'Light_fraction', lineLogFolder/f'{objName}_SSP_LightFrac.png')
+        sw.stellar_fit_comparison_plot(objName, Input_Wavelength, Input_Flux, Output_Flux, lineLogFolder/stellarPlotFile)
 
         # labelsDict = {'xlabel': r'Wavelength $(\AA)$',
         #               'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',

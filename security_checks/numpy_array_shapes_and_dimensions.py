@@ -1,10 +1,10 @@
 import numpy as np
-
-a = np.array([[1, 2, 3, 4, 5],
-              [5, 6, 7, 8, 9]])
-
-print(a.mean(axis=1))
-print(a[0, :].mean(axis=1))
+#
+# a = np.array([[1, 2, 3, 4, 5],
+#               [5, 6, 7, 8, 9]])
+#
+# print(a.mean(axis=1))
+# print(a[0, :].mean(axis=1))
 
 # print(a)
 # print(a.shape)
@@ -80,12 +80,12 @@ print(a[0, :].mean(axis=1))
 
 ## ----------------  Rearrenge orientation -----------------------
 
-# matrix = np.array([[1,2,3,8,8],[0,0,4,5,6],[8,8,7,8,9],[1,2,0,5,2]])
-# print('matrix original\n', matrix)
-# matrix_1d = matrix.flatten()
-# print('matrix flattend\n', matrix_1d)
-# matrix_2d = B = np.reshape(matrix_1d, (4, 5))
-# print('matrix reshaped\n', matrix_2d)
+matrix = np.array([[1,2,3,8,8],[0,0,4,5,6],[8,8,7,8,9],[1,2,0,5,2]])
+print('matrix original\n', matrix)
+matrix_1d = matrix.flatten()
+print('matrix flattend\n', matrix_1d)
+matrix_2d = np.reshape(matrix_1d, (4, 5))
+print('matrix reshaped\n', matrix_2d)
 
 
 

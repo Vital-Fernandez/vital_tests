@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import StarlightWrapper
+from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
@@ -18,7 +18,7 @@ flux_norm = obsData['sample_data']['norm_flux']
 # Analyse the spectrum
 for i, file_address in enumerate(addressList):
 
-    sw = StarlightWrapper()
+    sw = SSPsynthesizer()
 
     # Establish files location
     objName = obsData['file_information']['object_list'][i]

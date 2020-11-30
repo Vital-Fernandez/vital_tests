@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import StarlightWrapper, computeSSP_galaxy_mass
+from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 
 objList = ['gp030321', 'gp101157', 'gp121903']
@@ -60,7 +60,7 @@ for i, obj in enumerate(objList):
 
             # Measuring objects
             lm = sr.LineMesurer(specWave, specFlux, lineLog_file, normFlux=flux_norm)
-            sw = StarlightWrapper()
+            sw = SSPsynthesizer()
 
             # Generate starlight files
             idcs_lines = ~lm.linesDF.index.str.contains('_b')

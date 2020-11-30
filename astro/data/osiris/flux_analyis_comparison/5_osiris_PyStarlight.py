@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import src.specsiser as sr
 import atpy
-from src.specsiser.physical_model.starContinuum_functions import StarlightWrapper, computeSSP_galaxy_mass
+from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from astro.ext_lib.starlight.plotstarlightfits import plot_fits_and_SFH
@@ -72,7 +72,7 @@ for i, obj in enumerate(objList):
         obsWave, obsFlux = wave_rest[idx_wave], flux[idx_wave]
         nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
         obsNoNebWave, obsNoNebFlux = np.loadtxt(nebFluxNoNebCompFile, unpack=True)
-        sw = StarlightWrapper()
+        sw = SSPsynthesizer()
         stellarWave, inFlux, stellarFlux, fit_output = sw.load_starlight_output(starlightOutput)
         tsl = atpy.TableSet(str(starlightOutput), type='starlightv4')
         psfh = plot_fits_and_SFH(tsl)

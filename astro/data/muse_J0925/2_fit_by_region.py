@@ -80,8 +80,6 @@ for i, obj in enumerate(objList):
 
         int_level = fluxLevels_5007[-4]#[-4]
         mask_flux = fluxImage_5007 >= int_level
-        # mask_loc = (x >= 130) & (x <= 170) & (y >= 130) & (y <= 170)
-        # idcs_voxels = np.argwhere(mask_flux & mask_loc)
         idcs_voxels = np.argwhere(mask_flux)
         n_voxels = idcs_voxels.size / 2
         np.max(fluxImage_5007[mask_flux])
@@ -109,74 +107,76 @@ for i, obj in enumerate(objList):
             lm.plot_spectrum_components(output_address=voxelSpectrum)
 
             # Normalize
-            norm_spec = lm.continuum_remover(noise_region)
-
-            # Security check for pixels with nan values:
-            idcs_nan = np.isnan(lm.flux)
-
-            if idcs_nan.any():
-                Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
-                lm.flux = Interpolation(lm.wave)
+            try:
                 norm_spec = lm.continuum_remover(noise_region)
-                obj_db.loc[idx_database, 'Bad_values'] = idcs_nan.sum()
+                security_check = True
+            except:
+                security_check = False
 
-            # Identify the emission lines
-            obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=3)
-            maskLinesDF = lm.match_lines(obsLinesTable, mask_df, find_line_borders=False)
-            # lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF)
-            idcsObsLines = (maskLinesDF.observation == 'detected')
-            # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
+            if security_check:
+                # Security check for pixels with nan values:
+                idcs_nan = np.isnan(lm.flux)
 
-            # Save the local mask dataframe
-            with open(local_mask, 'wb') as output_db:
-                string_DF = maskLinesDF.loc[idcsObsLines].to_string()
-                output_db.write(string_DF.encode('UTF-8'))
+                if idcs_nan.any():
+                    Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
+                    lm.flux = Interpolation(lm.wave)
+                    norm_spec = lm.continuum_remover(noise_region)
+                    obj_db.loc[idx_database, 'Bad_values'] = idcs_nan.sum()
 
-            # Reset and measure the lines
-            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
+                # Identify the emission lines
+                obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=3)
+                maskLinesDF = lm.match_lines(obsLinesTable, mask_df, find_line_borders=False)
+                # lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF)
+                idcsObsLines = (maskLinesDF.observation == 'detected')
+                # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
 
-            # Fit and check the regions
-            obsLines = maskLinesDF.loc[idcsObsLines].index.values
-            for j, lineLabel in enumerate(obsLines):
-                print(f'--- {lineLabel}:')
-                wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
-                try:
-                    lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData['default_line_fitting'])
-                    # lm.print_results(show_fit_report=True, show_plot=True)
+                # Save the local mask dataframe
+                with open(local_mask, 'wb') as output_db:
+                    string_DF = maskLinesDF.loc[idcsObsLines].to_string()
+                    output_db.write(string_DF.encode('UTF-8'))
 
-                    if lineLabel == 'H1_6563A_b':
-                        flux_value = obj_db.loc[idx_database, 'B_H1_6563A_b']
-                        obj_db.loc[idx_database, 'myThings'] = flux_value
-                        obj_db.loc[idx_database, 'peak_max'] = np.max(flux_voxel)
-                        lm.plot_fit_components(lm.fit_output, output_address=fitcomponents_Halpha)
-                except:
-                    if lineLabel == 'H1_6563A_b':
-                        obj_db.loc[idx_database, 'Halpha_nan_pixel'] = True
-                    else:
-                        dict_errs[f'{lineLabel}_{idx_database}'] = 'Err'
+                # Reset and measure the lines
+                lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
 
-            if 'H1_6563A' in lm.linesDF.index:
+                # Fit and check the regions
+                obsLines = maskLinesDF.loc[idcsObsLines].index.values
+                for j, lineLabel in enumerate(obsLines):
+                    print(f'--- {lineLabel}:')
+                    wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
+                    try:
+                        lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData['default_line_fitting'])
+                        # lm.print_results(show_fit_report=True, show_plot=True)
 
-                # Number of lines measured
-                obj_db.loc[idx_database, 'n_emissions'] = len(lm.linesDF.index)
+                        if lineLabel == 'H1_6563A_b':
+                            lm.plot_fit_components(lm.fit_output, output_address=fitcomponents_Halpha)
+                    except:
+                        if lineLabel == 'H1_6563A_b':
+                            obj_db.loc[idx_database, 'Halpha_nan_pixel'] = True
+                        else:
+                            dict_errs[f'{lineLabel}_{idx_database}'] = 'Err'
 
-                # Storing special fluxes in database
-                for lineComp in obsData['default_line_fitting']['H1_6563A_b'].split('-'):
-                    for param in export_elements:
-                        if lineComp in lm.linesDF.index:
-                            column_name = f'{lineComp}-{param}'
-                            obj_db.loc[idx_database, column_name] = lm.linesDF.loc[lineComp, param]
+                if 'H1_6563A' in lm.linesDF.index:
 
-                # Compute reddening correction
-                cHbeta, rc_pyneb = red_corr_HalphaHbeta_ratio(lm.linesDF, 0.0)
-                obj_db.loc[idx_database, 'cHbeta'] = cHbeta
+                    # Number of lines measured
+                    obj_db.loc[idx_database, 'n_emissions'] = len(lm.linesDF.index)
 
-                # Save the results
-                print(f'- Printing results tables')
-                idcs_obsLines = ~lm.linesDF.index.str.contains('_b')
-                lm.save_lineslog(lm.linesDF, local_lineslog)
-                # lm.table_fluxes(lm.linesDF[idcs_obsLines], pdfTableFile, txtTableFile, rc_pyneb)
-                # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8, output_address=grid_address_i)
+                    # Storing special fluxes in database
+                    for lineComp in obsData['default_line_fitting']['H1_6563A_b'].split('-'):
+                        for param in export_elements:
+                            if lineComp in lm.linesDF.index:
+                                column_name = f'{lineComp}-{param}'
+                                obj_db.loc[idx_database, column_name] = lm.linesDF.loc[lineComp, param]
+
+                    # Compute reddening correction
+                    cHbeta, rc_pyneb = red_corr_HalphaHbeta_ratio(lm.linesDF, 0.0)
+                    obj_db.loc[idx_database, 'cHbeta'] = cHbeta
+
+                    # Save the results
+                    print(f'- Printing results tables')
+                    idcs_obsLines = ~lm.linesDF.index.str.contains('_b')
+                    lm.save_lineslog(lm.linesDF, local_lineslog)
+                    # lm.table_fluxes(lm.linesDF[idcs_obsLines], pdfTableFile, txtTableFile, rc_pyneb)
+                    # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8, output_address=grid_address_i)
 
         # Save the object database
         with open(db_addresss, 'wb') as output_db:

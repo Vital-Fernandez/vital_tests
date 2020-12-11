@@ -13,3 +13,6 @@ print(b, type(b))
 c = b + ('Vital the god')
 print(c)
 
+a = 'H1_6563A_w1_center'
+print(a[a.rfind('_')+1:])
+

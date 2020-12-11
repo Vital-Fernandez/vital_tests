@@ -92,106 +92,106 @@ nebular_bases = np.load(storing_folder/'neb_gamma.npy')
 # neb_int = nebCalc.flux_spectrum(lm.wave, Te_low, Halpha_int, HeII_HII, HeIII_HeII)
 
 
-# starlight_output_file = Path('D:\Dropbox\Astrophysics\Papers\gtc_greenpeas\data\starlight\Output\gp121903_BR.slOutput')
-# Input_Wavelength, Input_Flux, Output_Flux, fit_output = starCalc.load_starlight_output(starlight_output_file)
+starlight_output_file = Path('D:\Dropbox\Astrophysics\Papers\gtc_greenpeas\data\starlight\Output\gp121903_BR.slOutput')
+Input_Wavelength, Input_Flux, Output_Flux, fit_output = starCalc.load_starlight_output(starlight_output_file)
+# #
+# # Region 1 templates:
+# idcs_1 = (bases_df.age_yr < 1.5e7) & (bases_df.z_star > 0.005)
+# z_range_1, age_range_1, flux_matrix_1 = generate_region_templates(bases_df, idcs_1, wave_bases, flux_bases)
+# logAge_range_1 = np.log10(age_range_1)
+# spy_RGridInterp = spy.interpolate.RegularGridInterpolator((z_range_1, logAge_range_1), flux_matrix_1)
+# exop_interpAxis = xo.interp.RegularGridInterpolator([z_range_1, logAge_range_1], flux_matrix_1)
+# neb_interpAxis = xo.interp.RegularGridInterpolator([temp_range, HeI_range], nebular_bases)
 #
-# Region 1 templates:
-idcs_1 = (bases_df.age_yr < 1.5e7) & (bases_df.z_star > 0.005)
-z_range_1, age_range_1, flux_matrix_1 = generate_region_templates(bases_df, idcs_1, wave_bases, flux_bases)
-logAge_range_1 = np.log10(age_range_1)
-spy_RGridInterp = spy.interpolate.RegularGridInterpolator((z_range_1, logAge_range_1), flux_matrix_1)
-exop_interpAxis = xo.interp.RegularGridInterpolator([z_range_1, logAge_range_1], flux_matrix_1)
-neb_interpAxis = xo.interp.RegularGridInterpolator([temp_range, HeI_range], nebular_bases)
+# # Compute nebular component
+# Temp_true, HeI_II_true, Halpha_True = 12350.0, 0.1055, 500.0
+# coordB = np.stack(([Temp_true], [HeI_II_true]), axis=-1)
+# gamma_neb_inter = neb_interpAxis.evaluate(coordB).eval()[0]
+# flux_neb_inter = nebCalc.zanstra_calibration(wave_bases, Temp_true, Halpha_True, gamma_neb_inter)
+#
+# # Stellar component
+# age_true = np.array([6.95])
+# z_true = np.array([0.0265])
+# w_true = np.array([1.25])
+# age_neighbours = [8913000]
+# z_neighbours = [0.0315321]
+#
+# synth_spec = np.zeros(wave_bases.size)
+# spec_components = np.zeros((len(age_true), wave_bases.size))
+# for i in range(len(age_true)):
+#     coordB = np.stack(([z_true[i]], [age_true[i]]), axis=-1)
+#     flux_true_i = exop_interpAxis.evaluate(coordB).eval()
+#     synth_spec += flux_true_i[0] * w_true[i]
+#     spec_components[i, :] = flux_true_i[0]
+#
+# obj_cont = flux_neb_inter + synth_spec
+# wave_obj, flux_obj_norm, normFlux_coeff_i = starCalc.treat_input_spectrum(wave_bases, obj_cont, norm_waves=(5100, 5150))
+#
+# # Adding gas and stellar componts
+# fig, ax = plt.subplots(figsize=(9, 5))
+# ax.step(wave_obj, synth_spec, label='stellar continuum')
+# ax.step(wave_obj, flux_neb_inter, label='gas continuum', linestyle=':')
+# ax.step(wave_obj, flux_neb_inter + synth_spec, label='total continuum', linestyle=':')
+# ax.step(wave_obj, nebCalc.zanstra_calibration_tt(wave_bases, Temp_true, 500.0, gamma_neb_inter), label='neb zanstra', linestyle=':')
+# ax.set_xlabel(r'$wave (\AA)$')
+# ax.set_ylabel(r'$flux norm$')
+# ax.legend()
+# plt.show()
 
-# Compute nebular component
-Temp_true, HeI_II_true, Halpha_True = 12350.0, 0.1055, 500.0
-coordB = np.stack(([Temp_true], [HeI_II_true]), axis=-1)
-gamma_neb_inter = neb_interpAxis.evaluate(coordB).eval()[0]
-flux_neb_inter = nebCalc.zanstra_calibration(wave_bases, Temp_true, Halpha_True, gamma_neb_inter)
-
-# Stellar component
-age_true = np.array([6.95])
-z_true = np.array([0.0265])
-w_true = np.array([1.25])
-age_neighbours = [8913000]
-z_neighbours = [0.0315321]
-
-synth_spec = np.zeros(wave_bases.size)
-spec_components = np.zeros((len(age_true), wave_bases.size))
-for i in range(len(age_true)):
-    coordB = np.stack(([z_true[i]], [age_true[i]]), axis=-1)
-    flux_true_i = exop_interpAxis.evaluate(coordB).eval()
-    synth_spec += flux_true_i[0] * w_true[i]
-    spec_components[i, :] = flux_true_i[0]
-
-obj_cont = flux_neb_inter + synth_spec
-wave_obj, flux_obj_norm, normFlux_coeff_i = starCalc.treat_input_spectrum(wave_bases, obj_cont, norm_waves=(5100, 5150))
-
-# Adding gas and stellar componts
-fig, ax = plt.subplots(figsize=(9, 5))
-ax.step(wave_obj, synth_spec, label='stellar continuum')
-ax.step(wave_obj, flux_neb_inter, label='gas continuum', linestyle=':')
-ax.step(wave_obj, flux_neb_inter + synth_spec, label='total continuum', linestyle=':')
-ax.step(wave_obj, nebCalc.zanstra_calibration_tt(wave_bases, Temp_true, 500.0, gamma_neb_inter), label='neb zanstra', linestyle=':')
-ax.set_xlabel(r'$wave (\AA)$')
-ax.set_ylabel(r'$flux norm$')
-ax.legend()
-plt.show()
-
-# ----- Model with stellar and nebular continuum
-
-# Pymc3 fitter
-n_bases = age_true.size
-regions_range = np.arange(n_bases)
-spec_tensor = tt.zeros(wave_obj.size)
-pixelNoise = 0.05 * np.ones(wave_bases.size)
-
-print('Z limits', np.min(z_range_1), np.max(z_range_1))
-print('Age limits', np.min(logAge_range_1), np.max(logAge_range_1))
-
-nebular_comp = True
-with pm.Model() as model:
-
-    # Define priors
-    z_prior = pm.Uniform('z_star', lower=np.min(z_range_1), upper=np.max(z_range_1), shape=n_bases)
-    age_prior = pm.Uniform('age', lower=np.min(logAge_range_1), upper=np.max(logAge_range_1), shape=n_bases)
-    w_prior = w_true
-    Te_prior = pm.Normal('temp', mu=Temp_true, sigma=50) if nebular_comp else Temp_true
-    y_plus = pm.Normal('HeI_HI', mu=HeI_II_true, sigma=0.005) if nebular_comp else HeI_II_true
-
-    # Reset continuum container
-    if nebular_comp:
-        coord_temp = tt.stack([[Te_prior], [y_plus]], axis=-1)
-        neb_gamma_t = neb_interpAxis.evaluate(coord_temp)
-        spec_tensor = nebCalc.zanstra_calibration_tt(wave_obj, Te_prior, Halpha_True, neb_gamma_t[0])
-    else:
-        spec_tensor = spec_tensor * 0.0
-    # pixelNoise = pm.HalfCauchy('pixelNoise', 0.05)
-
-    # Loop through the stellar components
-    for i in regions_range:
-        coord_i = tt.stack([[z_prior[i]], [age_prior[i]]], axis=-1)
-        spec_i = exop_interpAxis.evaluate(coord_i)
-        spec_tensor += w_true[i] * spec_i[0]
-
-    # Likelihood
-    pm.Normal('continuum', spec_tensor, pixelNoise, observed=obj_cont)
-
-    # Check simulation statistics
-    displaySimulationData(model)
-
-    # Run sampler
-    trace = pm.sample(draws=5000, tune=3000, chains=2, cores=1)
-
-print('True values', z_true, age_true, Temp_true, HeI_II_true)
-
-print(az.summary(trace))
-az.plot_trace(trace)
-plt.show()
-az.plot_posterior(trace)
-plt.show()
-az.plot_forest(trace)
-plt.show()
+# # ----- Model with stellar and nebular continuum
+#
+# # Pymc3 fitter
+# n_bases = age_true.size
+# regions_range = np.arange(n_bases)
+# spec_tensor = tt.zeros(wave_obj.size)
+# pixelNoise = 0.05 * np.ones(wave_bases.size)
+#
+# print('Z limits', np.min(z_range_1), np.max(z_range_1))
+# print('Age limits', np.min(logAge_range_1), np.max(logAge_range_1))
+#
+# nebular_comp = True
+# with pm.Model() as model:
+#
+#     # Define priors
+#     z_prior = pm.Uniform('z_star', lower=np.min(z_range_1), upper=np.max(z_range_1), shape=n_bases)
+#     age_prior = pm.Uniform('age', lower=np.min(logAge_range_1), upper=np.max(logAge_range_1), shape=n_bases)
+#     w_prior = w_true
+#     Te_prior = pm.Normal('temp', mu=Temp_true, sigma=50) if nebular_comp else Temp_true
+#     y_plus = pm.Normal('HeI_HI', mu=HeI_II_true, sigma=0.005) if nebular_comp else HeI_II_true
+#
+#     # Reset continuum container
+#     if nebular_comp:
+#         coord_temp = tt.stack([[Te_prior], [y_plus]], axis=-1)
+#         neb_gamma_t = neb_interpAxis.evaluate(coord_temp)
+#         spec_tensor = nebCalc.zanstra_calibration_tt(wave_obj, Te_prior, Halpha_True, neb_gamma_t[0])
+#     else:
+#         spec_tensor = spec_tensor * 0.0
+#     # pixelNoise = pm.HalfCauchy('pixelNoise', 0.05)
+#
+#     # Loop through the stellar components
+#     for i in regions_range:
+#         coord_i = tt.stack([[z_prior[i]], [age_prior[i]]], axis=-1)
+#         spec_i = exop_interpAxis.evaluate(coord_i)
+#         spec_tensor += w_true[i] * spec_i[0]
+#
+#     # Likelihood
+#     pm.Normal('continuum', spec_tensor, pixelNoise, observed=obj_cont)
+#
+#     # Check simulation statistics
+#     displaySimulationData(model)
+#
+#     # Run sampler
+#     trace = pm.sample(draws=5000, tune=3000, chains=2, cores=1)
+#
+# print('True values', z_true, age_true, Temp_true, HeI_II_true)
+#
+# print(az.summary(trace))
+# az.plot_trace(trace)
+# plt.show()
+# az.plot_posterior(trace)
+# plt.show()
+# az.plot_forest(trace)
+# plt.show()
 
 
 
@@ -332,18 +332,13 @@ plt.show()
 # plot_this(bases_df, idcs_lib, wave_bases, flux_bases, interp_flux=scipy_flux[0])
 # plot_this(bases_df, idcs_lib, wave_bases, flux_bases, interp_flux=xo_flux[0])
 
-0.0190000, 6.749968083509403
-0.005, 6.477121254719663
-# # Plot by library
-# for z_value in [0.0037047, 0.0075640, 0.0190000, 0.0315321]:
-#     idcs_lib = (bases_df.z_star == z_value) & (bases_df.age_yr < 1.5e7)
-#     plot_this(bases_df, idcs_lib, wave_bases, flux_bases)
+
 
 # # Plot by library
 # for age_value in [1e6, 3e6, 3.9811e+06, 5.6230e+06, 8.9130e+06]:
 #     idcs_lib = (bases_df.age_yr == age_value)
 #     plot_this(bases_df, idcs_lib, wave_bases, flux_bases)
-#
+
 # # Plot by library
 # idcs_lib = bases_df.file_name.str.contains('BRGeneva')
 # plot_this(bases_df, idcs_lib, wave_bases, flux_bases)
@@ -356,75 +351,76 @@ plt.show()
 # idcs_lib = (bases_df.z_star == 0.0190) & (bases_df.age_yr > 5.5e6) & (bases_df.age_yr < 1.5e7)
 # plot_this(bases_df, idcs_lib, wave_bases, flux_bases)
 
+# ------ Plot stellar bases age and metallicity
+fig, ax = plt.subplots(figsize=(9, 9))
+bases_root_list = ['Iku1', 'br04', 'BRGeneva', 'Mun1']
+for bases_lib in bases_root_list:
+
+    idcs_lib = bases_df['file_name'].str.contains(bases_lib)
+    if idcs_lib.any():
+        z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
+        age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
+        ax.scatter(np.log10(age_lib_i), z_lib_i, label=bases_lib)
+
+ax.set_xlabel(r'$log(age)$')
+ax.set_ylabel(r'$z_{\star}$')
+ax.set_title('SSP bases metallicity versus age')
+ax.legend(loc='upper center')
+plt.show()
 
 
-
-# # ------ Plot stellar bases age and metallicity
-# fig, ax = plt.subplots(figsize=(9, 9))
-#
-# idcs_lib = (bases_df.age_yr < 1.5e7) & (bases_df.z_star > 0.005)
-# z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
-# age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
-# ax.scatter(np.log10(age_lib_i), z_lib_i, label='Group 1')
-#
-# ax.set_xlabel(r'$log(age)$')
-# ax.set_ylabel(r'$z_{\star}$')
-# ax.set_title('SSP bases metallicity versus age')
-# ax.legend(loc='upper center')
-# plt.show()
-#
-
-
-
-# # ------ Plot stellar bases age and metallicity
-# fig, ax = plt.subplots(figsize=(9, 9))
-# bases_root_list = ['Iku1', 'br04', 'BRGeneva', 'Mun1']
-# for bases_lib in bases_root_list:
-#
-#     idcs_lib = bases_df['file_name'].str.contains(bases_lib)
-#     if idcs_lib.any():
-#         z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
-#         age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
-#         ax.scatter(np.log10(age_lib_i), z_lib_i, label=bases_lib)
-#
-# ax.set_xlabel(r'$log(age)$')
-# ax.set_ylabel(r'$z_{\star}$')
-# ax.set_title('SSP bases metallicity versus age')
-# ax.legend(loc='upper center')
-# plt.show()
-
-
-# # ------ Plot stellar bases age and metallicity
+# ------ Plot stellar bases age and metallicity
 # SSP complete libraries
-# param_min = 0.0
-# for param_scale in ['Mcor_j', 'x_j']:
-#
-#     fig, ax = plt.subplots(figsize=(9, 9))
-#     bases_root_list = ['Iku1', 'br04', 'BRGeneva', 'Mun1']
-#     symbol_list = ['v', 'D', 'P', 'X']
-#
-#     print(param_scale)
-#     for i_base, bases_lib in enumerate(bases_root_list):
-#         idcs_lib = bases_df['file_name'].str.contains(bases_lib)
-#         if idcs_lib.any():
-#             z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
-#             age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
-#             ax.scatter(np.log10(age_lib_i), z_lib_i, marker=symbol_list[i_base], label=bases_lib, color='tab:grey')
-#
-#     param_array = np.array(fit_output[param_scale])
-#     age_array, z_array = np.array(fit_output['age_j']), np.array(fit_output['Z_j'])
-#
-#     idcs_ssp = param_array > param_min
-#     scat = ax.scatter(np.log10(age_array[idcs_ssp]), z_array[idcs_ssp], c=param_array[idcs_ssp], cmap="RdYlGn", s=50, label='Measured populations')
-#
-#     ax.set_xlabel(r'$log(age)$')
-#     ax.set_ylabel(r'$z_{\star}$')
-#     ax.set_title('SSP bases metallicity versus age')
-#     ax.legend(loc='upper center')
-#
-#     cbar = fig.colorbar(scat, orientation='horizontal')
-#     cbar.set_label(param_scale)
-#     cbar.formatter.useOffset = False
-#     cbar.update_ticks()
-#     plt.tight_layout()
-#     plt.show()
+param_min = 0.0
+for param_scale in ['Mcor_j', 'x_j']:
+
+    fig, ax = plt.subplots(figsize=(9, 9))
+    bases_root_list = ['Iku1', 'br04', 'BRGeneva', 'Mun1']
+    symbol_list = ['v', 'D', 'P', 'X']
+
+    print(param_scale)
+    for i_base, bases_lib in enumerate(bases_root_list):
+        idcs_lib = bases_df['file_name'].str.contains(bases_lib)
+        if idcs_lib.any():
+            z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
+            age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
+            ax.scatter(np.log10(age_lib_i), z_lib_i, marker=symbol_list[i_base], label=bases_lib, color='tab:grey')
+
+    param_array = np.array(fit_output[param_scale])
+    age_array, z_array = np.array(fit_output['age_j']), np.array(fit_output['Z_j'])
+
+    idcs_ssp = param_array > param_min
+    scat = ax.scatter(np.log10(age_array[idcs_ssp]), z_array[idcs_ssp], c=param_array[idcs_ssp], cmap="RdYlGn", s=50, label='Measured populations')
+
+    ax.set_xlabel(r'$log(age)$')
+    ax.set_ylabel(r'$z_{\star}$')
+    ax.set_title('SSP bases metallicity versus age')
+    ax.legend(loc='upper center')
+
+    cbar = fig.colorbar(scat, orientation='horizontal')
+    cbar.set_label(param_scale)
+    cbar.formatter.useOffset = False
+    cbar.update_ticks()
+    plt.tight_layout()
+    plt.show()
+
+# Plot by library
+for z_value in [0.0037047, 0.0075640, 0.0190000, 0.0315321]:
+    idcs_lib = (bases_df.z_star == z_value) & (bases_df.age_yr < 1.5e7)
+    plot_this(bases_df, idcs_lib, wave_bases, flux_bases)
+
+
+# ------ Plot stellar bases age and metallicity
+fig, ax = plt.subplots(figsize=(9, 9))
+
+idcs_lib = (bases_df.age_yr < 1.5e7) & (bases_df.z_star > 0.005)
+z_lib_i = bases_df.loc[idcs_lib, 'z_star'].values
+age_lib_i = bases_df.loc[idcs_lib, 'age_yr'].values
+ax.scatter(np.log10(age_lib_i), z_lib_i, label='Group 1')
+
+ax.set_xlabel(r'$log(age)$')
+ax.set_ylabel(r'$z_{\star}$')
+ax.set_title('SSP bases metallicity versus age')
+ax.legend(loc='upper center')
+plt.show()
+

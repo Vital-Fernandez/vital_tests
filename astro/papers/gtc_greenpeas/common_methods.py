@@ -76,7 +76,6 @@ def compute_cHbeta(input_labels, line_df, reddening_curve, R_v, temp=10000.0, de
     output = lineModel.fit(y_nom, pars, x=x_values, weights=1/np.sqrt(y_std))
     cHbeta, cHbeta_err = output.params['slope'].value, output.params['slope'].stderr
     intercept, intercept_err = output.params['intercept'].value, output.params['intercept'].stderr
-    #print(fit_report(output))
 
     output_dict = dict(cHbeta=cHbeta, cHbeta_err=cHbeta_err,
                        intercept=intercept, intercept_err=intercept_err,
@@ -141,27 +140,6 @@ def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda,):
     obsInt, obsIntErr = unumpy.nominal_values(obsInt_uarray), unumpy.std_devs(obsInt_uarray)
 
     return obsInt, obsIntErr
-
-
-def deredd_fluxes_backUp(line_DF, lines_flambda, cHbeta_nom, cHbeta_err = 0.0):
-
-    cHbeta = ufloat(cHbeta_nom, cHbeta_err)
-    obsFlux, obsFluxErr = line_DF['obsFlux'].values, line_DF['obsFluxErr'].values
-    obsFlux_uarray = unumpy.uarray(obsFlux, obsFluxErr)
-
-    # Compute line intensity
-    obsInt_uarray = obsFlux_uarray * unumpy.pow(10, cHbeta * lines_flambda)
-    obsInt, obsIntErr = unumpy.nominal_values(obsInt_uarray), unumpy.std_devs(obsInt_uarray)
-
-    # New columns for normalized fluxes at the beggining of table
-    line_DF.insert(loc=4, column='obsInt', value=np.nan)
-    line_DF.insert(loc=5, column='obsIntErr', value=np.nan)
-
-    # Assign values to dataframe
-    line_DF['obsInt'] = obsInt
-    line_DF['obsIntErr'] = obsIntErr
-
-    return
 
 
 def table_fluxes(lineLabels, f_lambda, flux, flux_err, inten, inten_err, cHbeta, cHbeta_err, ref_label, ref_flux, ref_err,

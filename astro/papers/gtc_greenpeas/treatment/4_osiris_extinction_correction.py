@@ -106,7 +106,7 @@ for i, obj in enumerate(objList):
             counter += 1
 
 # Global tables
-tableDF = pd.DataFrame(columns=['wavelength', 'f_lambda', 'latexLabel'])
+tableDF = pd.DataFrame(columns=['wavelength', 'f_lambda', 'latexLabel', 'blended'])
 objSubList = ['gp030321', 'gp101157', 'gp121903']
 
 # Combine dictionaries into one DF
@@ -119,7 +119,7 @@ for i, obj in enumerate(objSubList):
     for line in linesDF_i.index:
         if line not in tableDF.index:
             tableDF.loc[line] = [linesDF_i.loc[line, 'wavelength'], linesDF_i.loc[line, 'f_lambda'],
-                                 linesDF_i.loc[line, 'latexLabel']]
+                                 linesDF_i.loc[line, 'latexLabel'], linesDF_i.loc[line, 'blended']]
 tableDF.sort_values('wavelength', inplace=True)
 
 
@@ -129,9 +129,9 @@ pdfTableFile, txtTableFile = tables_folder/f'sample_emission_lines', tables_fold
 table_header_format = 'lccccccc'
 row_headers = ['',
                '',
-               pylatex.MultiColumn(2, align='c', data=objSubList[0]),
-               pylatex.MultiColumn(2, align='c', data=objSubList[1]),
-               pylatex.MultiColumn(2, align='c', data=objSubList[2])]
+               pylatex.MultiColumn(2, align='c', data=objSubList[0].upper()),
+               pylatex.MultiColumn(2, align='c', data=objSubList[1].upper()),
+               pylatex.MultiColumn(2, align='c', data=objSubList[2].upper())]
 row_subHeaders = ['Line label', r'$f_{lambda}$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
@@ -146,7 +146,17 @@ pdf.addTableRow(row_subHeaders, last_row=True)
 # Table body
 for i, linelabel in enumerate(tableDF.index):
 
-    row_data = [tableDF.loc[linelabel, 'latexLabel'], f'{tableDF.loc[linelabel, "f_lambda"]:0.2f}'] + ['-'] * 6
+    # Line reference
+    if (tableDF.loc[linelabel, 'blended'] == 'None') or ('_m' in linelabel):
+        label_ref = tableDF.loc[linelabel, 'latexLabel']
+    else:
+        label_ref = tableDF.loc[linelabel, 'latexLabel'][:-1]+'_g$'
+
+    # Line lambda
+    lambda_ref = f'{tableDF.loc[linelabel, "f_lambda"]:0.2f}'
+
+    # List for table row
+    row_data = [label_ref, lambda_ref] + ['-'] * 6
 
     for j, obj in enumerate(objSubList):
 
@@ -157,15 +167,13 @@ for i, linelabel in enumerate(tableDF.index):
             flux_err = linesDF_i.loc[linelabel, 'obsFluxErr'] * scaleTable
             int_line = linesDF_i.loc[linelabel, 'obsInt'] * scaleTable
             int_err = linesDF_i.loc[linelabel, 'obsIntErr'] * scaleTable
-            # 2 4 6
-            # 3 5 7
-            # 0 2 4
-            # 1 3 5
+
             row_data[2 + 2*j] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(flux_line, flux_err)
             row_data[2 + 2*j+1] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(int_line, int_err)
 
     lastRow_check = True if linelabel == tableDF.index[-1] else False
     pdf.addTableRow(row_data, last_row=lastRow_check)
+
 
 # Ending table
 cHbeta_row = [r'$c(H\beta)$', ''] + [''] * 3
@@ -181,12 +189,14 @@ for j, obj in enumerate(objSubList):
     cHbeta_tuple = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
 
     cHbeta = r'${}\,\pm\,{}$'.format(cHbeta_tuple[0], cHbeta_tuple[1])
-    eqw_Hbeta = f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}'
-    F_Hbeta = f'{linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux:0.2f}'
+    eqw_Hbeta = r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}', f'{linesDF_i.loc["H1_4861A", "eqw_err"]:0.2f}')
+    F_Hbeta =  r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux:0.2f}', f'{linesDF_i.loc["H1_4861A", "intg_err"]/normFlux:0.2f}')
+    # eqw_Hbeta = f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}'
+    # F_Hbeta = f'{linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux:0.2f}'
 
     cHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(cHbeta))
-    eqwHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=eqw_Hbeta)
-    FHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=F_Hbeta)
+    eqwHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(eqw_Hbeta))
+    FHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(F_Hbeta))
 
 pdf.addTableRow(cHbeta_row)
 pdf.addTableRow(eqwHbeta_row)

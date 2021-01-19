@@ -51,7 +51,7 @@ for i, obj in enumerate(objList):
 
             # Add new lines to the master df
             for line in linesDF_i.index:
-                if line not in tableDF.index:
+                if (line not in tableDF.index) and ('_b' not in line):
                     tableDF.loc[line] = [linesDF_i.loc[line, 'wavelength'], linesDF_i.loc[line, 'latexLabel']]
 
 #
@@ -61,7 +61,7 @@ print(tableDF)
 
 # Reddening law
 rc = pn.RedCorr(R_V=obsData['sample_data']['RV'], law=obsData['sample_data']['red_law'])
-X_Hbeta, Xx_ref, Xx = rc.X(4861.0), rc.X(tableDF.wavelength.values), rc.X(tableDF.wavelength.values)
+X_Hbeta, Xx_ref, Xx = rc.X(4861.0), rc.X(4861.0), rc.X(tableDF.wavelength.values)
 f_lines = Xx / Xx_ref - 1
 f_Hbeta = X_Hbeta / Xx_ref - 1
 
@@ -81,9 +81,9 @@ table1 = Tabular('lccccccc')
 table1.add_hline()
 row_headers = ['',
                '',
-               MultiColumn(2, align='c', data=objList[0]),
-               MultiColumn(2, align='c', data=objList[1]),
-               MultiColumn(2, align='c', data=objList[2])]
+               MultiColumn(2, align='c', data=objList[0].upper()),
+               MultiColumn(2, align='c', data=objList[1].upper()),
+               MultiColumn(2, align='c', data=objList[2].upper())]
 table1.add_row(row_headers, escape=False, strict=False)
 
 row_subHeaders = ['Line label', r'$f_{lambda}$',
@@ -98,11 +98,15 @@ for i, label in enumerate(tableDF.index):
     row_data = [''] * 8
 
     row_data[0] = tableDF.loc[label, 'latexLabel']
-    row_data[1] = f_lines[i]
+    row_data[1] = f'{f_lines[i]:.2f}'
     for j, obj in enumerate(objList):
         if j < 3:
             if label in df_dict[obj].index:
-                row_data[2 + j] = df_dict[obj].loc[label].intg_flux
+                row_data[2 + 2*j] = df_dict[obj].loc[label].obsFlux
+                row_data[2 + 2*j + 1] = df_dict[obj].loc[label].obsInt
+            else:
+                row_data[2 + 2*j] = '-'
+                row_data[2 + 2*j + 1] = '-'
 
     output_row = list(map(partial(format_for_table, rounddig=3), row_data))
     table1.add_row(output_row, escape=False, strict=False)

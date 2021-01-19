@@ -3,14 +3,13 @@ import pyneb as pn
 from scipy.stats import truncnorm
 import matplotlib.pyplot as plt
 
-
-def trunc_limits(mu, sigma, lower_limit, upper_limit):
-    return (lower_limit - mu) / sigma, (upper_limit - mu) / sigma
-
-mu, sigma, lower, upper = 75.0, 25.0, 1.0, np.infty,
-a, b = trunc_limits(mu, sigma, lower, upper)
-ne_lowReg = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=1000)
-
+#
+# def trunc_limits(mu, sigma, lower_limit, upper_limit):
+#     return (lower_limit - mu) / sigma, (upper_limit - mu) / sigma
+#
+# mu, sigma, lower, upper = 75.0, 25.0, 1.0, np.infty,
+# a, b = trunc_limits(mu, sigma, lower, upper)
+# ne_lowReg = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=1000)
 
 H1 = pn.RecAtom('H', 1)
 O2 = pn.Atom('O', 2)
@@ -18,14 +17,16 @@ S2 = pn.Atom('S', 2)
 O3 = pn.Atom('O', 3)
 S3 = pn.Atom('S', 3)
 
-ne, Te, abund, abund2 = 100.0, 10000.0, 0.0005, 0.008
+ne, Te, abund, abund2 = 10000.0, 14000.0, 0.0005, 0.008
 
-print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
-print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
+# print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
+# print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
 
 Hbeta_em = H1.getEmissivity(Te, ne, wave=4861)
 S2_6717A_em = S2.getEmissivity(Te, ne, wave=6717)
 S2_6731_em = S2.getEmissivity(Te, ne, wave=6731)
+
+# print(S2_6717A_em/S2_6731_em)
 
 S2_6717A_flux = abund * S2_6717A_em/Hbeta_em
 S2_6731_flux = abund * S2_6731_em/Hbeta_em
@@ -41,15 +42,82 @@ S3_9531A_flux = abund2 * S3_9531A_em/Hbeta_em
 S2_4069A_em = S2.getEmissivity(Te, ne, wave=4069)
 S2_4076A_em = S2.getEmissivity(Te, ne, wave=4076)
 
-print(S2_4069A_em/S2_4076A_em)
-print(S2.getEmissivity(18500, ne, wave=4069) / S2.getEmissivity(18500, ne, wave=4076))
-print(S2.getEmissivity(18500, 500, wave=4069) / S2.getEmissivity(18500, 500, wave=4076))
-print(S2.getEmissivity(Te, 500, wave=4069) / S2.getEmissivity(Te, 500, wave=4076))
-print(S2.getEmissivity(8000, ne, wave=4069) / S2.getEmissivity(8000, ne, wave=4076))
+# print(S2_4069A_em/S2_4076A_em)
+# print(S2.getEmissivity(18500, ne, wave=4069) / S2.getEmissivity(18500, ne, wave=4076))
+# print(S2.getEmissivity(18500, 500, wave=4069) / S2.getEmissivity(18500, 500, wave=4076))
+# print(S2.getEmissivity(Te, 500, wave=4069) / S2.getEmissivity(Te, 500, wave=4076))
+# print(S2.getEmissivity(8000, ne, wave=4069) / S2.getEmissivity(8000, ne, wave=4076))
 
-#
-# ne_SII = S2.getTemDen(S2_6717A_flux/S2_6731_flux, tem=5000.0, to_eval='L(6717)/L(6731)')
-# ne_SII_inv = S2.getTemDen(S2_6731_flux/S2_6717A_flux, tem=5000.0, to_eval='L(6731)/L(6717)')
+# S2_6717A_array = np.random.normal(S2_6717A_mean, S2_6717A_err, size=1000)
+# S2_6731A_array = np.random.normal(S2_6731A_mean, S2_6731A_err, size=1000)
+# RSII_array = S2_6717A_array/S2_6731A_array
+
+# #NARROW, BROAD, GLOBAL
+# Sii17_j1152 = np.array([15.61,12.11,27.73])
+# Sii17_j1152_err = np.array([1.84,2.869,3.409])
+# Sii31_j1152 = np.array([13.59,14.13,27.71])
+# Sii31_j1152_err = np.array([1.454,2.235,2.667])
+
+n_iteration = 1000
+
+S2_6717_n1 = np.random.normal(15.61, 1.84, size=n_iteration)
+S2_6717_B = np.random.normal(12.11, 2.869, size=n_iteration)
+S2_6717_G = np.random.normal(27.73, 3.409, size=n_iteration)
+
+S2_6731_n1 = np.random.normal(13.59, 1.454, size=n_iteration)
+S2_6731_B = np.random.normal(14.13, 2.235, size=n_iteration)
+S2_6731_G = np.random.normal(27.71, 2.667, size=n_iteration)
+
+temp_J1152 = np.random.normal(13430.0, 900, size=n_iteration)
+
+nSII_n1 = S2.getTemDen(S2_6717_n1/S2_6731_n1, tem=temp_J1152, to_eval='L(6717)/L(6731)')
+nSII_B = S2.getTemDen(S2_6717_B/S2_6731_B, tem=temp_J1152, to_eval='L(6717)/L(6731)')
+nSII_G = S2.getTemDen(S2_6717_G/S2_6731_G, tem=temp_J1152, to_eval='L(6717)/L(6731)')
+
+print(np.nanmean(nSII_n1), np.nanstd(nSII_n1))
+print(np.nanmean(nSII_B), np.nanstd(nSII_B), np.isnan(nSII_B).sum())
+print(np.nanmean(nSII_G), np.nanstd(nSII_G))
+
+ne_SII_ = S2.getTemDen(np.array([15.61,12.11,27.73]) / np.array([13.59,14.13,27.71]), tem=13430.0, to_eval='L(6717)/L(6731)')
+print(ne_SII_)
+
+print()
+print()
+
+
+S2_6717_n1 = np.random.normal(16.73, 0.827, size=n_iteration)
+S2_6717_n2 = np.random.normal(16.07, 0.639, size=n_iteration)
+S2_6717_B = np.random.normal(3.74, 1.591, size=n_iteration)
+S2_6717_G = np.random.normal(36.54, 1.903, size=n_iteration)
+
+# Sii31_j0925 = np.array([13.81,13.42,3.93,31.16])
+# Sii31_j0925_err = np.array([1.005,0.860,2.029,2.422])
+
+S2_6731_n1 = np.random.normal(13.81, 1.005, size=n_iteration)
+S2_6731_n2 = np.random.normal(13.42, 0.860, size=n_iteration)
+S2_6731_B = np.random.normal(3.93, 2.029, size=n_iteration)
+S2_6731_G = np.random.normal(31.16, 2.422, size=n_iteration)
+
+temp_J0925 = np.random.normal(15010.0, 410, size=n_iteration)
+temp_J0925_B = np.random.normal(10000.0, 500, size=n_iteration)
+
+nSII_n1 = S2.getTemDen(S2_6717_n1/S2_6731_n1, tem=temp_J0925, to_eval='L(6717)/L(6731)')
+nSII_n2 = S2.getTemDen(S2_6717_n2/S2_6731_n2, tem=temp_J0925, to_eval='L(6717)/L(6731)')
+nSII_B = S2.getTemDen(S2_6717_B/S2_6731_B, tem=temp_J0925_B, to_eval='L(6717)/L(6731)')
+nSII_G = S2.getTemDen(S2_6717_G/S2_6731_G, tem=temp_J0925, to_eval='L(6717)/L(6731)')
+
+
+print(np.nanmean(nSII_n1), np.nanstd(nSII_n1))
+print(np.nanmean(nSII_n2), np.nanstd(nSII_n2))
+print(np.nanmean(nSII_B), np.nanstd(nSII_B), np.isnan(nSII_B).sum())
+print(np.nanmean(nSII_G), np.nanstd(nSII_G))
+
+
+ne_SII_ = S2.getTemDen(np.array([16.73, 16.07, 3.74, 36.54]) / np.array([13.81, 13.42, 3.93, 31.16]), tem=15010.0, to_eval='L(6717)/L(6731)')
+print(ne_SII_)
+
+# ne_SII = S2.getTemDen(RSII_array, tem=10000.0, to_eval='L(6717)/L(6731)')
+# ne_SII_inv = S2.getTemDen(S2_6731_flux/S2_6717A_flux, tem=11000.0, to_eval='L(6731)/L(6717)')
 # print(ne_SII)
 # print(ne_SII_inv, '\n')
 
@@ -64,9 +132,9 @@ print(S2.getEmissivity(8000, ne, wave=4069) / S2.getEmissivity(8000, ne, wave=40
 # plt.show()
 
 # plt.show()
-# diags = pn.Diagnostics()
-# diags.addDiag("[SIII] 6312/9531", diag_tuple=('S3', 'L(6312)/L(9531)', 'RMS([E(9069), E(9531)])'))
-# diags.addDiag("[SII] 6716/6731", diag_tuple=('S2', 'L(6716)/L(6731)', 'RMS([E(6716), E(6731)])'))
+diags = pn.Diagnostics()
+diags.addDiag("[SIII] 6312/9531", diag_tuple=('S3', 'L(6312)/L(9531)', 'RMS([E(9069), E(9531)])'))
+diags.addDiag("[SII] 6716/6731", diag_tuple=('S2', 'L(6716)/L(6731)', 'RMS([E(6716), E(6731)])'))
 #
 #
 # attr1 = dict(diag_den = "[SII] 6716/6731",

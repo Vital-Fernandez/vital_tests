@@ -113,7 +113,7 @@ def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
     flux_label = 'intg_' if line_DF.loc[norm_line, 'blended'] == 'None' else 'gauss_'
     norm_flux, norm_err = line_DF.loc[norm_line, [f'{flux_label}flux', f'{flux_label}err']]
 
-    # Assign wavelengths # TODO add strong method to distinguish merged lines whose desired flux is the integrateds
+    # Assign wavelengths # TODO add strong method to distinguish merged lines whose desired flux is the integrated
     idcs_gauss = (line_DF.blended != 'None') & (~line_DF.latexLabel.str.contains('+', regex=False))
     idcs_ingt = ~idcs_gauss
     obsFlux, obsErr = np.zeros(len(line_DF.index)), np.zeros(len(line_DF.index))

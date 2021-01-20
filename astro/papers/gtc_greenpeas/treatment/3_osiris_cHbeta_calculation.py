@@ -82,7 +82,7 @@ for i, obj in enumerate(objList):
         sr.parseConfDict(results_file, {'SDSS_website': obsData[obj]['SDSS_website']}, 'Metadata')
 
         # Dictionary to store measurements
-        resultsDict = dict(T_low=10000.0, n_e=100.0, HeII_HII=100.0, HeIII_HII=0.001)
+        resultsDict = dict(T_low=10000.0, n_e=100.0, HeII_HII=0.01, HeIII_HII=0.001)
 
         # Check if file exists
         if fits_file.is_file():

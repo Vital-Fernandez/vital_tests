@@ -2,7 +2,6 @@ import numpy as np
 from pathlib import Path
 import src.specsiser as sr
 from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
-import matplotlib.pyplot as plt
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 dataFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/data')
@@ -11,9 +10,6 @@ starlight_folder = Path('/home/vital/Dropbox/Astrophysics/Tools/Starlight')
 
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
 objList = obsData['file_information']['object_list']
-# dataFolder = Path(obsData['file_information']['data_folder'])
-# resultsFolder = Path(obsData['file_information']['results_folder'])
-# starlightFolder = Path(obsData['SSP_synthesis']['starlight_folder'])
 
 fileList = obsData['file_information']['files_list']
 idx_band = int(obsData['file_information']['band_flux'])
@@ -44,9 +40,6 @@ for i, obj in enumerate(objList):
 
     results_dict = sr.loadConfData(results_file, group_variables=False)
     linesDF = sr.lineslogFile_to_DF(lineLog_file)
-
-    # Physical parameters
-    cHbeta = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
 
     # Load spectra
     print(f'\n-- Treating: {obj}{ext}.fits')

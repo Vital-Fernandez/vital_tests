@@ -103,6 +103,40 @@ def compute_arms_flambda(line_DF, red_law, R_V, ref_line='H1_4861A'):
     return f_ref, f_x
 
 
+def compute_spectrum_flambda(wavelength, red_law, R_V, ref_line='H1_4861A'):
+
+    # TODO combine previous two functions to work wiht reddening corrections for both continuum and lines
+    if ref_line == 'H1_4861A':
+        wave_ref = 4861.0
+    elif ref_line == 'H1_6563A':
+        wave_ref = 6563.0
+
+    # Reddening law
+    rc = pn.RedCorr(R_V=R_V, law=red_law)
+    X_ref, Xx = rc.X(wave_ref), rc.X(wavelength)
+    f_ref, f_x = X_ref/X_ref - 1, Xx/X_ref - 1
+
+    return f_x, f_ref
+
+def double_arm_redCorr(wave_spec, flux_spec, wave_boundary, red_law, red_R_V, cHbeta):
+
+    rc = pn.RedCorr(R_V=red_R_V, law=red_law, cHbeta=cHbeta[0])
+
+    # Mix correction
+    idcs_waveBlue = wave_spec < wave_boundary
+    idcs_waveRed = wave_spec > wave_boundary
+    f_spec_blue, f_Hbeta = compute_spectrum_flambda(wave_spec[idcs_waveBlue], rc.law, rc.R_V, ref_line='H1_4861A')
+    f_spec_red, f_Halpha = compute_spectrum_flambda(wave_spec[idcs_waveRed],  rc.law, rc.R_V, ref_line='H1_6563A')
+
+    corr_array = np.zeros(wave_spec.size)
+    corr_array[idcs_waveBlue] = np.power(10, cHbeta[0] * f_spec_blue) * np.power(10, cHbeta[0])
+    corr_array[idcs_waveRed] = np.power(10, cHbeta[0] * f_spec_red) * np.power(10, 0.4 * rc.E_BV * rc.X(6563))
+
+    int_array = flux_spec * corr_array
+
+    return int_array, corr_array
+
+
 def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
 
     required_columns = {'blended', 'intg_flux', 'gauss_flux', 'intg_err', 'gauss_err', 'latexLabel'}
@@ -129,7 +163,7 @@ def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
     return unumpy.nominal_values(obsFlux_uarray), unumpy.std_devs(obsFlux_uarray)
 
 
-def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda,):
+def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
 
     # Generate uncertainty variables to propagate the error
     cHbeta = ufloat(cHbeta_nom, cHbeta_err)

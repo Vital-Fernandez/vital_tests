@@ -5,9 +5,9 @@ from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer,
 import matplotlib.pyplot as plt
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
-dataFolder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data')
-resultsFolder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/treatment')
-starlight_folder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/starlight')
+dataFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/data')
+resultsFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/treatment')
+starlight_folder = Path('/home/vital/Dropbox/Astrophysics/Tools/Starlight')
 
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
 objList = obsData['file_information']['object_list']
@@ -68,10 +68,10 @@ for i, obj in enumerate(objList):
     starlight_cfg = {'gridFileName': gridFileName, 'outputFile': outputFile, 'saveFolder': saveFolder.as_posix()}
     sr.parseConfDict(results_file, starlight_cfg, 'Starlight_run1')
 
-    # # Launch starlight
-    # print(f'\n-Initiating starlight: {obj}')
-    # sw.starlight_launcher(gridFileName, starlightFolder)
-    # print('\n-Starlight finished succesfully ended')
+    # Launch starlight
+    print(f'\n-Initiating starlight: {obj}')
+    sw.starlight_launcher(gridFileName, starlight_folder)
+    print('\n-Starlight finished succesfully ended')
 
     # Read output data
     Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(saveFolder/outputFile)

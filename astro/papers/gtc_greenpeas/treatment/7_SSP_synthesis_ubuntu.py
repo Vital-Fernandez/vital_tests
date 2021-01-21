@@ -37,9 +37,17 @@ for i, obj in enumerate(objList):
     massFracPlotFile = objFolder / f'{obj}{ext}_SSP_MasFrac.png'
     LightFracPlotFile = objFolder / f'{obj}{ext}_SSP_LightFrac.png'
     stellarPlotFile = objFolder / f'{obj}{ext}_stellarFit.png'
+    maskFile = starlight_folder/'Masks'/f'{obj}{ext}_Mask.lineslog'
+    maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags.png'
 
     results_dict = sr.loadConfData(results_file, group_variables=False)
+
+    # Add new masks
     linesDF = sr.lineslogFile_to_DF(lineLog_file)
+    ini_mask, end_points = obsData[obj]['ini_mask_array'], obsData[obj]['end_mask_array']
+    labels = ['cont_mask_' + str(int(x)) for x in ini_mask]
+    for j, label_mask in enumerate(labels):
+        linesDF.loc[labels[j], ['w3', 'w4']] = ini_mask[j], end_points[j]
 
     # Load spectra
     print(f'\n-- Treating: {obj}{ext}.fits')
@@ -78,4 +86,5 @@ for i, obj in enumerate(objList):
     sw.population_fraction_plots(fit_output, plot_label, 'Mass_fraction', massFracPlotFile, mass_galaxy=mass_galaxy)
     sw.population_fraction_plots(fit_output, plot_label, 'Light_fraction', LightFracPlotFile)
     sw.stellar_fit_comparison_plot(plot_label, Input_Wavelength, Input_Flux, Output_Flux, stellarPlotFile)
+    sw.mask_plot(fit_output, obj, specWave, specFlux, Input_Wavelength, Input_Flux, maskFile, maskPlotFile)
 

@@ -19,51 +19,49 @@ RV = obsData['sample_data']['RV']
 counter = 0
 for i, obj in enumerate(objList):
 
-    if obj == 'gp004054':
+    for ext in ['_BR']:
 
-        for ext in ['_BR']:
+        # Declare files location
+        fits_file = dataFolder/f'{obj}{ext}.fits'
+        objFolder = resultsFolder/f'{obj}'
+        lineLog_file = objFolder/f'{obj}{ext}_linesLog.txt'
+        results_file = objFolder/f'{obj}{ext}_measurements.txt'
+        diagram_file = objFolder/f'{obj}{ext}_diagChart.png'
+        print(f'\n- Treating: {obj}{ext}.fits')
 
-            # Declare files location
-            fits_file = dataFolder/f'{obj}{ext}.fits'
-            objFolder = resultsFolder/f'{obj}'
-            lineLog_file = objFolder/f'{obj}{ext}_linesLog.txt'
-            results_file = objFolder/f'{obj}{ext}_measurements.txt'
-            diagram_file = objFolder/f'{obj}{ext}_diagChart.png'
-            print(f'\n- Treating: {obj}{ext}.fits')
+        # Load the data
+        linesDF = sr.lineslogFile_to_DF(lineLog_file)
+        results_dict = sr.loadConfData(results_file, group_variables=False)
+        cHbeta = results_dict['Initial_values'][f'cHbeta_BR_Hbeta_Hgamma_Hdelta']
+        obj_model_conf = obsData[f'{obj}_chemical_model']
+        obj_lines_conf = obsData[f'{obj}_line_fitting']
 
-            # Load the data
-            linesDF = sr.lineslogFile_to_DF(lineLog_file)
-            results_dict = sr.loadConfData(results_file, group_variables=False)
-            cHbeta = results_dict['Initial_values'][f'cHbeta{ext}_3lines_obs']
-            obj_model_conf = obsData[f'{obj}_chemical_model']
-            obj_lines_conf = obsData[f'{obj}_line_fitting']
+        # Declare lines to be used in analysis
+        idcs_obs = ~linesDF.index.str.contains('_b')
+        lineLabels = linesDF.loc[idcs_obs].index
+        f_lambda = linesDF.loc[idcs_obs, 'f_lambda'].values
+        obsFlux_Err = linesDF.loc[idcs_obs, 'obsFlux':'obsFluxErr'].values
+        obsInt_Err = linesDF.loc[idcs_obs, 'obsInt':'obsIntErr'].values
 
-            # Declare lines to be used in analysis
-            idcs_obs = ~linesDF.index.str.contains('_b')
-            lineLabels = linesDF.loc[idcs_obs].index
-            f_lambda = linesDF.loc[idcs_obs, 'f_lambda'].values
-            obsFlux_Err = linesDF.loc[idcs_obs, 'obsFlux':'obsFluxErr'].values
-            obsInt_Err = linesDF.loc[idcs_obs, 'obsInt':'obsIntErr'].values
+        # Compute matrix fluxes
+        cm = Standard_DirectMetchod(n_steps=5000)
+        flux_dict = cm.declare_line_fluxes(lineLabels, obsFlux_Err[:, 0], obsFlux_Err[:, 1])
 
-            # Compute matrix fluxes
-            cm = Standard_DirectMetchod(n_steps=100)
-            flux_dict = cm.declare_line_fluxes(lineLabels, obsFlux_Err[:, 0], obsFlux_Err[:, 1])
+        # Establish extinction correction
+        int_dict = cm.red_corr(flux_dict, cHbeta=cHbeta[0], cHbeta_err=cHbeta[1], f_lambda=f_lambda)
 
-            # Establish extinction correction
-            int_dict = cm.red_corr(flux_dict, cHbeta=cHbeta[0], cHbeta_err=cHbeta[1], f_lambda=f_lambda)
+        # Plot diagnostics diagram for galaxy
+        cm.plot_diag_chart(int_dict, plot_address=diagram_file)
 
-            # Plot diagnostics diagram for galaxy
-            cm.plot_diag_chart(int_dict, plot_address=diagram_file)
+        # Confirm temperature and density diagnostics
+        cm.electron_diagnostics(int_dict, neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
+                                Thigh_diag=obj_model_conf['Te_high_diag'])
 
-            # Confirm temperature and density diagnostics
-            cm.electron_diagnostics(int_dict, neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
-                                    Thigh_diag=obj_model_conf['Te_high_diag'])
+        # Compute ionic abundances
+        cm.ionic_abundances(int_dict, obj_lines_conf, obj_model_conf)
 
-            # Compute ionic abundances
-            cm.ionic_abundances(int_dict, obj_lines_conf, obj_model_conf)
-
-            # Compute elemental abundances
+        # Compute elemental abundances
 
 
-            # Save results abundances
-            cm.save_measurments(results_file, 'Initial')
+        # Save results abundances
+        cm.save_measurments(results_file, 'First_cycle')

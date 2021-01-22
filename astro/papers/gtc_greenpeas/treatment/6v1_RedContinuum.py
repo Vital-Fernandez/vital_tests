@@ -93,13 +93,13 @@ for i, obj in enumerate(objList):
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(lm.wave, lm.flux, label='Flux  spectrum')
     # ax.plot(lm.wave, int_spec, label='Intensity spectrum pyneb')
-    ax.plot(lm.wave, int_spec_Hbeta, label='Intensity spectrum relative HBeta', linestyle=':')
-    ax.plot(lm.wave, int_spec_Halpha, label='Intensity spectrum relative Halpha', linestyle=':')
+    # ax.plot(lm.wave, int_spec_Hbeta, label='Intensity spectrum relative HBeta', linestyle=':')
+    # ax.plot(lm.wave, int_spec_Halpha, label='Intensity spectrum relative Halpha', linestyle=':')
 
     ax.plot(lm.wave, int_spec_Hbeta * np.power(10, cHbeta[0]), label='Intensity spectrum relative HBeta', linestyle=':')
     ax.plot(lm.wave, int_spec_Halpha * np.power(10, 0.4 * rc.E_BV * rc.X(6563)), label='Intensity spectrum relative Halpha', linestyle=':')
 
-    ax.plot(lm.wave, int_spec_mix, label='Joined reddening spectrum', linestyle='--')
+    # ax.plot(lm.wave, int_spec_mix, label='Joined reddening spectrum', linestyle='--')
     ax.plot(lm.wave, int_array, label='Joined reddening spectrum function', linestyle='--')
 
     ax.update(labelsDict)

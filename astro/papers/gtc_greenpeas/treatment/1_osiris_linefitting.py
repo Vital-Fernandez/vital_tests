@@ -70,11 +70,11 @@ for i, obj in enumerate(objList):
                     print(f'-- {lineLabel}:')
                     wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
                     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=fit_conf)
-                    # lm.print_results(show_fit_report=True, show_plot=True)
+                    lm.print_results(show_fit_report=True, show_plot=True)
 
                     if lm.blended_check:
                         plotFile = f'{obj}{ext}_{lineLabel}.png'
-                        lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
+                        # lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
 
                 # Save the lines log
                 lm.save_lineslog(lm.linesDF, lineLog_file)

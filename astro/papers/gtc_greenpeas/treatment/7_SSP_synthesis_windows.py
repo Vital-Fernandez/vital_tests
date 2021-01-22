@@ -2,7 +2,9 @@ import numpy as np
 from pathlib import Path
 import src.specsiser as sr
 from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
+from astro.papers.gtc_greenpeas.common_methods import double_arm_redCorr
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 dataFolder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data')
@@ -18,6 +20,7 @@ idx_band = int(obsData['file_information']['band_flux'])
 z_array = obsData['sample_data']['z_array']
 wmin_array = obsData['sample_data']['wmin_array']
 wmax_array = obsData['sample_data']['wmax_array']
+arm_wave_boundary = obsData['sample_data']['w_div']
 
 red_law = obsData['sample_data']['red_law']
 RV = obsData['sample_data']['RV']
@@ -38,6 +41,8 @@ for i, obj in enumerate(objList):
     results_file = objFolder / f'{obj}{ext}_measurements.txt'
     objMask = objFolder / f'{obj}{ext}_mask.txt'
     nebFluxNoNebCompFile = objFolder / f'{obj}{ext}_obs_RemoveNebularComp.txt'
+    fluxNoStellarComFile = objFolder / f'{obj}{ext}_obs_RemoveStellarComp.txt'
+    nebCompFile = objFolder/f'{obj}{ext}_NebFlux.txt'
 
     massFracPlotFile = objFolder / f'{obj}{ext}_SSP_MasFrac.png'
     LightFracPlotFile = objFolder / f'{obj}{ext}_SSP_LightFrac.png'
@@ -46,6 +51,15 @@ for i, obj in enumerate(objList):
     maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags.png'
 
     results_dict = sr.loadConfData(results_file, group_variables=False)
+
+    print(f'\n-- Treating: {obj}{ext}.fits')
+    wave, flux_array, header = sr.import_fits_data(fits_file, instrument='OSIRIS')
+    flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
+    lm = sr.LineMesurer(wave, flux, redshift=z_array[i], crop_waves=(wmin_array[i], wmax_array[i]))
+
+    # Recover reddening correction
+    cHbeta = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
+    int_spec, corr_spec = double_arm_redCorr(lm.wave, lm.flux, arm_wave_boundary[i], red_law, RV, cHbeta)
 
     # Add new masks
     linesDF = sr.lineslogFile_to_DF(lineLog_file)
@@ -57,6 +71,8 @@ for i, obj in enumerate(objList):
     # Load spectra
     print(f'\n-- Treating: {obj}{ext}.fits')
     specWave, specFlux = np.loadtxt(nebFluxNoNebCompFile, unpack=True)
+    nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
+    specInt = specFlux * corr_spec
 
     # Starlight wrapper
     sw = SSPsynthesizer()
@@ -67,7 +83,7 @@ for i, obj in enumerate(objList):
     gridFileName, outputFile, saveFolder, waveResample, fluxResample = sw.generate_starlight_files(starlight_folder,
                                                                                                    run_ref,
                                                                                                    specWave,
-                                                                                                   specFlux,
+                                                                                                   specInt,
                                                                                                    linesDF.loc[idcs_lines])
 
     # Store starlight configuration values for linux run
@@ -80,7 +96,7 @@ for i, obj in enumerate(objList):
     # print('\n-Starlight finished succesfully ended')
 
     # Read output data
-    Input_Wavelength, Input_Flux, Output_Flux, fit_output = sw.load_starlight_output(saveFolder/outputFile)
+    stellar_Wave, obj_Int, stellar_Int, fit_output = sw.load_starlight_output(saveFolder/outputFile)
     z_gp = obsData['sample_data']['z_array'][i]
     Mcor, Mint = fit_output['Mcor_tot'], fit_output['Mini_tot']
     mass_galaxy = computeSSP_galaxy_mass(Mcor, 1, z_gp)
@@ -90,8 +106,45 @@ for i, obj in enumerate(objList):
     plot_label = f'{obj} spectrum' if ext == '_BR' else f'{obj} blue arm spectrum'
     sw.population_fraction_plots(fit_output, plot_label, 'Mass_fraction', massFracPlotFile, mass_galaxy=mass_galaxy)
     sw.population_fraction_plots(fit_output, plot_label, 'Light_fraction', LightFracPlotFile)
-    sw.stellar_fit_comparison_plot(plot_label, Input_Wavelength, Input_Flux, Output_Flux, stellarPlotFile)
-    sw.mask_plot(fit_output, obj, specWave, specFlux, Input_Wavelength, Input_Flux, maskFile, maskPlotFile)
+    sw.stellar_fit_comparison_plot(plot_label, stellar_Wave, obj_Int, stellar_Int, stellarPlotFile)
+    sw.mask_plot(fit_output, obj, specWave, specFlux, stellar_Wave, obj_Int, maskFile, maskPlotFile)
+
+    # ----- Save the object flus without the stellar component
+    #Increase the range of Wave_S so it is greater than the observational range
+    Wave_StellarExtension = np.linspace(3000.0, 3399.0, 200)
+    Int_StellarExtension = np.zeros(len(Wave_StellarExtension))
+
+    #Increase the range of Wave_S so it is greater than the observational range
+    Wave_S = np.hstack((Wave_StellarExtension, stellar_Wave))
+    Int_S = np.hstack((Int_StellarExtension, stellar_Int))
+
+    #Resampling stellar spectra
+    Interpolation = interp1d(Wave_S, Int_S, kind = 'slinear')
+    Int_Stellar_Resampled = Interpolation(lm.wave)
+
+    # Save the non object spectrum without stellar component
+    obsFluxNoStellar = lm.flux - Int_Stellar_Resampled/corr_spec
+    np.savetxt(fluxNoStellarComFile, np.transpose(np.array([lm.wave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
+
+    # # Plot spectra components
+    # fig, ax = plt.subplots(figsize=(12, 8))
+    # ax.plot(lm.wave, lm.flux, label='Object flux')
+    # ax.plot(specWave, specFlux + nebFlux, label='Object flux')
+    #
+    #
+    # ax.plot(specWave, Int_Stellar_Resampled/corr_spec, label='nebular + stellar component')
+    # ax.plot(specWave, nebFlux + Int_Stellar_Resampled/corr_spec, label='nebular + stellar component')
+    # ax.plot(lm.wave, obsFluxNoStellar, label='Removed stellar component flux', color='tab:green', linestyle=':')
+    # ax.update(labelsDict)
+    # ax.legend()
+    # ax.set_yscale('log')
+    # plt.show()
+
+
+
+
+
+
 
 
 

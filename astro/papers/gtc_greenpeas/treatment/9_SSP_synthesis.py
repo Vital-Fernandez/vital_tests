@@ -51,11 +51,11 @@ for i, obj in enumerate(objList):
     nebCompFile = objFolder/f'{obj}{ext}_NebFlux_{cycle}.txt'
 
     # Names for new data
-    run_ref = f'{obj}{ext}_{cycle_ref}'
+    run_ref = f'{obj}{ext}_{cycle}'
     massFracPlotFile = objFolder / f'{obj}{ext}_SSP_MasFrac_{cycle}.png'
     LightFracPlotFile = objFolder / f'{obj}{ext}_SSP_LightFrac_{cycle}.png'
     stellarPlotFile = objFolder / f'{obj}{ext}_stellarFit_{cycle}.png'
-    maskFile = starlight_folder/'Masks'/f'{obj}{ext}_Mask_{cycle}.lineslog'
+    maskFile = starlight_folder/'Masks'/f'{obj}{ext}_{cycle}_Mask.lineslog'
     maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags_{cycle}.png'
     nebFluxNoNebCompFile = objFolder / f'{obj}{ext}_obs_RemoveNebularComp_{cycle}.txt'
     fluxNoStellarComFile = objFolder / f'{obj}{ext}_obs_RemoveStellarComp_{cycle}.txt'
@@ -95,10 +95,10 @@ for i, obj in enumerate(objList):
                                                                                                    specInt,
                                                                                                    linesDF.loc[idcs_lines])
 
-    # # Launch starlight
-    # print(f'\n-Initiating starlight: {obj}')
-    # sw.starlight_launcher(gridFileName, starlight_folder)
-    # print('\n-Starlight finished succesfully ended')
+    # Launch starlight
+    print(f'\n-Initiating starlight: {obj}')
+    sw.starlight_launcher(gridFileName, starlight_folder)
+    print('\n-Starlight finished succesfully ended')
 
     # Read output data
     stellar_Wave, obj_Int, stellar_Int, fit_output = sw.load_starlight_output(saveFolder/outputFile)

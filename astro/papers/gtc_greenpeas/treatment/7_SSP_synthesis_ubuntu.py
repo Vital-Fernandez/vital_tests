@@ -90,9 +90,9 @@ for i, obj in enumerate(objList):
     sr.parseConfDict(results_file, starlight_cfg, 'Starlight_run1')
 
     # # Launch starlight
-    # print(f'\n-Initiating starlight: {obj}')
-    # sw.starlight_launcher(gridFileName, starlight_folder)
-    # print('\n-Starlight finished succesfully ended')
+    print(f'\n-Initiating starlight: {obj}')
+    sw.starlight_launcher(gridFileName, starlight_folder)
+    print('\n-Starlight finished succesfully ended')
 
     # Read output data
     stellar_Wave, obj_Int, stellar_Int, fit_output = sw.load_starlight_output(saveFolder/outputFile)

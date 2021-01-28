@@ -38,7 +38,7 @@ cycle_ref = 'First_cycle'
 
 for i, obj in enumerate(objList):
 
-    if i == 1:
+    # if i == 1:
 
         labelsDict = {'xlabel': r'Wavelength $(\AA)$',
                       'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
@@ -61,6 +61,7 @@ for i, obj in enumerate(objList):
         maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags_{cycle}.png'
         nebFluxNoNebCompFile = objFolder / f'{obj}{ext}_obs_RemoveNebularComp_{cycle}.txt'
         fluxNoStellarComFile = objFolder / f'{obj}{ext}_obs_RemoveStellarComp_{cycle}.txt'
+        stellarFluxFile = objFolder / f'{obj}{ext}_stellarFlux_{cycle}.txt'
 
         results_dict = sr.loadConfData(results_file, group_variables=False)
 
@@ -98,9 +99,9 @@ for i, obj in enumerate(objList):
                                                                                                        linesDF.loc[idcs_lines])
 
         # Launch starlight
-        print(f'\n-Initiating starlight: {obj}')
-        sw.starlight_launcher(gridFileName, starlight_folder)
-        print('\n-Starlight finished succesfully ended')
+        # print(f'\n-Initiating starlight: {obj}')
+        # sw.starlight_launcher(gridFileName, starlight_folder)
+        # print('\n-Starlight finished succesfully ended')
 
         # Read output data
         stellar_Wave, obj_Int, stellar_Int, fit_output = sw.load_starlight_output(saveFolder/outputFile)
@@ -139,5 +140,7 @@ for i, obj in enumerate(objList):
 
         # Save the non object spectrum without stellar component
         obsFluxNoStellar = lm.flux - Int_Stellar_Resampled/corr_spec
+        stellarFlux = Int_Stellar_Resampled/corr_spec
         np.savetxt(fluxNoStellarComFile, np.transpose(np.array([lm.wave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
+        np.savetxt(stellarFluxFile, np.transpose(np.array([lm.wave, stellarFlux])), fmt="%7.1f %10.4e")
 

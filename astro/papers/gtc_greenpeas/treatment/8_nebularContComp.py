@@ -43,7 +43,6 @@ for i, obj in enumerate(objList):
     objFolder = resultsFolder / f'{obj}'
     lineLog_file = objFolder / f'{obj}{ext}_linesLog.txt'
     results_file = objFolder / f'{obj}{ext}_measurements.txt'
-    nebFluxNoNebCompFile = objFolder/f'{obj}{ext}_obs_RemoveNebularComp_{cycle}.txt'
     nebCompFile = objFolder/f'{obj}{ext}_NebFlux_{cycle}.txt'
     nebPlotFile = objFolder/f'{obj}{ext}_nebComp_{cycle}.png'
 
@@ -86,7 +85,6 @@ for i, obj in enumerate(objList):
     # Save object spectrum without nebular component
     flux_noNeb = ((int_spec - neb_int) / corr_spec)
     flux_neb = (neb_int/corr_spec)
-    np.savetxt(nebFluxNoNebCompFile, np.transpose(np.array([lm.wave, flux_noNeb])), fmt="%7.1f %10.4e")
     np.savetxt(nebCompFile, np.transpose(np.array([lm.wave, flux_neb])), fmt="%7.1f %10.4e")
 
     # Plot spectra components
@@ -95,16 +93,17 @@ for i, obj in enumerate(objList):
                   'title': f'Galaxy {obj}{ext} nebular continuum calculation {cycle}'}
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(lm.wave, lm.flux, label='Object flux  spectrum')
-    ax.plot(lm.wave, int_spec, label='Object intensity spectrum')
-    ax.plot(lm.wave, neb_int, label='Nebular intensity spectrum')
-    ax.plot(lm.wave, flux_noNeb, label='Object Flux no nebular component', linestyle='--')
-    # ax.plot(lm.wave, flux_neb, label='Nebular Flux spectrum backwards', linestyle='--')
+    ax.plot(lm.wave, lm.flux, label='Object flux spectrum', color='tab:red')
+    ax.plot(lm.wave, flux_neb, label='Nebular flux spectrum', color='tab:red', linestyle='--')
+
+    ax.plot(lm.wave, int_spec, label='Object Intensity spectrum', color='tab:blue')
+    ax.plot(lm.wave, neb_int, label='Nebular Intensity spectrum', color='tab:blue', linestyle='--')
+
     ax.update(labelsDict)
     ax.legend()
     ax.set_yscale('log')
     plt.savefig(nebPlotFile, bbox_inches='tight')
-    # plt.show()
+    plt.show()
 
 
 

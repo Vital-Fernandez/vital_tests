@@ -5,6 +5,7 @@ import src.specsiser as sr
 from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 from scipy.interpolate import interp1d
 from astro.papers.gtc_greenpeas.common_methods import double_arm_redCorr
+import matplotlib.pyplot as plt
 
 if os.name != 'nt':
     conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
@@ -59,7 +60,6 @@ for i, obj in enumerate(objList):
         stellarPlotFile = objFolder / f'{obj}{ext}_stellarFit_{cycle}.png'
         maskFile = starlight_folder/'Masks'/f'{obj}{ext}_{cycle}_Mask.lineslog'
         maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags_{cycle}.png'
-        nebFluxNoNebCompFile = objFolder / f'{obj}{ext}_obs_RemoveNebularComp_{cycle}.txt'
         fluxNoStellarComFile = objFolder / f'{obj}{ext}_obs_RemoveStellarComp_{cycle}.txt'
         stellarFluxFile = objFolder / f'{obj}{ext}_stellarFlux_{cycle}.txt'
 
@@ -83,8 +83,10 @@ for i, obj in enumerate(objList):
 
         # Load spectra
         print(f'\n-- Treating: {obj}{ext}.fits')
-        specWave, specFlux = np.loadtxt(nebFluxNoNebCompFile, unpack=True)
+
+        nebWave, nebFlux = np.loadtxt(nebFlux, unpack=True)
         nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
+        specFlux = lm.flux - nebFlux
         specInt = specFlux * corr_spec
 
         # Starlight wrapper
@@ -99,9 +101,9 @@ for i, obj in enumerate(objList):
                                                                                                        linesDF.loc[idcs_lines])
 
         # Launch starlight
-        # print(f'\n-Initiating starlight: {obj}')
-        # sw.starlight_launcher(gridFileName, starlight_folder)
-        # print('\n-Starlight finished succesfully ended')
+        print(f'\n-Initiating starlight: {obj}')
+        sw.starlight_launcher(gridFileName, starlight_folder)
+        print('\n-Starlight finished succesfully ended')
 
         # Read output data
         stellar_Wave, obj_Int, stellar_Int, fit_output = sw.load_starlight_output(saveFolder/outputFile)
@@ -115,7 +117,7 @@ for i, obj in enumerate(objList):
         sw.population_fraction_plots(fit_output, plot_label, 'Mass_fraction', massFracPlotFile, mass_galaxy=mass_galaxy)
         sw.population_fraction_plots(fit_output, plot_label, 'Light_fraction', LightFracPlotFile)
         sw.stellar_fit_comparison_plot(plot_label, stellar_Wave, obj_Int, stellar_Int, stellarPlotFile)
-        sw.mask_plot(fit_output, obj, specWave, specFlux, stellar_Wave, obj_Int, maskFile, maskPlotFile)
+        sw.mask_plot(fit_output, obj, lm.wave, specFlux, stellar_Wave, obj_Int, maskFile, maskPlotFile)
 
         # Store starlight configuration values for linux run
         starlight_cfg = {'gridFileName': gridFileName,
@@ -144,3 +146,17 @@ for i, obj in enumerate(objList):
         np.savetxt(fluxNoStellarComFile, np.transpose(np.array([lm.wave, obsFluxNoStellar])), fmt="%7.1f %10.4e")
         np.savetxt(stellarFluxFile, np.transpose(np.array([lm.wave, stellarFlux])), fmt="%7.1f %10.4e")
 
+        # compare adding componennts
+        wave_neb, flux_neb = np.loadtxt(nebCompFile, unpack=True)
+        wave_star, flux_star = np.loadtxt(stellarFluxFile, unpack=True)
+
+
+        # # Plot spectra components
+        # fig, ax = plt.subplots(figsize=(12, 8))
+        # ax.plot(lm.wave, lm.flux * lm.normFlux, label='Object flux')
+        # ax.plot(wave_neb, flux_neb, label='Nebular flux')
+        # ax.plot(wave_star, flux_star, label='Stellar flux')
+        # ax.plot(wave_star, flux_star + flux_neb, label='Combined continuum', linestyle=':')
+        # ax.set_yscale('log')
+        # plt.tight_layout()
+        # plt.show()

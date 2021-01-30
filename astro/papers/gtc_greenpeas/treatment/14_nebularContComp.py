@@ -41,7 +41,7 @@ for i, obj in enumerate(objList):
     # Declare files location
     fits_file = dataFolder / f'{obj}{ext}.fits'
     objFolder = resultsFolder / f'{obj}'
-    lineLog_file = objFolder / f'{obj}{ext}_linesLog_{cycle}.txt'
+    lineLog_file = objFolder / f'{obj}{ext}_linesLog_c2.txt'
     results_file = objFolder / f'{obj}{ext}_measurements.txt'
     nebCompFile = objFolder/f'{obj}{ext}_NebFlux_{cycle}.txt'
     nebPlotFile = objFolder/f'{obj}{ext}_nebComp_{cycle}.png'
@@ -104,7 +104,7 @@ for i, obj in enumerate(objList):
     ax.legend()
     ax.set_yscale('log')
     plt.savefig(nebPlotFile, bbox_inches='tight')
-    plt.show()
+    # plt.show()
 
 
 

@@ -48,7 +48,7 @@ for i, obj in enumerate(objList):
         # Declare files location
         fits_file = dataFolder / f'{obj}{ext}.fits'
         objFolder = resultsFolder / f'{obj}'
-        lineLog_file = objFolder / f'{obj}{ext}_linesLog.txt'
+        lineLog_file = objFolder / f'{obj}{ext}_linesLog_c2.txt'
         results_file = objFolder / f'{obj}{ext}_measurements.txt'
         objMask = objFolder / f'{obj}{ext}_mask.txt'
         nebCompFile = objFolder/f'{obj}{ext}_NebFlux_{cycle}.txt'

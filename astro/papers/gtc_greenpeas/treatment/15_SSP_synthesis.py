@@ -34,8 +34,8 @@ RV = obsData['sample_data']['RV']
 
 counter = 0
 ext = '_BR'
-cycle = 'c2'
-cycle_ref = 'First_cycle'
+cycle = 'c3'
+cycle_ref = 'Second_cycle'
 
 for i, obj in enumerate(objList):
 
@@ -97,10 +97,11 @@ for i, obj in enumerate(objList):
                                                                                                        specFlux,
                                                                                                        linesDF.loc[idcs_lines])
 
-        # # Launch starlight
-        # print(f'\n-Initiating starlight: {obj}')
-        # sw.starlight_launcher(gridFileName, starlight_folder)
-        # print('\n-Starlight finished succesfully ended')
+        if os.name != 'nt':
+            # Launch starlight
+            print(f'\n-Initiating starlight: {obj}')
+            sw.starlight_launcher(gridFileName, starlight_folder)
+            print('\n-Starlight finished succesfully ended')
 
         # Read output data
         stellar_Wave, obj_input_flux, stellar_flux, fit_output = sw.load_starlight_output(saveFolder/outputFile)

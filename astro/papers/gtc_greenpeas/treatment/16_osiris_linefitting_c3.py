@@ -27,7 +27,7 @@ cycle_ref = 'Second_cycle'
 counter = 0
 for i, obj in enumerate(objList):
 
-    if i == 2:
+    # if i == 2:
 
         z = z_objs[i]
         wmin, wmax = wmin_array[i], wmax_array[i]
@@ -77,7 +77,7 @@ for i, obj in enumerate(objList):
                     plotFile = f'{obj}{ext}_{lineLabel}_{cycle}.png'
                     lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
                     # if i > 1:
-                    lm.print_results(show_fit_report=True, show_plot=True)
+                    # lm.print_results(show_fit_report=True, show_plot=True)
 
             # Save the lines log
             lm.save_lineslog(lm.linesDF, lineLog_file)

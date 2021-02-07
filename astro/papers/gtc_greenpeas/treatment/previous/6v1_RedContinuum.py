@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from astro.papers.gtc_greenpeas.common_methods import compute_spectrum_flambda, deredd_fluxes, double_arm_redCorr
 
 
-conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
+conf_file_address = '../../gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
 
 objList = obsData['file_information']['object_list']

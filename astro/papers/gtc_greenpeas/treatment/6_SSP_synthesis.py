@@ -5,7 +5,6 @@ import src.specsiser as sr
 from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 from scipy.interpolate import interp1d
 from astro.papers.gtc_greenpeas.common_methods import double_arm_redCorr
-import matplotlib.pyplot as plt
 import pyneb as pn
 
 if os.name != 'nt':
@@ -30,49 +29,51 @@ wmin_array = obsData['sample_data']['wmin_array']
 wmax_array = obsData['sample_data']['wmax_array']
 arm_wave_boundary = obsData['sample_data']['w_div']
 
+w_div_array = obsData['sample_data']['w_div']
 red_law = obsData['sample_data']['red_law']
 RV = obsData['sample_data']['RV']
 
-counter = 0
-ext = '_BR'
-cycle = 'c3'
-cycle_ref = 'Second_cycle'
+ext = 'BR'
+cycle = 'it1'
 
 for i, obj in enumerate(objList):
 
-    # if i == 0:
-
-        labelsDict = {'xlabel': r'Wavelength $(\AA)$',
-                      'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})\cdot10^{20}$',
-                      'title': f'Galaxy {obj}{ext} nebular continuum calculation'}
-
-        # Declare files location
-        fits_file = dataFolder / f'{obj}{ext}.fits'
-        objFolder = resultsFolder / f'{obj}'
-        lineLog_file = objFolder / f'{obj}{ext}_linesLog_c2.txt'
-        results_file = objFolder / f'{obj}{ext}_measurements.txt'
-        objMask = objFolder / f'{obj}{ext}_mask.txt'
-        nebCompFile = objFolder/f'{obj}{ext}_NebFlux_{cycle}.txt'
-
-        # Names for new data
-        run_ref = f'{obj}{ext}_{cycle}'
-        massFracPlotFile = objFolder / f'{obj}{ext}_SSP_MasFrac_{cycle}.png'
-        LightFracPlotFile = objFolder / f'{obj}{ext}_SSP_LightFrac_{cycle}.png'
-        stellarPlotFile = objFolder / f'{obj}{ext}_stellarFit_{cycle}.png'
-        maskFile = starlight_folder/'Masks'/f'{obj}{ext}_{cycle}_Mask.lineslog'
-        maskPlotFile = objFolder / f'{obj}{ext}_maskAndFlags_{cycle}.png'
-        stellarFluxFile = objFolder / f'{obj}{ext}_stellarFlux_{cycle}.txt'
-
-        results_dict = sr.loadConfData(results_file, group_variables=False)
+    if i == 0:
 
         print(f'\n-- Treating: {obj}{ext}.fits')
+
+        # Declare input files
+        objFolder = resultsFolder / f'{obj}'
+        fits_file = dataFolder / f'{obj}_{ext}.fits'
+        objMask = dataFolder / f'{obj}_{ext}_mask.txt'
+        results_file = objFolder / f'{obj}_{ext}_measurements.txt'
+        lineLog_file = objFolder / f'{obj}_{ext}_linesLog_{cycle}.txt'
+        nebCompFile = objFolder/f'{obj}_{ext}_nebFlux_{cycle}.txt'
+
+        # Declare output files
+        massFracPlotFile = objFolder / f'{obj}_{ext}_SSP_MasFrac_{cycle}.png'
+        LightFracPlotFile = objFolder / f'{obj}_{ext}_SSP_LightFrac_{cycle}.png'
+        stellarPlotFile = objFolder / f'{obj}_{ext}_stellarFit_{cycle}.png'
+        maskFile = starlight_folder/'Masks'/f'{obj}_{ext}_{cycle}_Mask.lineslog'
+        maskPlotFile = objFolder / f'{obj}_{ext}_maskAndFlags_{cycle}.png'
+        stellarFluxFile = objFolder / f'{obj}_{ext}_stellarFlux_{cycle}.txt'
+
+        # Load data
+        results_dict = sr.loadConfData(results_file, group_variables=False)
+
+        linesDF = sr.lineslogFile_to_DF(lineLog_file)
+
         wave, flux_array, header = sr.import_fits_data(fits_file, instrument='OSIRIS')
         flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
         lm = sr.LineMesurer(wave, flux, redshift=z_array[i], crop_waves=(wmin_array[i], wmax_array[i]))
 
-        # Recover reddening correction
-        cHbeta = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
-        int_spec, corr_spec = double_arm_redCorr(lm.wave, lm.flux, arm_wave_boundary[i], red_law, RV, cHbeta)
+        nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
+
+
+        # Spectrum extinction correction
+        cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
+        cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
+        int_spec, corr_spec = double_arm_redCorr(lm.wave, lm.flux, w_div_array[i], red_law, RV, cHbeta)
 
         # Add new masks
         linesDF = sr.lineslogFile_to_DF(lineLog_file)
@@ -81,10 +82,7 @@ for i, obj in enumerate(objList):
         for j, label_mask in enumerate(labels):
             linesDF.loc[labels[j], ['w3', 'w4']] = ini_mask[j], end_points[j]
 
-        # Load spectra
-        print(f'\n-- Treating: {obj}{ext}.fits')
-
-        nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
+        # Remove nebular component spectra
         specFlux = lm.flux - nebFlux
 
         # Starlight wrapper
@@ -93,7 +91,7 @@ for i, obj in enumerate(objList):
         # Generate starlight files
         idcs_lines = ~linesDF.index.str.contains('_b')
         gridFileName, outputFile, saveFolder, waveResample, fluxResample = sw.generate_starlight_files(starlight_folder,
-                                                                                                       run_ref,
+                                                                                                       f'{obj}_{ext}_{cycle}',
                                                                                                        lm.wave,
                                                                                                        specFlux,
                                                                                                        linesDF.loc[idcs_lines])
@@ -113,16 +111,9 @@ for i, obj in enumerate(objList):
         idcs_below_20Myr = fit_output['DF'].age_j < 2*10**7
         mass_galaxy_20Myr_percent = np.sum(fit_output['DF'].loc[idcs_below_20Myr, 'Mcor_j'].values)
 
-        # # Plot the results
-        # plot_label = f'{obj} spectrum' if ext == '_BR' else f'{obj} blue arm spectrum'
-        # sw.population_fraction_plots(fit_output, plot_label, 'Mass_fraction', massFracPlotFile, mass_galaxy=mass_galaxy)
-        # sw.population_fraction_plots(fit_output, plot_label, 'Light_fraction', LightFracPlotFile)
-        # sw.stellar_fit_comparison_plot(plot_label, stellar_Wave, obj_input_flux, stellar_flux, stellarPlotFile)
-        sw.mask_plot(fit_output, obj, lm.wave, specFlux, stellar_Wave, obj_input_flux, maskFile, maskPlotFile)
+        # Store starlight configuration values for linux run
         rc = pn.RedCorr(R_V=RV, E_BV=fit_output['Av_min']/RV, law=red_law)
         cHbeta_star = rc.cHbetaFromEbv(fit_output['Av_min']/RV)
-
-        # Store starlight configuration values for linux run
         starlight_cfg = {'gridFileName': gridFileName,
                          'outputFile': outputFile,
                          'saveFolder': saveFolder.as_posix(),
@@ -153,18 +144,14 @@ for i, obj in enumerate(objList):
         stellarFlux = flux_Stellar_Resampled
         np.savetxt(stellarFluxFile, np.transpose(np.array([lm.wave, stellarFlux])), fmt="%7.1f %10.4e")
 
-        # # compare adding componennts
-        # wave_neb, flux_neb = np.loadtxt(nebCompFile, unpack=True)
-        # wave_star, flux_star = np.loadtxt(stellarFluxFile, unpack=True)
-        #
-        # # Plot spectra components
-        # fig, ax = plt.subplots(figsize=(12, 8))
-        # ax.plot(lm.wave, lm.flux, label='Object flux')
-        # # ax.plot(stellar_Wave, obj_input_flux, label='Input starlight spectrum', linestyle='--')
-        # ax.plot(wave_neb, flux_neb, label='Nebular flux')
-        # ax.plot(wave_star, flux_star, label='Stellar flux')
-        # ax.plot(wave_star, flux_star + flux_neb, label='Combined continuum', linestyle=':')
-        # ax.legend()
-        # ax.set_yscale('log')
-        # plt.tight_layout()
-        # plt.show()
+        # Plot the results
+        plot_label = f'{obj} spectrum' if ext == '_BR' else f'{obj} blue arm spectrum'
+        sw.population_fraction_plots(fit_output, plot_label, 'Mass_fraction', massFracPlotFile, mass_galaxy=mass_galaxy)
+        sw.population_fraction_plots(fit_output, plot_label, 'Light_fraction', LightFracPlotFile)
+        sw.stellar_fit_comparison_plot(f'{obj}_{ext}_{cycle}', lm.wave, lm.flux, nebCompFile, stellarFluxFile, stellarPlotFile)
+        sw.mask_plot(fit_output, obj, lm.wave, specFlux, stellar_Wave, obj_input_flux, maskFile, maskPlotFile)
+
+
+
+
+

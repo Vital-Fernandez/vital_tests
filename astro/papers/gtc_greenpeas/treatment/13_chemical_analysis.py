@@ -70,4 +70,4 @@ for i, obj in enumerate(objList):
 
 
         # Save results abundances
-        cm.save_measurments(results_file, cycle_ref)
+        cm.save_measurements(results_file, cycle_ref)

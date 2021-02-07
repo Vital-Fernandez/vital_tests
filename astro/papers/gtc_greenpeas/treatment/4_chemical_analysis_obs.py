@@ -1,9 +1,6 @@
-
-import src.specsiser as sr
 from pathlib import Path
+import src.specsiser as sr
 from src.specsiser.physical_model.chemical_model import Standard_DirectMetchod
-from astro.papers.gtc_greenpeas.common_methods import compute_arms_flambda, deredd_fluxes, normalize_flux, table_fluxes
-import pyneb as pn
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
@@ -16,25 +13,31 @@ fileList = obsData['file_information']['files_list']
 red_law = obsData['sample_data']['red_law']
 RV = obsData['sample_data']['RV']
 
-counter = 0
+ext = 'BR'
+cycle = 'it1'
+MC_steps = 1000
+
 for i, obj in enumerate(objList):
 
-    for ext in ['_BR']:
+    if i == 0:
 
-        # Declare files location
-        fits_file = dataFolder/f'{obj}{ext}.fits'
+        print(f'- Treating {obj}')
+
+        # Declare input files
         objFolder = resultsFolder/f'{obj}'
-        lineLog_file = objFolder/f'{obj}{ext}_linesLog.txt'
-        results_file = objFolder/f'{obj}{ext}_measurements.txt'
-        diagram_file = objFolder/f'{obj}{ext}_diagChart.png'
-        print(f'\n- Treating: {obj}{ext}.fits')
+        results_file = objFolder / f'{obj}_{ext}_measurements.txt'
+        lineLog_file = objFolder / f'{obj}_{ext}_linesLog_{cycle}.txt'
+
+        # Declare output files
+        diagram_file = objFolder / f'{obj}_{ext}_diagChart_{cycle}.png'
 
         # Load the data
         linesDF = sr.lineslogFile_to_DF(lineLog_file)
         results_dict = sr.loadConfData(results_file, group_variables=False)
-        cHbeta = results_dict['Initial_values'][f'cHbeta_BR_Hbeta_Hgamma_Hdelta']
-        obj_model_conf = obsData[f'{obj}_chemical_model']
-        obj_lines_conf = obsData[f'{obj}_line_fitting']
+
+        # Extinction parameters
+        cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
+        cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
 
         # Declare lines to be used in analysis
         idcs_obs = ~linesDF.index.str.contains('_b')
@@ -44,7 +47,7 @@ for i, obj in enumerate(objList):
         obsInt_Err = linesDF.loc[idcs_obs, 'obsInt':'obsIntErr'].values
 
         # Compute matrix fluxes
-        cm = Standard_DirectMetchod(n_steps=5000)
+        cm = Standard_DirectMetchod(n_steps=MC_steps)
         flux_dict = cm.declare_line_fluxes(lineLabels, obsFlux_Err[:, 0], obsFlux_Err[:, 1])
 
         # Establish extinction correction
@@ -54,7 +57,10 @@ for i, obj in enumerate(objList):
         cm.plot_diag_chart(int_dict, plot_address=diagram_file)
 
         # Confirm temperature and density diagnostics
-        cm.electron_diagnostics(int_dict, neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
+        obj_model_conf = obsData[f'{obj}_chemical_model']
+        obj_lines_conf = obsData[f'{obj}_line_fitting']
+        cm.electron_diagnostics(int_dict,
+                                neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
                                 Thigh_diag=obj_model_conf['Te_high_diag'])
 
         # Compute ionic abundances
@@ -64,4 +70,4 @@ for i, obj in enumerate(objList):
 
 
         # Save results abundances
-        cm.save_measurments(results_file, 'First_cycle')
+        cm.save_measurements(results_file, cycle)

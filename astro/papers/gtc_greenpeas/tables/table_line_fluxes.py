@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
-import pyneb as pn
 import src.specsiser as sr
 from pathlib import Path
-from astro.papers.gtc_greenpeas.common_methods import red_corr_HalphaHbeta_ratio
-from src.specsiser.data_printing import PdfPrinter, label_decomposition, format_for_table
-from pylatex import Document, Figure, NewPage, NoEscape, Package, Tabular, Section, Tabu, Table, LongTable, MultiColumn, MultiRow
-from functools import partial
+from astro.papers.gtc_greenpeas.common_methods import compute_arms_flambda, deredd_fluxes, normalize_flux, table_fluxes
+import pyneb as pn
+from src.specsiser.data_printing import PdfPrinter
+import pylatex
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
@@ -14,218 +13,192 @@ obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables
 objList = obsData['file_information']['object_list']
 dataFolder = Path(obsData['file_information']['data_folder'])
 resultsFolder = Path(obsData['file_information']['results_folder'])
-tables_folder = Path(obsData['file_information']['tables_folder'])
 fileList = obsData['file_information']['files_list']
+tables_folder = Path(obsData['file_information']['tables_folder'])
 
-z_objs = obsData['sample_data']['z_array']
-wmin_array = obsData['sample_data']['wmin_array']
-wmax_array = obsData['sample_data']['wmax_array']
-flux_norm = obsData['sample_data']['norm_flux']
-noise_region = obsData['sample_data']['noiseRegion_array']
-idx_band = int(obsData['file_information']['band_flux'])
-counter = 0
+normFlux = obsData['sample_data']['norm_flux']
+w_div_array = obsData['sample_data']['w_div']
 
-# Start table
-pdfTableFile, txtTableFile = tables_folder/f'emissionLinesTable', tables_folder/f'emissionLinesTable.txt'
+red_law = obsData['sample_data']['red_law']
+RV = obsData['sample_data']['RV']
+H1 = pn.RecAtom('H', 1)
 
-# Loop through the objects and get the existing lines:
-
-tableDF = pd.DataFrame(columns=['wavelength', 'latexLabel'])
-df_dict = {}
-Hbeta_dict = {}
+dict_linesDF = {}
+ext = 'BR'
+cycle = 'it1'
 
 for i, obj in enumerate(objList):
 
-    for ext in ['_BR']:
+    print(f'\n- Treating {i} :{obj}_{ext}.fits')
 
-        if i < 3:
+    # Declare input files
+    fits_file = dataFolder / f'{obj}_{ext}.fits'
+    objFolder = resultsFolder / f'{obj}'
+    lineLog_file = objFolder / f'{obj}_{ext}_linesLog_{cycle}.txt'
+    results_file = objFolder/f'{obj}_{ext}_measurements.txt'
 
-            # Declare files location
-            fits_file = dataFolder / f'{obj}{ext}.fits'
-            objFolder = resultsFolder / f'{obj}'
+    # Declare output files
+    tables_prefix = objFolder/f'{obj}{ext}_linesTable_{cycle}'
 
-            lineLog_file = objFolder / f'{obj}{ext}_linesLog.txt'
-            linesDF_i = sr.lineslogFile_to_DF(lineLog_file)
-            df_dict[obj] = linesDF_i
-            Hbeta_dict[obj] = linesDF_i.loc['H1_4861A', 'intg_flux']
+    # Load data
+    linesDF = sr.lineslogFile_to_DF(lineLog_file)
+    results_dict = sr.loadConfData(results_file, group_variables=False)
 
-            # Add new lines to the master df
-            for line in linesDF_i.index:
-                if (line not in tableDF.index) and ('_b' not in line):
-                    tableDF.loc[line] = [linesDF_i.loc[line, 'wavelength'], linesDF_i.loc[line, 'latexLabel']]
+    # Physical parameters
+    Te = results_dict[f'Extinction_{cycle}']['Te_low']
+    ne = results_dict[f'Extinction_{cycle}']['ne']
+    cHbeta = results_dict[f'Extinction_{cycle}']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
 
-#
+    # Add new columns to dataframe
+    for column in ['obsFlux', 'obsFluxErr', 'f_lambda', 'obsInt', 'obsIntErr']:
+        linesDF[column] = np.nan
+
+    # Scale factor for lines in the red arm
+    Halpha_beta_ratio = H1.getEmissivity(tem=Te, den=ne, wave=6563) / H1.getEmissivity(tem=Te, den=ne, wave=4861)
+
+    # Distinguish each arm lines
+    idcs_blue = linesDF.wavelength < w_div_array[i]
+    idcs_red = ~idcs_blue
+
+    # Normalize fluxes blue arm
+    obsFlux, obsFluxErr = normalize_flux(linesDF.loc[idcs_blue], norm_line='H1_4861A')
+    linesDF.loc[idcs_blue, 'obsFlux':'obsFluxErr'] = np.array([obsFlux, obsFluxErr]).T
+
+    # Normalize fluxes red arm
+    obsFlux, obsFluxErr = normalize_flux(linesDF.loc[idcs_red], norm_line='H1_6563A', scale_factor=Halpha_beta_ratio)
+    linesDF.loc[idcs_red, 'obsFlux':'obsFluxErr'] = np.array([obsFlux, obsFluxErr]).T
+
+    # Compute reddening law for blue arm
+    f_Hbeta, f_blue = compute_arms_flambda(linesDF.loc[idcs_blue], red_law, RV, ref_line='H1_4861A')
+    linesDF.loc[idcs_blue, 'f_lambda'] = f_blue
+
+    # Compute reddening law for red arm
+    f_Halpha, f_red = compute_arms_flambda(linesDF.loc[idcs_red], red_law, RV, ref_line='H1_6563A')
+    linesDF.loc[idcs_red, 'f_lambda'] = f_red
+
+    # Compute line intensities
+    obsInt, obsIntErr = deredd_fluxes(linesDF.obsFlux, linesDF.obsFluxErr, cHbeta[0], cHbeta[1], linesDF.f_lambda)
+    linesDF.loc[:, 'obsInt':'obsIntErr'] = np.array([obsInt, obsIntErr]).T
+
+    # # Save individual object tables
+    idcs_obs = ~linesDF.index.str.contains('_b')
+    table_fluxes(linesDF.loc[idcs_obs].index,
+                 linesDF.loc[idcs_obs].f_lambda,
+                 linesDF.loc[idcs_obs].obsFlux,
+                 linesDF.loc[idcs_obs].obsFluxErr,
+                 linesDF.loc[idcs_obs].obsInt,
+                 linesDF.loc[idcs_obs].obsIntErr,
+                 cHbeta[0],
+                 cHbeta[1],
+                 ref_label='H1_4861A',
+                 ref_flux=linesDF.loc['H1_4861A'].intg_flux,
+                 ref_err=linesDF.loc['H1_4861A'].intg_err,
+                 output_address=tables_prefix)
+
+    # Save the lines log
+    sr.save_lineslog(linesDF, lineLog_file)
+
+    # Add DF to dict
+    dict_linesDF[obj] = linesDF.loc[idcs_obs]
+
+
+# Global tables
+tableDF = pd.DataFrame(columns=['wavelength', 'f_lambda', 'latexLabel', 'blended'])
+objSubList = ['gp030321', 'gp101157', 'gp121903']
+
+# Combine dictionaries into one DF
+for i, obj in enumerate(objSubList):
+
+    # Obj DF
+    linesDF_i = dict_linesDF[obj]
+
+    # Add new lines to the master df
+    for line in linesDF_i.index:
+        if line not in tableDF.index:
+            tableDF.loc[line] = [linesDF_i.loc[line, 'wavelength'], linesDF_i.loc[line, 'f_lambda'],
+                                 linesDF_i.loc[line, 'latexLabel'], linesDF_i.loc[line, 'blended']]
 tableDF.sort_values('wavelength', inplace=True)
 
-print(tableDF)
-
-# Reddening law
-rc = pn.RedCorr(R_V=obsData['sample_data']['RV'], law=obsData['sample_data']['red_law'])
-X_Hbeta, Xx_ref, Xx = rc.X(4861.0), rc.X(4861.0), rc.X(tableDF.wavelength.values)
-f_lines = Xx / Xx_ref - 1
-f_Hbeta = X_Hbeta / Xx_ref - 1
-
-pdf_geometry_options = {'right': '1cm', 'left': '1cm', 'top': '1cm', 'bottom': '2cm', 'landscape': 'true',
-                        'paperwidth': '30in', 'paperheight': '30in'}
-
-pdfDoc = Document(pdfTableFile, documentclass=u'article', geometry_options=pdf_geometry_options)
-pdfDoc.packages.append(Package('preview', options=['active', 'tightpage', ]))
-pdfDoc.packages.append(Package('hyperref', options=['unicode=true', ]))
-pdfDoc.append(NoEscape(r'\pagenumbering{gobble}'))
-pdfDoc.packages.append(Package('nicefrac'))
-pdfDoc.packages.append(Package('color', options=['usenames', 'dvipsnames', ]))
-pdfDoc.append(NoEscape(r'\begin{preview}'))
-
-table1 = Tabular('lccccccc')
-
-table1.add_hline()
+# Make table
+scaleTable = 1000
+pdfTableFile, txtTableFile = tables_folder / f'sample_emission_lines', tables_folder / f'sample_emission_lines.txt'
+table_header_format = 'lccccccc'
 row_headers = ['',
                '',
-               MultiColumn(2, align='c', data=objList[0].upper()),
-               MultiColumn(2, align='c', data=objList[1].upper()),
-               MultiColumn(2, align='c', data=objList[2].upper())]
-table1.add_row(row_headers, escape=False, strict=False)
-
+               pylatex.MultiColumn(2, align='c', data=objSubList[0].upper()),
+               pylatex.MultiColumn(2, align='c', data=objSubList[1].upper()),
+               pylatex.MultiColumn(2, align='c', data=objSubList[2].upper())]
 row_subHeaders = ['Line label', r'$f_{lambda}$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
                   r'$F(\lambda)$', r'$I(\lambda)$']
-table1.add_row(row_subHeaders, escape=False, strict=False)
-table1.add_hline()
 
-for i, label in enumerate(tableDF.index):
+# Table heading
+pdf = PdfPrinter()
+pdf.create_pdfDoc(pdfTableFile, pdf_type='table')
+pdf.pdf_insert_table(row_headers, table_format=table_header_format, addfinalLine=False)
+pdf.addTableRow(row_subHeaders, last_row=True)
 
-    row_data = [''] * 8
+# Table body
+for i, linelabel in enumerate(tableDF.index):
 
-    row_data[0] = tableDF.loc[label, 'latexLabel']
-    row_data[1] = f'{f_lines[i]:.2f}'
-    for j, obj in enumerate(objList):
-        if j < 3:
-            if label in df_dict[obj].index:
-                row_data[2 + 2*j] = df_dict[obj].loc[label].obsFlux
-                row_data[2 + 2*j + 1] = df_dict[obj].loc[label].obsInt
-            else:
-                row_data[2 + 2*j] = '-'
-                row_data[2 + 2*j + 1] = '-'
+    # Line reference
+    if (tableDF.loc[linelabel, 'blended'] == 'None') or ('_m' in linelabel):
+        label_ref = tableDF.loc[linelabel, 'latexLabel']
+    else:
+        label_ref = tableDF.loc[linelabel, 'latexLabel'][:-1] + '_g$'
 
-    output_row = list(map(partial(format_for_table, rounddig=3), row_data))
-    table1.add_row(output_row, escape=False, strict=False)
-table1.add_hline()
+    # Line lambda
+    lambda_ref = f'{tableDF.loc[linelabel, "f_lambda"]:0.2f}'
 
-parameterers_row = [r'$c(H\beta)$',
-                    '',
-                    MultiColumn(2, align='c', data=0.0),
-                    MultiColumn(2, align='c', data=0.0),
-                    MultiColumn(2, align='c', data=0.0)]
-table1.add_hline()
-pdfDoc.append(table1)
-pdfDoc.append(NoEscape(r'\end{preview}'))
-print(pdfTableFile)
-pdfDoc.generate_pdf(clean_tex=False)
+    # List for table row
+    row_data = [label_ref, lambda_ref] + ['-'] * 6
 
-# row_headers = [lineID,
-# 	       f_lambda,
-#                MultiColumn(2, align='c', data='GP01'),
-#                MultiColumn(2, align='c', data='GP02'),
-#                MultiColumn(2, align='c', data='GP03')]
-# table1.add_row(row_headers)
-# table1.add_hline()
-#
-# row_subheaders = [lineID, f_lambda,
-#                   F_lambda, I_lambda,
-#                   F_lambda, I_lambda,
-# 		   F_lambda, I_lambda]
-# table1.add_row(row_subheaders)
-# table1.add_hline()
-#
-# row_data = [label, f_lambda_value, F_lambda_value, I_lambda_value, F_lambda_value, I_lambda_value, F_lambda_value, I_lambda_value]
-# table1.add_row(row_data)
-#
-# table1.add_hline()
-# parameterers_row = [Parameter,
-#  		    '',
-# 		    MultiColumn(2, align='c', data='Parameter_value_GP01'),
-# 			MultiColumn(2, align='c', data='Parameter_value_GP02'),
-# 			MultiColumn(2, align='c', data='Parameter_value_GP03')]
-# table1.add_hline()
-#
-# pdfDoc.append(table1)
-# pdfDoc.generate_pdf(clean_tex=False)
+    for j, obj in enumerate(objSubList):
 
-# table_format = 'l' + 'c' * (len(column_headers) - 1)
-#
-# # Initiate the table
-# with self.pdfDoc.create(Tabu(table_format)) as self.table:
-#     if column_headers != None:
-#         self.table.add_hline()
-#         self.table.add_row(list(map(str, column_headers)), escape=False, strict=False
-#         self.table.add_hline()
-# # flux_Hbeta = lines_df.loc['H1_4861A', 'intg_flux']
-#
-#
-# obsLines = lines_df.index.values
-# for lineLabel in obsLines:
-#
-#     label_entry = lines_df.loc[lineLabel, 'latexLabel']
-#     wavelength = lines_df.loc[lineLabel, 'wavelength']
-#     eqw, eqwErr = lines_df.loc[lineLabel, 'eqw'], lines_df.loc[lineLabel, 'eqw_err']
-#
-#     flux_intg = lines_df.loc[lineLabel, 'intg_flux'] / flux_Hbeta * scaleTable
-#     flux_intgErr = lines_df.loc[lineLabel, 'intg_err'] / flux_Hbeta * scaleTable
-#     flux_gauss = lines_df.loc[lineLabel, 'gauss_flux'] / flux_Hbeta * scaleTable
-#     flux_gaussErr = lines_df.loc[lineLabel, 'gauss_err'] / flux_Hbeta * scaleTable
-#
-#     if (lines_df.loc[lineLabel, 'blended'] != 'None') and ('_m' not in lineLabel):
-#         flux, fluxErr = flux_gauss, flux_gaussErr
-#         label_entry = label_entry + '$_{gauss}$'
-#     else:
-#         flux, fluxErr = flux_intg, flux_intgErr
-#
-#     # Correct the flux
-#     corr = pyneb_rc.getCorrHb(wavelength)
-#     intensity, intensityErr = flux * corr, fluxErr * corr
-#
-#     eqw_entry = r'${:0.2f}\,\pm\,{:0.2f}$'.format(eqw, eqwErr)
-#     flux_entry = r'${:0.2f}\,\pm\,{:0.2f}$'.format(flux, fluxErr)
-#     intensity_entry = r'${:0.2f}\,\pm\,{:0.2f}$'.format(intensity, intensityErr)
-#
-#     # Add row of data
-#     tex_row_i = [label_entry, eqw_entry, flux_entry, intensity_entry]
-#     txt_row_i = [label_entry, eqw, eqwErr, flux, fluxErr, intensity, intensityErr]
-#
-#     lastRow_check = True if lineLabel == obsLines[-1] else False
-#     pdf.addTableRow(tex_row_i, last_row=lastRow_check)
-#     tableDF.loc[lineLabel] = txt_row_i[1:]
-#
-# # Data last rows
-# row_Hbetaflux = [r'$H\beta$ $(erg\,cm^{-2} s^{-1} \AA^{-1})$',
-#                  '',
-#                  flux_Hbeta,
-#                  flux_Hbeta * pyneb_rc.getCorr(4861)]
-#
-# row_cHbeta = [r'$c(H\beta)$',
-#               '',
-#               float(pyneb_rc.cHbeta),
-#               '']
-#
-# pdf.addTableRow(row_Hbetaflux, last_row=False)
-# pdf.addTableRow(row_cHbeta, last_row=False)
-# tableDF.loc[row_Hbetaflux[0]] = row_Hbetaflux[1:] + [''] * 3
-# tableDF.loc[row_cHbeta[0]] = row_cHbeta[1:] + [''] * 3
-#
-# # Format last rows
-# pdf.table.add_hline()
-# pdf.table.add_hline()
-#
-# # Save the pdf table
-# try:
-#     pdf.generate_pdf(clean_tex=True)
-# except:
-#     print('-- PDF compilation failure')
-#
-# # Save the txt table
-# with open(txt_address, 'wb') as output_file:
-#     string_DF = tableDF.to_string()
-#     string_DF = string_DF.replace('$', '')
-#     output_file.write(string_DF.encode('UTF-8'))
-#
+        linesDF_i = dict_linesDF[obj]
+        if linelabel in linesDF_i.index:
+            flux_line = linesDF_i.loc[linelabel, 'obsFlux'] * scaleTable
+            flux_err = linesDF_i.loc[linelabel, 'obsFluxErr'] * scaleTable
+            int_line = linesDF_i.loc[linelabel, 'obsInt'] * scaleTable
+            int_err = linesDF_i.loc[linelabel, 'obsIntErr'] * scaleTable
+
+            row_data[2 + 2 * j] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(flux_line, flux_err)
+            row_data[2 + 2 * j + 1] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(int_line, int_err)
+
+    lastRow_check = True if linelabel == tableDF.index[-1] else False
+    pdf.addTableRow(row_data, last_row=lastRow_check)
+
+# Ending table
+cHbeta_row = [r'$c(H\beta)$', ''] + [''] * 3
+eqwHbeta_row = [r'$-W(\beta)(\AA)$', ''] + [''] * 3
+FHbeta_row = [r'$F(H\beta) (10^{14} \cdot erg\,cm^{-2} s^{-1} \AA^{-1})$', ''] + [''] * 3
+for j, obj in enumerate(objSubList):
+    objFolder = resultsFolder / f'{obj}'
+    results_file = objFolder / f'{obj}_BR_measurements.txt'
+
+    results_dict = sr.loadConfData(results_file, group_variables=False)
+    linesDF_i = dict_linesDF[obj]
+    cHbeta_tuple = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
+
+    cHbeta = r'${}\,\pm\,{}$'.format(cHbeta_tuple[0], cHbeta_tuple[1])
+    eqw_Hbeta = r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}',
+                                        f'{linesDF_i.loc["H1_4861A", "eqw_err"]:0.2f}')
+    F_Hbeta = r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "intg_flux"] / normFlux:0.2f}',
+                                      f'{linesDF_i.loc["H1_4861A", "intg_err"] / normFlux:0.2f}')
+    # eqw_Hbeta = f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}'
+    # F_Hbeta = f'{linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux:0.2f}'
+
+    cHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(cHbeta))
+    eqwHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(eqw_Hbeta))
+    FHbeta_row[2 + j] = pylatex.MultiColumn(2, align='c', data=pylatex.NoEscape(F_Hbeta))
+
+pdf.addTableRow(cHbeta_row)
+pdf.addTableRow(eqwHbeta_row)
+pdf.addTableRow(FHbeta_row, last_row=True)
+
+# Save the pdf table
+try:
+    pdf.generate_pdf(clean_tex=False)
+except:
+    print('-- PDF compilation failure')

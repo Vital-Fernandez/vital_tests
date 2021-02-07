@@ -3,6 +3,7 @@ import pyneb as pn
 import pandas as pd
 import src.specsiser as sr
 import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 from src.specsiser.data_printing import label_decomposition, PdfPrinter
 from lmfit.models import LinearModel
 from lmfit import fit_report
@@ -118,6 +119,7 @@ def compute_spectrum_flambda(wavelength, red_law, R_V, ref_line='H1_4861A'):
 
     return f_x, f_ref
 
+
 def double_arm_redCorr(wave_spec, flux_spec, wave_boundary, red_law, red_R_V, cHbeta):
 
     rc = pn.RedCorr(R_V=red_R_V, law=red_law, cHbeta=cHbeta[0])
@@ -166,7 +168,7 @@ def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
 def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
 
     # Generate uncertainty variables to propagate the error
-    cHbeta = ufloat(cHbeta_nom, cHbeta_err)
+    cHbeta = ufloat(cHbeta_nom, cHbeta_err),
     obsFlux_uarray = unumpy.uarray(obs_flux, obs_err)
 
     # Compute line intensity
@@ -240,5 +242,50 @@ def table_fluxes(lineLabels, f_lambda, flux, flux_err, inten, inten_err, cHbeta,
         string_DF = tableDF.to_string()
         string_DF = string_DF.replace('$', '')
         output_file.write(string_DF.encode('UTF-8'))
+
+    return
+
+
+def exitinction_corr_plot(objName, corr_dict_list, ext_file_list, plot_save_file=None):
+
+    ext_color_dict = dict(BR='tab:purple', B='tab:blue', SDSS='black')
+
+    STANDARD_PLOT = {'figure.figsize': (14, 7),
+                     'axes.titlesize': 14,
+                     'axes.labelsize': 18,
+                     'legend.fontsize': 12,
+                     'xtick.labelsize': 12,
+                     'ytick.labelsize': 12}
+    rcParams.update(STANDARD_PLOT)
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+
+    ax.update({'xlabel': r'$f_{\lambda} - f_{H\beta}$',
+               'ylabel': r'$ \left(\frac{I_{\lambda}}{I_{\H\beta}}\right)_{Theo} - \left(\frac{F_{\lambda}}{F_{\H\beta}}\right)_{Obs}$',
+               'title': f' {objName} logaritmic extinction calculation'})
+
+    for idx_file, corr_lines_dict in enumerate(corr_dict_list):
+
+        ext_file = ext_file_list[idx_file]
+        corr_dict, blue_rc = corr_lines_dict['four_lines'], corr_lines_dict['three_lines']
+
+        ax.errorbar(corr_dict['x'], corr_dict['y'], yerr=corr_dict['y_err'], color=ext_color_dict[ext_file], fmt='o')
+        all_ylineFit = corr_dict['cHbeta'] * corr_dict['x'] + corr_dict['intercept']
+        label = r'$c(H\beta)$ = ${:.2f}\pm{:.2f}$ ' \
+                r'($H\alpha$, $H\beta$, $H\gamma$, $H\delta$)'.format(corr_dict['cHbeta'], corr_dict['cHbeta_err'])
+        ax.plot(corr_dict['x'], all_ylineFit, color=ext_color_dict[ext_file], label=label, linestyle='--')
+
+
+        blue_ylineFit = blue_rc['cHbeta'] * blue_rc['x'] + blue_rc['intercept']
+        label = r'$c(H\beta)$ = ${:.2f}\pm{:.2f}$ ($H\beta$, $H\gamma$, $H\delta$)'.format(blue_rc['cHbeta'],
+                                                                                           blue_rc['cHbeta_err'])
+        ax.plot(blue_rc['x'], blue_ylineFit, color=ext_color_dict[ext_file], label=label, linestyle=':')
+
+    ax.legend()
+    plt.tight_layout()
+    if plot_save_file is not None:
+        plt.savefig(plot_save_file, dpi=200, bbox_inches='tight')
+    else:
+        plt.show()
 
     return

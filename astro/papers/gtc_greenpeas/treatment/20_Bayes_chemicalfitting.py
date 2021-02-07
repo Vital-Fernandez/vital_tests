@@ -2,6 +2,32 @@ import numpy as np
 from pathlib import Path
 import src.specsiser as sr
 
+def check_previous_measurements(parameter_list, measurements_dict):
+
+        data_dict = {}
+
+        for param in parameter_list:
+
+                if param in ('n_e', 'T_low'):
+                        dict_section = measurements_dict['Third_cycle_Ionic_Abundances']
+                        value = dict_section[param]
+                elif param in ('cHbeta'):
+                        dict_section = measurements_dict['Initial_values']
+                        value = dict_section['cHbeta_BR_Hbeta_Hgamma_Hdelta']
+                else:
+                        dict_section = measurements_dict['Third_cycle_Ionic_Abundances']
+                        if param in ('Cl3', 'He1r', 'N2', 'O3', 'S2'):
+                                if param in dict_section:
+                                        value = dict_section[param]
+                                else:
+                                        value = None
+
+        if param is not None:
+
+                data_dict[param] = value
+
+        return
+
 # # Import the observation data
 # obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
 # linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
@@ -23,12 +49,14 @@ normFlux = obsData['sample_data']['norm_flux']
 ext = '_BR'
 cycle = 'c3'
 cycle_ref = 'Second_cycle'
-combined_line_dict = {'O2_3726A': 'O2_3726A-O2_3729A', 'O2_7319A': 'O2_7319A-O2_7330A'}
+combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_b': 'O2_7319A-O2_7330A'}
+parameter_list = ['n_e','T_low','cHbeta','Ar3','Ar4','Fe3','He1r','He2r','N2','Ne3','O3','S2','S3']
+
 
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-        if i < 3:
+        if i ==2:
 
                 # Declare files location
                 fits_file = dataFolder / f'{obj}{ext}.fits'
@@ -38,39 +66,29 @@ for i, obj in enumerate(objList):
                 outputDb = objFolder/f'{obj}{ext}_fitting_{cycle}.db'
                 outputTxt = objFolder/f'{obj}{ext}_fitting_{cycle}.txt'
                 simConf = dataFolder / f'{obj}_config.txt'
-
-                # # Establish files location
-                # objName = obsData['file_information']['object_list'][i]
-                # fitsFolder, fitsFile = file_address.parent, file_address.name
-                # lineLogFolder, lineLogFile = fitsFolder / 'flux_analysis', fitsFile.replace('.fits', '_linesLog.txt')
-                # simFolder, simConf = fitsFolder / 'chemical_analysis',  fitsFile.replace('_BR.fits', '_config.txt')
-                # inputLinesLog = f'{objName}_inputLinesLog.txt'
-                # outputDb = f'{objName}_fitting.db'
-                # outputTxt = f'{objName}_fitting.txt'
-                # print(f'- {objName}')
+                results_file = objFolder / f'{obj}{ext}_measurements.txt'
 
                 # Load data
                 objParams = sr.loadConfData(simConf)
+                results_dict = sr.loadConfData(results_file, group_variables=False)
                 objLinesDF = sr.import_emission_line_data(lineLog_file, include_lines=objParams['input_lines'])
 
-                # blended_dict = obsData['blended_groups']
-                # blended_list = []
-                # for group in blended_dict:
-                #     blended_list += blended_dict[group].split('-')
-                #
-                # idcs_blended = lm.linesDF.index.isin(blended_list)
-                #
-                # # Asociate the corresponding flux to the appropiate line
-                # lm.linesDF.insert(loc=1, column='obsFlux', value=np.nan)
-                # lm.linesDF.insert(loc=2, column='obsFluxErr', value=np.nan)
-                # flux_Hbeta = lm.linesDF.loc['H1_4861A', 'intg_flux']
-                # lm.linesDF.loc[idcs_blended, 'obsFlux'] = lm.linesDF.loc[idcs_blended, 'gauss_flux']/flux_Hbeta
-                # lm.linesDF.loc[idcs_blended, 'obsFluxErr'] = lm.linesDF.loc[idcs_blended, 'gauss_err']/flux_Hbeta
-                # lm.linesDF.loc[~idcs_blended, 'obsFlux'] = lm.linesDF.loc[~idcs_blended, 'intg_flux']/flux_Hbeta
-                # lm.linesDF.loc[~idcs_blended, 'obsFluxErr'] = lm.linesDF.loc[~idcs_blended, 'intg_err']/flux_Hbeta
-                # lm.linesDF.rename(columns={'wavelength': 'obsWave'}, inplace=True)
-                # lm.save_lineslog(lm.linesDF, simFolder/inputLinesLog)
 
+
+                # # Recover results from direct method:
+                # standard_method_results = dict(n_e = results_dict['Third_cycle_Electron_parameters']['ne'],
+                #                                T_low = results_dict['Third_cycle_Electron_parameters']['Te_low'],
+                #                                cHbeta = results_dict['[Extinction_c3]']['cHbeta_BR_Halpha_Hbeta_Hgamma_Hdelta'],
+                #                                Ar3= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                Ar4= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                Fe3= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                He1r= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                He2r= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                N2= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                Ne3= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                O3= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                S2= results_dict['Third_cycle_Ionic_Abundances']['XXX'],
+                #                                S3= results_dict['Third_cycle_Ionic_Abundances']['XXX'],)
 
                 # Declare extinction properties
                 objRed = sr.ExtinctionModel(Rv=objParams['R_v'],

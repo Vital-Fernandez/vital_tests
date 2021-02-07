@@ -21,8 +21,6 @@ noise_region = obsData['sample_data']['noiseRegion_array']
 idx_band = int(obsData['file_information']['band_flux'])
 
 
-
-
 ext = '_BR'
 cycle = 'c2'
 cycle_ref = 'First_cycle'

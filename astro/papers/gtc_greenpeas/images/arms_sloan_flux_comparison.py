@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt, rcParams
 
 objList = ['gp030321', 'gp101157', 'gp121903']
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
-obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)
+obsData = sr.loadConfData(conf_file_address, group_variables=False)
 
 dataFolder = Path(obsData['file_information']['data_folder'])
 resultsFolder = Path(obsData['file_information']['results_folder'])
@@ -52,7 +52,7 @@ for i, obj in enumerate(objList):
                 label='OSIRIS')
 
     # Loop through the extensions and put the data in the plot
-    for ext in ['_SDSS', '_B', '_R']:
+    for ext in ['_B', '_R']:
         extLinesLog = objFolder / f'{obj}{ext}_linesLog.txt'
         extLogDF = sr.lineslogFile_to_DF(extLinesLog)
 
@@ -78,8 +78,8 @@ for i, obj in enumerate(objList):
     plt.tight_layout()
 
     plot_address = objFolder/f'{obj}_line_flux_comparison_log.png'
-    plt.savefig(plot_address, dpi=200, bbox_inches='tight')
-    # plt.show()
+    # plt.savefig(plot_address, dpi=200, bbox_inches='tight')
+    plt.show()
 
     # Increase counter for obj number
     counter += 1

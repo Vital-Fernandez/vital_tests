@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt, rcParams, gridspec
 
 objList = ['gp030321', 'gp101157', 'gp121903']
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
-obsData = sr.loadConfData(conf_file_address, objList=objList, group_variables=False)
+obsData = sr.loadConfData(conf_file_address, group_variables=False)
 
 dataFolder = Path(obsData['file_information']['data_folder'])
 resultsFolder = Path(obsData['file_information']['results_folder'])
@@ -60,7 +60,7 @@ for i, obj in enumerate(objList):
             lm = sr.LineMesurer(wave, flux, redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
         else:
             wave, flux, header = sr.import_fits_data(dataFolder/fits_file, instrument='SDSS')
-            lm = sr.LineMesurer(wave, flux, redshift=0, normFlux=flux_norm)
+            lm = sr.LineMesurer(wave, flux, normFlux=flux_norm)
 
         # Load line measurer object
         print(f'-- Pixel width: {np.diff(lm.wave).mean()}')

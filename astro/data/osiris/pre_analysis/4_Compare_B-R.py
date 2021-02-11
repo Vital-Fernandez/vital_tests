@@ -13,16 +13,19 @@ dataFolder = Path(obsData['file_information']['data_folder'])
 
 objList = obsData['file_information']['object_list']
 fileList = obsData['file_information']['files_list']
-objList_B = obsData['file_information']['objectB_list']
-fileList_B = obsData['file_information']['filesB_list']
-objList_R = obsData['file_information']['objectR_list']
-fileList_R = obsData['file_information']['filesR_list']
+# objList_B = obsData['file_information']['objectB_list']
+# fileList_B = obsData['file_information']['filesB_list']
+# objList_R = obsData['file_information']['objectR_list']
+# fileList_R = obsData['file_information']['filesR_list']
 z_objs = obsData['sample_data']['z_array']
 idx_band = int(obsData['file_information']['band_flux'])
 
 for i, obj in enumerate(objList):
 
-    file_BR, file_blue, file_red = dataFolder/fileList[i], dataFolder/fileList_B[i], dataFolder/fileList_R[i]
+    fileList_B = dataFolder/fileList[i].replace('_BR', '_B')
+    fileList_R = dataFolder/fileList[i].replace('_BR', '_R')
+
+    file_BR, file_blue, file_red = dataFolder/fileList[i], dataFolder/fileList_B, dataFolder/fileList_R
 
     # Set and crop the wavelength
     rest_wave, flux, header = sr.import_fits_data(file_BR, instrument='OSIRIS')
@@ -78,9 +81,9 @@ for i, obj in enumerate(objList):
     fig.tight_layout()
 
     plotAddress = dataFolder/fileList[i].replace('.fits', '_armFluxComparison.png')
-    plt.savefig(plotAddress, dpi=200, bbox_inches='tight')
+    # plt.savefig(plotAddress, dpi=200, bbox_inches='tight')
 
-    # plt.show()
+    plt.show()
 
 # fig, axes = plt.subplots(1,3, figsize = (12,4))
 # x = np.arange(1,11)

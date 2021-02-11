@@ -32,6 +32,6 @@ print({**AMP_CONF_DEFAULT, **emptyConf})
 print(AMP_CONF_DEFAULT == AMP_CONF_orig)
 
 
-# for i, item in enumerate(AMP_CONF_orig.items()):
-#    key, value = item
-#    print(i, key, value)
+for i, item in enumerate(AMP_CONF_orig.items()):
+   key, value = item
+   print(i, key, value)

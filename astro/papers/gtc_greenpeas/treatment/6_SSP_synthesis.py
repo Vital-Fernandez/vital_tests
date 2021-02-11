@@ -67,10 +67,9 @@ for i, obj in enumerate(objList):
 
     nebWave, nebFlux = np.loadtxt(nebCompFile, unpack=True)
 
-
     # Spectrum extinction correction
-    cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
-    cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
     int_spec, corr_spec = double_arm_redCorr(lm.wave, lm.flux, w_div_array[i], red_law, RV, cHbeta)
 
     # Add new masks

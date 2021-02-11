@@ -59,21 +59,18 @@ for i, obj in enumerate(objList):
     HeII_HII = results_dict[f'Extinction_{cycle}']['He1r']
     HeIII_HeII = results_dict[f'Extinction_{cycle}']['He2r']
 
-    # Spectrum extinction correction
-    previousCycle = cycle.replace('2', '1')
-    cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
-    cHbeta = results_dict[f'Extinction_{previousCycle}'][cHbeta_label]
+    # Extinction parameters
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
     int_spec, corr_spec = double_arm_redCorr(lm.wave, lm.flux, w_div_array[i], red_law, RV, cHbeta)
 
     # Calculate Halpha intensity from Hbeta flux
     rc = pn.RedCorr(R_V=RV, law=red_law, cHbeta=cHbeta[0])
     Hbeta_int = linesDF.loc['H1_4861A'].intg_flux * rc.getCorr(4861.0)
-    emis_AlphaBetaRatio = H1.getEmissivity(tem=Te_low, den=ne, wave=6563)/H1.getEmissivity(tem=Te_low, den=ne, wave=4861)
-    Halpha_int = Hbeta_int * emis_AlphaBetaRatio
 
     # Compute nebular continuum
     nebCalc = NebularContinua()
-    neb_int = nebCalc.flux_spectrum(lm.wave, Te_low, Halpha_int, HeII_HII, HeIII_HeII)
+    neb_int = nebCalc.flux_spectrum(lm.wave, Te_low, Hbeta_int, HeII_HII, HeIII_HeII)
 
     # Save nebular flux
     flux_neb = (neb_int/corr_spec)

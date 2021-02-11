@@ -1,4 +1,5 @@
 from pathlib import Path
+import numpy as np
 import src.specsiser as sr
 from src.specsiser.physical_model.chemical_model import Standard_DirectMetchod
 
@@ -15,7 +16,7 @@ RV = obsData['sample_data']['RV']
 
 ext = 'BR'
 cycle = 'it2'
-MC_steps = 1000
+MC_steps = 2500
 
 for i, obj in enumerate(objList):
 
@@ -34,8 +35,8 @@ for i, obj in enumerate(objList):
     results_dict = sr.loadConfData(results_file, group_variables=False)
 
     # Extinction parameters
-    cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
-    cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
 
     # Declare lines to be used in analysis
     idcs_obs = ~linesDF.index.str.contains('_b')

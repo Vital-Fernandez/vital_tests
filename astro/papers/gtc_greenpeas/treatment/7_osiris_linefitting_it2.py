@@ -51,12 +51,12 @@ for i, obj in enumerate(objList):
 
     # Create line measurer object
     lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
-    # lm.plot_spectrum_components(matchedLinesDF=maskDF)
 
     # Remove the stellar component
-    lm.flux = lm.flux - flux_star
+    lm.flux = lm.flux - flux_star/flux_norm
+    # lm.plot_spectrum_components()
 
-    # # Fit and check the regions
+    # Fit and check the regions
     obsLines = maskDF.index.values
     for j, lineLabel in enumerate(obsLines):
 
@@ -68,13 +68,14 @@ for i, obj in enumerate(objList):
         if lm.blended_check:
             plotFile = f'{obj}_{ext}_deblend_{lineLabel}_{cycle}.png'
             lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
+            # lm.print_results(show_fit_report=True, show_plot=True)
 
     # Save the lines log
     lm.save_lineslog(lm.linesDF, lineLog_file)
 
     # Plot the single lines:
     idcs_unblended = ~lm.linesDF.index.str.contains('_b')
-    lm.plot_line_grid(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=lineGrid_file)
+    lm.plot_line_grid(lm.linesDF.loc[idcs_unblended], ncols=8, log_check=False, output_address=lineGrid_file)
 
     # Lines to store in tables
     idcs_lines = ~lm.linesDF.index.str.contains('_b')

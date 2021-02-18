@@ -3,7 +3,7 @@ import pandas as pd
 import src.specsiser as sr
 import pyneb as pn
 from pathlib import Path
-from astro.papers.gtc_greenpeas.common_methods import compute_cHbeta, deredd_fluxes, exitinction_corr_plot, compute_arms_flambda, normalize_flux
+from astro.papers.gtc_greenpeas.common_methods import compute_cHbeta, deredd_fluxes, compute_arms_flambda, normalize_flux
 
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
@@ -31,7 +31,6 @@ cycle = 'it3'
 for i, obj in enumerate(objList):
 
     print(f'- Treating {obj}')
-    previousCycle = cycle.replace('3', '2')
 
     # Declare input files
     objFolder = resultsFolder/f'{obj}'
@@ -41,15 +40,17 @@ for i, obj in enumerate(objList):
     results_file = objFolder/f'{obj}_{ext}_measurements.txt'
     plot_address = resultsFolder/f'{obj}'/f'{obj}_{ext}_cHbeta_calculation_{cycle}.png'
 
-    # Get physical conditions for extinction calculation
-    cHbeta_label = f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'
+    # Load the data
+    results_dict = sr.loadConfData(results_file, group_variables=False)
 
+    # Dictionary for first entry
     extinction_data = {}
+    previousCycle = cycle.replace('3', '2')
     if obj not in objects_no_chemistry:
-        extinction_data['Te_low'] = results_file[f'{previousCycle}_electron_parameters']['Te_low'][0]
-        extinction_data['ne'] = results_file[f'{previousCycle}_electron_parameters']['n_e'][0]
-        extinction_data['He1r'] = results_file[f'{previousCycle}_ionic_Abundances']['He1r'][0]
-        extinction_data['He2r'] = results_file[f'{previousCycle}_ionic_Abundances']['He2r'][0]
+        extinction_data['Te_low'] = results_dict[f'{previousCycle}_electron_parameters']['Te_low'][0]
+        extinction_data['ne'] = results_dict[f'{previousCycle}_electron_parameters']['ne'][0]
+        extinction_data['He1r'] = results_dict[f'{previousCycle}_ionic_Abundances']['He1r'][0]
+        extinction_data['He2r'] = results_dict[f'{previousCycle}_ionic_Abundances']['He2r'][0]
     else:
         extinction_data['Te_low'] = obsData[obj]['Te_low_array'][0]
         extinction_data['ne'] = obsData[obj]['ne_array'][0]
@@ -64,37 +65,32 @@ for i, obj in enumerate(objList):
 
     Te_low, ne = extinction_data['Te_low'], extinction_data['ne']
 
-    # Main lines
-    all_lines = ['H1_4102A', 'H1_4341A', 'H1_4861A', 'H1_6563A']
-    comb_rc = compute_cHbeta(all_lines, linesDF, red_law, RV, Te_low, ne)
+    extCorrDict = {f'cHbeta_{ext}_Halpha_Hbeta_Hgamma_Hdelta': ['H1_4102A', 'H1_4341A', 'H1_4861A', 'H1_6563A'],
+                   f'cHbeta_{ext}_Halpha_Hbeta_Hgamma': ['H1_4341A', 'H1_4861A', 'H1_6563A'],
+                   f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta': ['H1_4102A', 'H1_4341A', 'H1_4861A'],
+                   f'cHbeta_{ext}_Hbeta_Hgamma': ['H1_4341A', 'H1_4861A']}
 
-    # Blue arm lines
-    blue_arm_lines = ['H1_4102A', 'H1_4341A', 'H1_4861A']
-    blue_rc = compute_cHbeta(blue_arm_lines, linesDF, red_law, RV, Te_low, ne)
-
-    # Store dicts for plotting
-    ext_cor_list.append({'four_lines': comb_rc, 'three_lines': blue_rc})
-    ext_list.append(ext)
-
-    # Save extinction coefficient for dictionary
-    four_lines_ext = (f'{comb_rc["cHbeta"]:0.3f}', f'{comb_rc["cHbeta_err"]:0.3f}')
-    extinction_data[f'cHbeta_{ext}_Halpha_Hbeta_Hgamma_Hdelta'] = four_lines_ext
-
-    three_lines_ext = (f'{blue_rc["cHbeta"]:0.3f}', f'{blue_rc["cHbeta_err"]:0.3f}')
-    extinction_data[f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta'] = three_lines_ext
+    # Fitt reddening coefficient
+    reddening_results = compute_cHbeta(extCorrDict, linesDF, red_law, RV, Te_low, ne, plot_address=plot_address)
 
     # Save dictionary with the measurements
+    for cHbeta_label, inputLines in extCorrDict.items():
+        cHbeta, cHbeta_err = reddening_results[cHbeta_label]['cHbeta'], reddening_results[cHbeta_label]['cHbeta_err']
+        extinction_data[cHbeta_label] = (f'{cHbeta:0.3f}', f'{cHbeta_err:0.3f}')
     sr.parseConfDict(results_file, extinction_data, f'Extinction_{cycle}', clear_section=True)
-
-    # Plot the data
-    exitinction_corr_plot(obj, ext_cor_list, ext_list, plot_save_file=plot_address)
 
     # -------------------------------------- Apply extinction correction -------------------------------------
 
-    cHbeta = np.array(extinction_data[cHbeta_label], dtype=float)
+    # Get favoured physical conditions for extinction calculation
+    results_dict = sr.loadConfData(results_file, group_variables=False)
+
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
+    print(f'-- Using {cHbeta_label}: {cHbeta}')
+    print(f'-- Wdiv: {w_div_array[i]}\n')
 
     # Add new columns to dataframe
-    for column in ['obsFlux', 'obsFluxErr', 'f_lambda', 'obsInt', 'obsIntErr']:
+    for column in ['obsFlux', 'obsFluxErr', 'f_lambda', 'obsInt', 'obsIntErr', 'calib_const']:
         linesDF[column] = np.nan
 
     # Scale factor for lines in the red arm
@@ -126,3 +122,4 @@ for i, obj in enumerate(objList):
 
     # Save the lines log
     sr.save_lineslog(linesDF, lineLog_file)
+

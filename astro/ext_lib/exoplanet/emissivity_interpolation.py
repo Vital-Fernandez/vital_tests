@@ -40,7 +40,7 @@ spy_interp = spy.interpolate.interp2d(ne_range, Te_range, emisValues)
 print('Scipy interpolation', spy_interp(ne_true, Te_true))
 
 # Exoplanet interpolation
-exop_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range], emisValues[:, :, None], nout=1)
+exop_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range], emisValues[:, :], nout=1)
 coordB = np.stack(([Te_true], [ne_true]), axis=-1)
 print('Exoplanet interpolation', exop_interp.evaluate(coordB).eval())
 

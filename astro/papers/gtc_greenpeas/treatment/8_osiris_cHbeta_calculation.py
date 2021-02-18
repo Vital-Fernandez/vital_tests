@@ -1,10 +1,7 @@
-import numpy as np
-import pandas as pd
-import src.specsiser as sr
-import pyneb as pn
 from pathlib import Path
-from astro.papers.gtc_greenpeas.common_methods import compute_cHbeta, deredd_fluxes, compute_arms_flambda, normalize_flux
-
+import numpy as np
+import src.specsiser as sr
+from src.specsiser.physical_model.chemical_model import Standard_DirectMetchod
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
@@ -14,112 +11,61 @@ dataFolder = Path(obsData['file_information']['data_folder'])
 resultsFolder = Path(obsData['file_information']['results_folder'])
 fileList = obsData['file_information']['files_list']
 
-objList = obsData['file_information']['object_list']
-dataFolder = Path(obsData['file_information']['data_folder'])
-resultsFolder = Path(obsData['file_information']['results_folder'])
-fileList = obsData['file_information']['files_list']
-objects_no_chemistry = obsData['file_information']['object_ChemIssues_list']
-
-w_div_array = obsData['sample_data']['w_div']
 red_law = obsData['sample_data']['red_law']
 RV = obsData['sample_data']['RV']
-H1 = pn.RecAtom('H', 1)
 
 ext = 'BR'
 cycle = 'it2'
+MC_steps = 2500
 
 for i, obj in enumerate(objList):
 
-    print(f'- Treating {obj}')
+        print(f'- Treating {obj}')
 
-    # Declare input files
-    objFolder = resultsFolder/f'{obj}'
-    lineLog_file = objFolder / f'{obj}_{ext}_linesLog_{cycle}.txt'
+        # Declare input files
+        objFolder = resultsFolder / f'{obj}'
+        results_file = objFolder / f'{obj}_{ext}_measurements.txt'
+        lineLog_file = objFolder / f'{obj}_{ext}_linesLog_{cycle}.txt'
 
-    # Declare output files
-    results_file = objFolder/f'{obj}_{ext}_measurements.txt'
-    plot_address = resultsFolder/f'{obj}'/f'{obj}_{ext}_cHbeta_calculation_{cycle}.png'
+        # Declare output files
+        diagram_file = objFolder / f'{obj}_{ext}_diagChart_{cycle}.png'
 
-    # Load the data
-    results_dict = sr.loadConfData(results_file, group_variables=False)
+        # Load the data
+        linesDF = sr.lineslogFile_to_DF(lineLog_file)
+        results_dict = sr.loadConfData(results_file, group_variables=False)
 
-    # Dictionary for first entry
-    extinction_data = {}
-    previousCycle = cycle.replace('2', '1')
-    if obj not in objects_no_chemistry:
-        extinction_data['Te_low'] = results_dict[f'{previousCycle}_electron_parameters']['Te_low'][0]
-        extinction_data['ne'] = results_dict[f'{previousCycle}_electron_parameters']['ne'][0]
-        extinction_data['He1r'] = results_dict[f'{previousCycle}_ionic_Abundances']['He1r'][0]
-        extinction_data['He2r'] = results_dict[f'{previousCycle}_ionic_Abundances']['He2r'][0]
-    else:
-        extinction_data['Te_low'] = obsData[obj]['Te_low_array'][0]
-        extinction_data['ne'] = obsData[obj]['ne_array'][0]
-        extinction_data['He1r'] = obsData[obj]['He1_array'][0]
-        extinction_data['He2r'] = obsData[obj]['He2_4686A_array'][0]
+        # Extinction parameters
+        cHbeta_label = obsData[obj]['cHbeta_label']
+        cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
 
-    # Load the data
-    linesDF = sr.lineslogFile_to_DF(lineLog_file)
+        # Declare lines to be used in analysis
+        idcs_obs = ~linesDF.index.str.contains('_b')
+        lineLabels = linesDF.loc[idcs_obs].index
+        f_lambda = linesDF.loc[idcs_obs, 'f_lambda'].values
+        obsFlux_Err = linesDF.loc[idcs_obs, 'obsFlux':'obsFluxErr'].values
+        obsInt_Err = linesDF.loc[idcs_obs, 'obsInt':'obsIntErr'].values
 
-    # -------------------------------------- Compute cHbeta -------------------------------------
-    ext_cor_list, ext_list = [], []
+        # Compute matrix fluxes
+        cm = Standard_DirectMetchod(n_steps=MC_steps)
+        flux_dict = cm.declare_line_fluxes(lineLabels, obsFlux_Err[:, 0], obsFlux_Err[:, 1])
 
-    Te_low, ne = extinction_data['Te_low'], extinction_data['ne']
+        # Establish extinction correction
+        int_dict = cm.red_corr(flux_dict, cHbeta=cHbeta[0], cHbeta_err=cHbeta[1], f_lambda=f_lambda)
 
-    extCorrDict = {f'cHbeta_{ext}_Halpha_Hbeta_Hgamma_Hdelta': ['H1_4102A', 'H1_4341A', 'H1_4861A', 'H1_6563A'],
-                   f'cHbeta_{ext}_Halpha_Hbeta_Hgamma': ['H1_4341A', 'H1_4861A', 'H1_6563A'],
-                   f'cHbeta_{ext}_Hbeta_Hgamma_Hdelta': ['H1_4102A', 'H1_4341A', 'H1_4861A'],
-                   f'cHbeta_{ext}_Hbeta_Hgamma': ['H1_4341A', 'H1_4861A']}
+        # Plot diagnostics diagram for galaxy
+        cm.plot_diag_chart(int_dict, plot_address=diagram_file)
 
-    # Fitt reddening coefficient
-    reddening_results = compute_cHbeta(extCorrDict, linesDF, red_law, RV, Te_low, ne, plot_address=plot_address)
+        # Confirm temperature and density diagnostics
+        obj_model_conf = obsData[f'{obj}_chemical_model']
+        obj_lines_conf = obsData[f'{obj}_line_fitting']
+        cm.electron_diagnostics(int_dict,
+                                neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
+                                Thigh_diag=obj_model_conf['Te_high_diag'])
 
-    # Save dictionary with the measurements
-    for cHbeta_label, inputLines in extCorrDict.items():
-        cHbeta, cHbeta_err = reddening_results[cHbeta_label]['cHbeta'], reddening_results[cHbeta_label]['cHbeta_err']
-        extinction_data[cHbeta_label] = (f'{cHbeta:0.3f}', f'{cHbeta_err:0.3f}')
-    sr.parseConfDict(results_file, extinction_data, f'Extinction_{cycle}', clear_section=True)
+        # Compute ionic abundances
+        cm.ionic_abundances(int_dict, obj_lines_conf, obj_model_conf)
 
+        # Compute elemental abundances
 
-    # -------------------------------------- Apply extinction correction -------------------------------------
-
-    # Get favoured physical conditions for extinction calculation
-    results_dict = sr.loadConfData(results_file, group_variables=False)
-
-    cHbeta_label = obsData[obj]['cHbeta_label']
-    cHbeta = np.array(results_dict[f'Extinction_{cycle}'][cHbeta_label], dtype=float)
-    print(f'-- Using {cHbeta_label}: {cHbeta}')
-    print(f'-- Wdiv: {w_div_array[i]}\n')
-
-    # Add new columns to dataframe
-    for column in ['obsFlux', 'obsFluxErr', 'f_lambda', 'obsInt', 'obsIntErr', 'calib_const']:
-        linesDF[column] = np.nan
-
-    # Scale factor for lines in the red arm
-    Halpha_beta_ratio = H1.getEmissivity(tem=Te_low, den=ne, wave=6563) / H1.getEmissivity(tem=Te_low, den=ne, wave=4861)
-
-    # Distinguish each arm lines
-    idcs_blue = linesDF.wavelength < w_div_array[i]
-    idcs_red = ~idcs_blue
-
-    # Normalize fluxes blue arm
-    obsFlux, obsFluxErr = normalize_flux(linesDF.loc[idcs_blue], norm_line='H1_4861A')
-    linesDF.loc[idcs_blue, 'obsFlux':'obsFluxErr'] = np.array([obsFlux, obsFluxErr]).T
-
-    # Normalize fluxes red arm
-    obsFlux, obsFluxErr = normalize_flux(linesDF.loc[idcs_red], norm_line='H1_6563A', scale_factor=Halpha_beta_ratio)
-    linesDF.loc[idcs_red, 'obsFlux':'obsFluxErr'] = np.array([obsFlux, obsFluxErr]).T
-
-    # Compute reddening law for blue arm
-    f_Hbeta, f_blue = compute_arms_flambda(linesDF.loc[idcs_blue], red_law, RV, ref_line='H1_4861A')
-    linesDF.loc[idcs_blue, 'f_lambda'] = f_blue
-
-    # Compute reddening law for red arm
-    f_Halpha, f_red = compute_arms_flambda(linesDF.loc[idcs_red], red_law, RV, ref_line='H1_6563A')
-    linesDF.loc[idcs_red, 'f_lambda'] = f_red
-
-    # Compute line intensities
-    obsInt, obsIntErr = deredd_fluxes(linesDF.obsFlux, linesDF.obsFluxErr, cHbeta[0], cHbeta[1], linesDF.f_lambda)
-    linesDF.loc[:, 'obsInt':'obsIntErr'] = np.array([obsInt, obsIntErr]).T
-
-    # Save the lines log
-    sr.save_lineslog(linesDF, lineLog_file)
+        # Save results abundances
+        cm.save_measurements(results_file, cycle)

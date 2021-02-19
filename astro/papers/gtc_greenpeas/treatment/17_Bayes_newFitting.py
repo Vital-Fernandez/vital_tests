@@ -5,8 +5,8 @@ import pymc3
 import theano.tensor as tt
 from src.specsiser.inference_model import displaySimulationData
 from astro.papers.gtc_greenpeas.common_methods import reading_epm_grids
-import arviz as az
 import matplotlib.pyplot as plt
+import arviz as az
 
 grid_line_dict, params_range_dict = reading_epm_grids()
 
@@ -46,7 +46,7 @@ for lineLabel, lineGrid in grid_line_dict.items():
 #
 # Creat synthetic observations
 temp_true, logU_true, OH_true = 53500.0, -1.70, 7.4
-temp_true, logU_true, OH_true = 48620.0, -2.15, 7.4
+# temp_true, logU_true, OH_true = 48620.0, -2.15, 7.4
 coord_true = np.stack(([logU_true], [temp_true], [OH_true]), axis=-1)
 lineFluxes = np.zeros(len(grid_line_dict.keys()))
 for i, item in enumerate(lineInterpolators.items()):

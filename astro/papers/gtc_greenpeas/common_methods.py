@@ -421,7 +421,7 @@ def interpolate(grid, z, zmin, zmax, n):
    return out
 
 
-def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
+def epm_fitting(input00, output_file, n, sed, geo, inter, grid_file=None, HCm_folder=''):
 
     input0 = np.genfromtxt(input00, dtype=None, names=True)
 
@@ -432,7 +432,8 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
 
     if geo == 1 and sed == 1:
         bin = 99
-        grid = np.loadtxt('C17_WMb_Teff_30-60_pp.dat')
+        fileAddress = f'{HCm_folder}C17_WMb_Teff_30-60_pp.dat'
+        grid = np.loadtxt(fileAddress)
         if inter == 0:
             sed_type = 'WM-Basic stellar atmosphere. Plane-parallel geometry. Not interpolated'
             print('Teff and U calculation using WM-Basic models with plane-paralell geometry and non-interpolation')
@@ -442,7 +443,8 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
 
     elif geo == 2 and sed == 1:
         bin = 99
-        grid = np.loadtxt(f'{HCm_folder}C17_WMb_Teff_30-60_sph.dat')
+        fileAddress = f'{HCm_folder}C17_WMb_Teff_30-60_sph.dat'
+        grid = np.loadtxt(fileAddress)
         if inter == 0:
             sed_type = 'WM-Basic stellar atmosphereSpherical geometry. Not interpolated'
             print('Teff and U calculation using WM-Basic models with spherical geometry and non-interpolation')
@@ -452,7 +454,8 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
 
     elif geo == 1 and sed == 2:
         bin = 132
-        grid = np.loadtxt(f'{HCm_folder}C17_bb_Teff_30-90_pp.dat')
+        fileAddress = f'{HCm_folder}C17_bb_Teff_30-90_pp.dat'
+        grid = np.loadtxt(fileAddress)
         if inter == 0:
             sed_type = 'Black body. Plane-parallel geometry. Not interpolated'
             print('Teff and U calculation using black body models with plane-parallel geometry and non-interpolation')
@@ -462,7 +465,8 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
 
     elif geo == 2 and sed == 2:
         bin = 132
-        grid = np.loadtxt(f'{HCm_folder}C17_bb_Teff_30-90_sph.dat')
+        fileAddress = f'{HCm_folder}C17_bb_Teff_30-90_sph.dat'
+        grid = np.loadtxt(fileAddress)
         if inter == 0:
             sed_type = 'Black body. spherical geometry. Not interpolated'
             print('Teff and U calculation using black body models with spherical geometry and non-interpolation')
@@ -473,18 +477,25 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
     elif geo == 1 and sed == 3:
         sed_type = 'BPASS cluster atmospheres, Mup = 300. Plane-parallel geometry'
         bin = 63
-        grid = np.loadtxt('C17_bpass21_imf135_300_pp_esc.dat')
+        fileAddress = f'{HCm_folder}C17_bpass21_imf135_300_pp_esc.dat'
+        grid = np.loadtxt(fileAddress)
         print('f_abs and U calculation using BPASS models with plane-parallel geometry')
 
     elif geo == 2 and sed == 3:
         bin = 77
-        grid = np.loadtxt(f'{HCm_folder}C17_bpass21_imf135_300_sph_esc.dat')
+        fileAddress = f'{HCm_folder}C17_bpass21_imf135_300_sph_esc.dat'
+        grid = np.loadtxt(fileAddress)
         if inter == 0:
             sed_type = 'BPASS cluster atmospheres, Mup = 300, x = 1.35, age = 4 Myr. Spherical geometry. Not interpolated'
             print('F_abs and U calculation usingBPASS models with spherical geometry and non-interpolation')
         elif inter == 1:
             sed_type = 'BPASS cluster atmospheres, Mup = 300, x = 1.35, age = 4 Myr. Spherical geometry. Interpolated'
             print('F_abs and U calculation usingBPASS models with spherical geometry and interpolation')
+
+    if grid_file is not None:
+        grid = np.loadtxt(grid_file)
+
+    print(f'Using grids: {grid_file}')
 
     OHffs = []
     eOHffs = []
@@ -1129,7 +1140,6 @@ def epm_fitting(input00, output_file, n, sed, geo, inter, HCm_folder=''):
                    fmt=' '.join(['%s'] * 1 + ['%.3f'] * 14 + ['%.2f'] * 2 + ['%.0f'] * 2 + ['%.2f'] * 2), header=header)
     print('________________________________')
     print('Results are stored in ' + input00 + '_hcm-teff-output.dat')
-
 
     return
 

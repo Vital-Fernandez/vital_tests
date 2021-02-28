@@ -25,9 +25,9 @@ H1 = pn.RecAtom('H', 1)
 
 dict_linesDF = {}
 ext = 'BR'
-cycle = 'it1'
+cycle = 'it3'
 
-for i, obj in enumerate(objList):
+for i, obj in enumerate(objList[:3]):
 
     print(f'\n- Treating {i} :{obj}_{ext}.fits')
 
@@ -47,7 +47,8 @@ for i, obj in enumerate(objList):
     # Physical parameters
     Te = results_dict[f'Extinction_{cycle}']['Te_low']
     ne = results_dict[f'Extinction_{cycle}']['ne']
-    cHbeta = results_dict[f'Extinction_{cycle}']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
 
     # Add new columns to dataframe
     for column in ['obsFlux', 'obsFluxErr', 'f_lambda', 'obsInt', 'obsIntErr']:
@@ -128,17 +129,20 @@ row_headers = ['',
                pylatex.MultiColumn(2, align='c', data=objSubList[0].upper()),
                pylatex.MultiColumn(2, align='c', data=objSubList[1].upper()),
                pylatex.MultiColumn(2, align='c', data=objSubList[2].upper())]
-row_subHeaders = ['Line label', r'$f_{lambda}$',
+row_subHeaders = ['Line label', r'$f_{\lambda}$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
                   r'$F(\lambda)$', r'$I(\lambda)$',
                   r'$F(\lambda)$', r'$I(\lambda)$']
 
 # Table heading
+print(f'-- Saving table at: {pdfTableFile}')
 pdf = PdfPrinter()
 pdf.create_pdfDoc(pdfTableFile, pdf_type='table')
 pdf.pdf_insert_table(row_headers, table_format=table_header_format, addfinalLine=False)
+# pdf.table.add_hline(3, 4, cmidruleoption='l{10pt}r{2pt}')
+# pdf.table.add_hline(5, 6)
+# pdf.table.add_hline(7, 8)
 pdf.addTableRow(row_subHeaders, last_row=True)
-
 # Table body
 for i, linelabel in enumerate(tableDF.index):
 
@@ -163,8 +167,8 @@ for i, linelabel in enumerate(tableDF.index):
             int_line = linesDF_i.loc[linelabel, 'obsInt'] * scaleTable
             int_err = linesDF_i.loc[linelabel, 'obsIntErr'] * scaleTable
 
-            row_data[2 + 2 * j] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(flux_line, flux_err)
-            row_data[2 + 2 * j + 1] = r'${:0.2f}\,\pm\,{:0.2f}$'.format(int_line, int_err)
+            row_data[2 + 2 * j] = r'${:0.0f}\,\pm\,{:0.0f}$'.format(flux_line, flux_err)
+            row_data[2 + 2 * j + 1] = r'${:0.0f}\,\pm\,{:0.0f}$'.format(int_line, int_err)
 
     lastRow_check = True if linelabel == tableDF.index[-1] else False
     pdf.addTableRow(row_data, last_row=lastRow_check)
@@ -179,13 +183,19 @@ for j, obj in enumerate(objSubList):
 
     results_dict = sr.loadConfData(results_file, group_variables=False)
     linesDF_i = dict_linesDF[obj]
-    cHbeta_tuple = results_dict['Initial_values']['cHbeta_BR_Hbeta_Hgamma_Hdelta']
+    cHbeta_label = obsData[obj]['cHbeta_label']
+    cHbeta = results_dict[f'Extinction_{cycle}'][cHbeta_label]
 
-    cHbeta = r'${}\,\pm\,{}$'.format(cHbeta_tuple[0], cHbeta_tuple[1])
-    eqw_Hbeta = r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}',
-                                        f'{linesDF_i.loc["H1_4861A", "eqw_err"]:0.2f}')
-    F_Hbeta = r'${}\,\pm\,{}$'.format(f'{linesDF_i.loc["H1_4861A", "intg_flux"] / normFlux:0.2f}',
-                                      f'{linesDF_i.loc["H1_4861A", "intg_err"] / normFlux:0.2f}')
+    lineLog_file_1 = objFolder / f'{obj}_{ext}_linesLog_it1.txt'
+    linesDF_1 = sr.lineslogFile_to_DF(lineLog_file_1)
+    eqw = linesDF_1.loc["H1_4861A", "eqw"]
+    eqw_err =linesDF_1.loc["H1_4861A", "eqw_err"]
+
+    cHbeta = r'${:0.2f}\,\pm\,{:0.2f}$'.format(cHbeta[0], cHbeta[1])
+    eqw_Hbeta = r'${}\,\pm\,{}$'.format(f'{eqw:0.0f}', f'{eqw_err:0.0f}')
+    F_Hbeta = r'${}$'.format(f'{linesDF_i.loc["H1_4861A", "intg_flux"] / normFlux:0.3f}')
+
+    print(linesDF_i.loc["H1_4861A", "intg_flux"], normFlux, linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux)
     # eqw_Hbeta = f'{linesDF_i.loc["H1_4861A", "eqw"]:0.2f}'
     # F_Hbeta = f'{linesDF_i.loc["H1_4861A", "intg_flux"]/normFlux:0.2f}'
 
@@ -196,6 +206,7 @@ for j, obj in enumerate(objSubList):
 pdf.addTableRow(cHbeta_row)
 pdf.addTableRow(eqwHbeta_row)
 pdf.addTableRow(FHbeta_row, last_row=True)
+pdf.table.add_hline()
 
 # Save the pdf table
 try:

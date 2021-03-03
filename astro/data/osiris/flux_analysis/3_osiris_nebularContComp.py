@@ -3,7 +3,7 @@ import numpy as np
 import pyneb as pn
 import src.specsiser as sr
 from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
-from src.specsiser.physical_model.chemical_model import TOIII_TSIII_relation
+from src.specsiser.physical_model.chemical_model import TOIII_from_TSIII_relation
 import matplotlib.pyplot as plt
 
 # Import the observation data

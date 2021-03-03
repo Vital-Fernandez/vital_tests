@@ -18,7 +18,7 @@ objParams = {}
 objParams['true_values'] = {'flux_hbeta': 5e-14,
                             'n_e': 150.0,
                             'T_low': 10000.0,
-                            'T_high': ss.TOIII_TSIII_relation(10000.0),
+                            'T_high': ss.TOIII_from_TSIII_relation(10000.0),
                             'tau': 0.60,
                             'cHbeta': 0.08,
                             'H1r': 0.0,

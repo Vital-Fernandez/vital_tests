@@ -48,7 +48,7 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i == 1:
+    if i == 2:
 
         # Declare input files
         objFolder = resultsFolder / f'{obj}'
@@ -70,44 +70,45 @@ for i, obj in enumerate(objList):
         # Load previous measurements to compare
         true_values = check_previous_measurements(obj, objParams['parameter_list'], results_dict, obsData)
 
-        # Declare extinction properties
-        objRed = sr.ExtinctionModel(Rv=objParams['R_v'],
-                                    red_curve=objParams['reddenig_curve'],
-                                    data_folder=objParams['external_data_folder'])
-        # Declare ion properties
-        objIons = sr.IonEmissivity(tempGrid=objParams['temp_grid'],
-                                   denGrid=objParams['den_grid'])
-
-        # Generate interpolator from the emissivity grids
-        ionDict = objIons.get_ions_dict(np.unique(objLinesDF.ion.values))
-        objIons.computeEmissivityGrids(objLinesDF, ionDict, combined_dict=combined_line_dict)
-
-        # Declare chemical model
-        objChem = sr.DirectMethod(linesDF=objLinesDF, highTempIons=objParams['high_temp_ions_list'])
-
-        # Declare region physical model
-        obj1_model = sr.SpectraSynthesizer()
-        obj1_model.define_region(objLinesDF, objIons, objRed, objChem)
-
-        # Replace the flamda values
-        idcs_lines = objLinesDF.index.isin(obj1_model.lineLabels)
-        flambda_new = objLinesDF.loc[idcs_lines, 'f_lambda']
-        # for i, lineLabel in enumerate(obj1_model.lineLabels):
-        #     quote = f'{lineLabel} ({lineLabel == objLinesDF.index.values[i]}): {obj1_model.lineFlambda[i]} {flambda_new[i]}'
-        #     print(quote)
-
-        obj1_model.lineFlambda = flambda_new
-
-        # Declare sampling properties
-        obj1_model.simulation_configuration(objParams['parameter_list'], prior_conf_dict=objParams)
-
-        # Declare simulation inference model
-        obj1_model.inference_model(include_Thigh_prior=objParams['T_high_check'])
-
-        # Run the simulation
-        obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
+        # # Declare extinction properties
+        # objRed = sr.ExtinctionModel(Rv=objParams['R_v'],
+        #                             red_curve=objParams['reddenig_curve'],
+        #                             data_folder=objParams['external_data_folder'])
+        # # Declare ion properties
+        # objIons = sr.IonEmissivity(tempGrid=objParams['temp_grid'],
+        #                            denGrid=objParams['den_grid'])
+        #
+        # # Generate interpolator from the emissivity grids
+        # ionDict = objIons.get_ions_dict(np.unique(objLinesDF.ion.values))
+        # objIons.computeEmissivityGrids(objLinesDF, ionDict, combined_dict=combined_line_dict)
+        #
+        # # Declare chemical model
+        # objChem = sr.DirectMethod(linesDF=objLinesDF, highTempIons=objParams['high_temp_ions_list'])
+        #
+        # # Declare region physical model
+        # obj1_model = sr.SpectraSynthesizer()
+        # obj1_model.define_region(objLinesDF, objIons, objRed, objChem)
+        #
+        # # Replace the flamda values
+        # idcs_lines = objLinesDF.index.isin(obj1_model.lineLabels)
+        # flambda_new = objLinesDF.loc[idcs_lines, 'f_lambda']
+        # # for i, lineLabel in enumerate(obj1_model.lineLabels):
+        # #     quote = f'{lineLabel} ({lineLabel == objLinesDF.index.values[i]}): {obj1_model.lineFlambda[i]} {flambda_new[i]}'
+        # #     print(quote)
+        #
+        # obj1_model.lineFlambda = flambda_new
+        #
+        # # Declare sampling properties
+        # obj1_model.simulation_configuration(objParams['parameter_list'], prior_conf_dict=objParams)
+        #
+        # # Declare simulation inference model
+        # obj1_model.inference_model(include_Thigh_prior=objParams['T_high_check'])
+        #
+        # # Run the simulation
+        # obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
 
         # Plot the results
+        obj1_model = sr.SpectraSynthesizer()
         fit_results = sr.load_MC_fitting(outputDb)
 
         print('-- Model parameters table')
@@ -121,13 +122,13 @@ for i, obj in enumerate(objList):
         print('-- Model parameters posterior diagram')
         figure_file = objFolder / f'{obj}_ParamsPosteriors.png'
         obj1_model.tracesPosteriorPlot(figure_file, fit_results, true_values=true_values)
-
-        print('-- Line flux posteriors')
-        figure_file = objFolder / f'{obj}_lineFluxPosteriors.png'
-        obj1_model.fluxes_distribution(figure_file, fit_results)
-
-        print('-- Model parameters corner diagram')
-        figure_file = objFolder / f'{obj}_cornerPlot.png'
-        obj1_model.corner_plot(figure_file, fit_results, true_values=true_values)
+        #
+        # print('-- Line flux posteriors')
+        # figure_file = objFolder / f'{obj}_lineFluxPosteriors.png'
+        # obj1_model.fluxes_distribution(figure_file, fit_results)
+        #
+        # print('-- Model parameters corner diagram')
+        # figure_file = objFolder / f'{obj}_cornerPlot.png'
+        # obj1_model.corner_plot(figure_file, fit_results, true_values=true_values)
 
 

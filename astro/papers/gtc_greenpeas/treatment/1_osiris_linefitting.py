@@ -49,33 +49,33 @@ for i, obj in enumerate(objList):
     lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
     lm.plot_spectrum_components()
 
-    # # # Fit and check the regions
-    # obsLines = maskDF.index.values
-    # for j, lineLabel in enumerate(obsLines):
-    #
-    #     print(f'-- {lineLabel}:')
-    #     wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
-    #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData[f'{obj}_line_fitting'])
-    #     # lm.print_results(show_fit_report=True, show_plot=True)
-    #
-    #     if lm.blended_check:
-    #         plotFile = f'{obj}_{ext}_deblend_{lineLabel}_{cycle}.png'
-    #         lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
-    #
-    # # Save the lines log
-    # lm.save_lineslog(lm.linesDF, lineLog_file)
-    #
-    # # Plot the single lines:
-    # idcs_unblended = ~lm.linesDF.index.str.contains('_b')
-    # lm.plot_line_grid(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=lineGrid_file)
-    #
-    # # Lines to store in tables
-    # idcs_lines = ~lm.linesDF.index.str.contains('_b')
-    # linesLogOutput_df = lm.linesDF.loc[idcs_lines]
-    #
-    # # Reddening correction for flux tables
-    # cHbeta, rc_pyneb = red_corr_HalphaHbeta_ratio(linesLogOutput_df, 0.0)
-    #
-    # # Table for the output data
-    # print(f'- Printing results tables')
-    # lm.table_fluxes(linesLogOutput_df, lineTable_file, rc_pyneb)
+    # # Fit and check the regions
+    obsLines = maskDF.index.values
+    for j, lineLabel in enumerate(obsLines):
+
+        print(f'-- {lineLabel}:')
+        wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
+        lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData[f'{obj}_line_fitting'])
+        # lm.print_results(show_fit_report=True, show_plot=True)
+
+        if lm.blended_check:
+            plotFile = f'{obj}_{ext}_deblend_{lineLabel}_{cycle}.png'
+            lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
+
+    # Save the lines log
+    lm.save_lineslog(lm.linesDF, lineLog_file)
+
+    # Plot the single lines:
+    idcs_unblended = ~lm.linesDF.index.str.contains('_b')
+    lm.plot_line_grid(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=lineGrid_file)
+
+    # Lines to store in tables
+    idcs_lines = ~lm.linesDF.index.str.contains('_b')
+    linesLogOutput_df = lm.linesDF.loc[idcs_lines]
+
+    # Reddening correction for flux tables
+    cHbeta, rc_pyneb = red_corr_HalphaHbeta_ratio(linesLogOutput_df, 0.0)
+
+    # Table for the output data
+    print(f'- Printing results tables')
+    lm.table_fluxes(linesLogOutput_df, lineTable_file, rc_pyneb)

@@ -48,7 +48,7 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i < 3:
+    if i == 0:
 
         # Declare input files
         print(f'- Treating object ({i}): {obj}')
@@ -89,44 +89,46 @@ for i, obj in enumerate(objList):
 
         # Declare region physical model
         obj1_model = sr.SpectraSynthesizer()
-        obj1_model.define_region(objLinesDF, objIons, objRed, objChem)
-
-        # Replace the flamda values
-        idcs_lines = objLinesDF.index.isin(obj1_model.lineLabels)
-        flambda_new = objLinesDF.loc[idcs_lines, 'f_lambda']
-        obj1_model.lineFlambda = flambda_new
-
-        # Declare sampling properties
-        obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
-                                            prior_conf_dict=objParams['priors_configuration'],
-                                            photo_ionization_grid=False)
-
-        # Declare simulation inference model
-        obj1_model.inference_model(fit_T_low=False)
-
-        # Run the simulation
-        obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
+        # obj1_model.define_region(objLinesDF, objIons, objRed, objChem)
+        #
+        # # Replace the flamda values
+        # idcs_lines = objLinesDF.index.isin(obj1_model.lineLabels)
+        # flambda_new = objLinesDF.loc[idcs_lines, 'f_lambda']
+        # obj1_model.lineFlambda = flambda_new
+        #
+        # # Declare sampling properties
+        # obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
+        #                                     prior_conf_dict=objParams['priors_configuration'],
+        #                                     photo_ionization_grid=False)
+        #
+        # # Declare simulation inference model
+        # obj1_model.inference_model(fit_T_low=False)
+        #
+        # # Run the simulation
+        # obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
 
         # Plot the results
         fit_results = sr.load_MC_fitting(outputDb)
 
-        print('-- Model parameters table')
-        figure_file = objFolder/f'{obj}_MeanOutputs'
-        obj1_model.table_mean_outputs(figure_file, fit_results, true_values=true_values)
-
-        print('-- Flux values table')
-        figure_file = objFolder/f'{obj}_FluxComparison'
-        obj1_model.table_line_fluxes(figure_file, fit_results, combined_dict=combined_line_dict)
+        # print('-- Model parameters table')
+        # figure_file = objFolder/f'{obj}_MeanOutputs'
+        # obj1_model.table_mean_outputs(figure_file, fit_results, true_values=true_values)
+        #
+        # print('-- Flux values table')
+        # figure_file = objFolder/f'{obj}_FluxComparison'
+        # obj1_model.table_line_fluxes(figure_file, fit_results, combined_dict=combined_line_dict)
 
         print('-- Model parameters posterior diagram')
         figure_file = objFolder/f'{obj}_ParamsPosteriors.png'
-        obj1_model.tracesPosteriorPlot(figure_file, fit_results, true_values=true_values)
+        fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 8}
+        obj1_model.tracesPosteriorPlot(None, fit_results, true_values=None)
 
-        print('-- Line flux posteriors')
-        figure_file = objFolder/f'{obj}_lineFluxPosteriors.png'
-        obj1_model.fluxes_distribution(figure_file, fit_results, combined_dict=combined_line_dict)
+        # print('-- Line flux posteriors')
+        # fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 10, 'axes.labelsize': 10}
+        # obj1_model.fluxes_distribution(None, fit_results, n_columns=3, combined_dict=combined_line_dict,
+        #                                plot_conf=fig_conf)
 
-        print('-- Model parameters corner diagram')
-        figure_file = objFolder/f'{obj}_cornerPlot.png'
-        obj1_model.corner_plot(figure_file, fit_results, true_values=true_values)
-        obj1_model.savefig(figure_file, resolution=200)
+        # print('-- Model parameters corner diagram')
+        # figure_file = objFolder/f'{obj}_cornerPlot.png'
+        # obj1_model.corner_plot(figure_file, fit_results, true_values=true_values)
+        # obj1_model.savefig(figure_file, resolution=200)

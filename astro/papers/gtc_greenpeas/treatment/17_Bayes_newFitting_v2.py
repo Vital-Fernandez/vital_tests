@@ -34,6 +34,8 @@ for i, obj in enumerate(objList):
         # Load data
         objParams = sr.loadConfData(simConf, group_variables=False)
         results_dict = sr.loadConfData(results_file, group_variables=False)
+
+        # linesAnalysis = ['O2_3726A_m', 'He1_4471A', 'He1_5876A', 'He2_4686A']
         objLinesDF = sr.import_emission_line_data(lineLog_file, include_lines=objParams[obj]['input_lines'])
         fit_results_dict = sr.loadConfData(fitResults_file, group_variables=False)
 
@@ -65,11 +67,10 @@ for i, obj in enumerate(objList):
         # Declare sampling properties
         obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
                                             prior_conf_dict=objParams['priors_configuration'],
-
                                             photo_ionization_grid=True)
 
         # Declare simulation inference model
-        obj1_model.inference_photoionization(OH=OH, cHbeta=cHbeta[0])
+        obj1_model.inference_photoionization(OH=OH, cHbeta=cHbeta[0], OH_err=OH_err)
 
         print(f'- Fitting: {obj}, at OH = {OH}, cHbeta = {cHbeta[0]}')
 

@@ -17,7 +17,9 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i == 2:
+    if i == 0:
+
+        print(f'Treating object {obj}')
 
         # Declare input files
         objFolder = resultsFolder / f'{obj}'

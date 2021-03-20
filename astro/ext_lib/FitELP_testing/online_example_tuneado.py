@@ -19,7 +19,7 @@ constants.DATA_FILES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 
 # Set up example region to simultaneously fit multiple emission lines
 example_object = RegionParameters(region_name='example-object',
-                                blue_spec_file='exampleB.fc.fits', #fits file path of the blue spectrum
+                                  blue_spec_file='exampleB.fc.fits', #fits file path of the blue spectrum
                                   red_spec_file='exampleR.fc.fits', #fits file path of the red spectrum
                                   blue_spec_error_file='exampleB_ErrorFlux.fc.fits', #fits file path of the blue spectrum error
                                   red_spec_error_file='exampleR_ErrorFlux.fc.fits', #fits file path of the red spectrum error

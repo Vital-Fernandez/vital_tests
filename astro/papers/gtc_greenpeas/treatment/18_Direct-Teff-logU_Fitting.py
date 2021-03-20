@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 import src.specsiser as sr
+from astro.papers.gtc_greenpeas.common_methods import check_previous_measurements
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
@@ -17,9 +18,10 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i == 2:
+    if i == 1:
 
         # Declare input files
+        print(f'- Treating object ({i}): {obj}')
         objFolder = resultsFolder / f'{obj}'
         fits_file = dataFolder / f'{obj}_{ext}.fits'
         results_file = objFolder / f'{obj}_{ext}_measurements.txt'
@@ -28,8 +30,8 @@ for i, obj in enumerate(objList):
         simConf = dataFolder / f'{obj}_config.txt'
 
         # Declare output files
-        outputDb = objFolder / f'{obj}_{ext}_pI_fitting_{cycle}.db'
-        outputTxt = objFolder / f'{obj}_{ext}_pI_fitting_{cycle}.txt'
+        outputDb = objFolder / f'{obj}_{ext}_Direct-Teff-logU_{cycle}.db'
+        outputTxt = objFolder / f'{obj}_{ext}_Direct-Teff-logU_{cycle}.txt'
 
         # Load data
         objParams = sr.loadConfData(simConf, group_variables=False)
@@ -37,14 +39,9 @@ for i, obj in enumerate(objList):
         objLinesDF = sr.import_emission_line_data(lineLog_file, include_lines=objParams[obj]['input_lines'])
         fit_results_dict = sr.loadConfData(fitResults_file, group_variables=False)
 
-        abund_dict = fit_results_dict['Fitting_results']
-        O2_abund = np.power(10, abund_dict['O2'] - 12)
-        O3_abund = np.power(10, abund_dict['O3'] - 12)
-
-        OH = np.log10(O2_abund[0] + O3_abund[0]) + 12
-        OH_err = np.log10(np.sqrt(O2_abund[1] ** 2.0 + O3_abund[1] ** 2.0)) + 12
-
-        cHbeta = fit_results_dict['Fitting_results']['cHbeta']
+        # Load previous measurements to compare
+        true_values = check_previous_measurements(obj, objParams['inference_model_configuration']['parameter_list'],
+                                                  results_dict, obsData)
 
         # Declare sampler
         obj1_model = sr.SpectraSynthesizer()
@@ -54,8 +51,20 @@ for i, obj in enumerate(objList):
                                     red_curve=objParams['simulation_properties']['reddenig_curve'],
                                     data_folder=objParams['data_location']['external_data_folder'])
 
+        # Declare ion properties
+        objIons = sr.IonEmissivity(tempGrid=objParams['simulation_properties']['temp_grid'],
+                                   denGrid=objParams['simulation_properties']['den_grid'])
+
+        # Generate interpolator from the emissivity grids
+        ionDict = objIons.get_ions_dict(np.unique(objLinesDF.ion.values))
+        objIons.computeEmissivityGrids(objLinesDF, ionDict, combined_dict=combined_line_dict)
+
+        # Declare chemical model
+        objChem = sr.DirectMethod(linesDF=objLinesDF, highTempIons=objParams['simulation_properties']['high_temp_ions_list'])
+
         # Declare region physical model
-        obj1_model.define_region(objLinesDF, extinction_model=objRed)
+        obj1_model = sr.SpectraSynthesizer()
+        obj1_model.define_region(objLinesDF, objIons, objRed, objChem)
 
         # Replace the flamda values
         idcs_lines = objLinesDF.index.isin(obj1_model.lineLabels)
@@ -65,13 +74,10 @@ for i, obj in enumerate(objList):
         # Declare sampling properties
         obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
                                             prior_conf_dict=objParams['priors_configuration'],
-
                                             photo_ionization_grid=True)
 
         # Declare simulation inference model
-        obj1_model.inference_photoionization(OH=OH, cHbeta=cHbeta[0])
-
-        print(f'- Fitting: {obj}, at OH = {OH}, cHbeta = {cHbeta[0]}')
+        obj1_model.inference_model(fit_T_low=False)
 
         # Run the simulation
         obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
@@ -80,23 +86,22 @@ for i, obj in enumerate(objList):
         fit_results = sr.load_MC_fitting(outputDb)
 
         print('-- Model parameters table')
-        figure_file = objFolder / f'{obj}_pI_fitting_MeanOutputs'
+        figure_file = objFolder / f'{obj}_Direct-Teff-logU_MeanOutputs'
         obj1_model.table_mean_outputs(figure_file, fit_results)
 
         print('-- Model parameters posterior diagram')
-        figure_file = objFolder / f'{obj}_pI_fitting_ParamsPosteriors.png'
+        figure_file = objFolder / f'{obj}_Direct-Teff-logU_ParamsPosteriors.png'
         obj1_model.tracesPosteriorPlot(figure_file, fit_results)
 
         print('-- Model parameters corner diagram')
-        figure_file = objFolder / f'{obj}_pI_fitting_cornerPlot.png'
+        figure_file = objFolder / f'{obj}_Direct-Teff-logU_cornerPlot.png'
         obj1_model.corner_plot(figure_file, fit_results)
 
         print('-- Model emission flux posteriors')
-        figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors.png'
-        obj1_model.fluxes_photoIonization_distribution(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
-                                                                                'S2_6716A_m': 'S2_6716A-S2_6731A'})
+        figure_file = objFolder/f'{obj}_Direct-Teff-logU_EmFluxPosteriors.png'
+        obj1_model.fluxes_distribution(figure_file, fit_results, combined_dict=combined_line_dict)
 
         print('-- Model emission flux table')
-        figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors'
+        figure_file = objFolder/f'{obj}_Direct-Teff-logU_PhotoFluxPosteriors'
         obj1_model.table_line_fluxes_photoIoniz(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
                                                                                 'S2_6716A_m': 'S2_6716A-S2_6731A'})

@@ -5,8 +5,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="spectra-synthesizer" />
-    <orderEntry type="module" module-name="spectra-synthesizer-maybe" />
-    <orderEntry type="module" module-name="spectra-synthesizer-maybe" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="pytest" />

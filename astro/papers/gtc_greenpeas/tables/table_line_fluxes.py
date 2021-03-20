@@ -83,21 +83,21 @@ for i, obj in enumerate(objList[:3]):
 
     # # Save individual object tables
     idcs_obs = ~linesDF.index.str.contains('_b')
-    table_fluxes(linesDF.loc[idcs_obs].index,
-                 linesDF.loc[idcs_obs].f_lambda,
-                 linesDF.loc[idcs_obs].obsFlux,
-                 linesDF.loc[idcs_obs].obsFluxErr,
-                 linesDF.loc[idcs_obs].obsInt,
-                 linesDF.loc[idcs_obs].obsIntErr,
-                 cHbeta[0],
-                 cHbeta[1],
-                 ref_label='H1_4861A',
-                 ref_flux=linesDF.loc['H1_4861A'].intg_flux,
-                 ref_err=linesDF.loc['H1_4861A'].intg_err,
-                 output_address=tables_prefix)
-
-    # Save the lines log
-    sr.save_lineslog(linesDF, lineLog_file)
+    # table_fluxes(linesDF.loc[idcs_obs].index,
+    #              linesDF.loc[idcs_obs].f_lambda,
+    #              linesDF.loc[idcs_obs].obsFlux,
+    #              linesDF.loc[idcs_obs].obsFluxErr,
+    #              linesDF.loc[idcs_obs].obsInt,
+    #              linesDF.loc[idcs_obs].obsIntErr,
+    #              cHbeta[0],
+    #              cHbeta[1],
+    #              ref_label='H1_4861A',
+    #              ref_flux=linesDF.loc['H1_4861A'].intg_flux,
+    #              ref_err=linesDF.loc['H1_4861A'].intg_err,
+    #              output_address=tables_prefix)
+    #
+    # # Save the lines log
+    # sr.save_lineslog(linesDF, lineLog_file)
 
     # Add DF to dict
     dict_linesDF[obj] = linesDF.loc[idcs_obs]
@@ -135,9 +135,8 @@ row_subHeaders = ['Line label', r'$f_{\lambda}$',
                   r'$F(\lambda)$', r'$I(\lambda)$']
 
 # Table heading
-print(f'-- Saving table at: {pdfTableFile}')
 pdf = PdfPrinter()
-pdf.create_pdfDoc(pdfTableFile, pdf_type='table')
+pdf.create_pdfDoc(pdf_type=None)
 pdf.pdf_insert_table(row_headers, table_format=table_header_format, addfinalLine=False)
 # pdf.table.add_hline(3, 4, cmidruleoption='l{10pt}r{2pt}')
 # pdf.table.add_hline(5, 6)
@@ -206,10 +205,10 @@ for j, obj in enumerate(objSubList):
 pdf.addTableRow(cHbeta_row)
 pdf.addTableRow(eqwHbeta_row)
 pdf.addTableRow(FHbeta_row, last_row=True)
-pdf.table.add_hline()
 
 # Save the pdf table
+print(f'-- Saving table at: {pdfTableFile}')
 try:
-    pdf.generate_pdf(clean_tex=False)
+    pdf.generate_pdf(pdfTableFile, clean_tex=False)
 except:
     print('-- PDF compilation failure')

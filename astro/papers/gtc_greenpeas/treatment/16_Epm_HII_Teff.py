@@ -42,7 +42,7 @@ lineInterpolator_dict = gridInterpolatorFunction(gridLineDict,
                                                  gridAxDict['Teff'],
                                                  gridAxDict['OH'],
                                                  interp_type='cube')
-MC_n = 1000
+MC_n = 2000
 
 # Analyse the spectrum
 grid_file_list = ['C17_bb_Teff_30-90_pp.dat', 'C17_bb_Teff_30-90_sph.dat']

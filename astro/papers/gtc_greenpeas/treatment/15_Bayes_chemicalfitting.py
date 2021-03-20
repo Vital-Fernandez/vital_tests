@@ -1,37 +1,7 @@
 import numpy as np
 from pathlib import Path
 import src.specsiser as sr
-
-
-def check_previous_measurements(objName, parameter_list, measurements_dict, cfg_dict):
-
-    output_dict = {}
-
-    # Chemical abundances
-    for param in parameter_list:
-        if param in measurements_dict['it3_ionic_Abundances']:
-            output_dict[param] = measurements_dict['it3_ionic_Abundances'][param]
-
-    if 'O2_3726A_m' in measurements_dict['it3_ionic_Abundances']:
-        output_dict['O2'] = measurements_dict['it3_ionic_Abundances']['O2_3726A_m']
-
-    conversion_dict = {'He1': 'He1r', 'He2': 'He2r'}
-    for fit_label, measure_label in conversion_dict.items():
-        if measure_label in measurements_dict['it3_ionic_Abundances']:
-                output_dict[fit_label] = measurements_dict['it3_ionic_Abundances'][measure_label]
-
-    # Extinction
-    cHbeta_key = cfg_dict[objName]['cHbeta_label']
-    output_dict['cHbeta'] = measurements_dict['Extinction_it3'][cHbeta_key]
-
-    # Electron parameters
-    conversion_dict = {'n_e': 'ne', 'T_low': 'Te_low', 'T_high': 'Te_high'}
-    for fit_label, measure_label in conversion_dict.items():
-        if measure_label in measurements_dict['it3_electron_parameters']:
-            output_dict[fit_label] = measurements_dict['it3_electron_parameters'][measure_label]
-
-    return output_dict
-
+from astro.papers.gtc_greenpeas.common_methods import check_previous_measurements
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)

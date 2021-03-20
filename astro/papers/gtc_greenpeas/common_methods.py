@@ -251,7 +251,7 @@ def table_fluxes(lineLabels, f_lambda, flux, flux_err, inten, inten_err, cHbeta,
 
     # Measure line fluxes
     pdf = PdfPrinter()
-    pdf.create_pdfDoc(pdf_address, pdf_type='table')
+    pdf.create_pdfDoc(pdf_type='table')
     pdf.pdf_insert_table(FLUX_TEX_TABLE_HEADERS)
 
     # Dataframe as container as a txt file
@@ -296,7 +296,7 @@ def table_fluxes(lineLabels, f_lambda, flux, flux_err, inten, inten_err, cHbeta,
 
     # Save the pdf table
     try:
-        pdf.generate_pdf(clean_tex=True)
+        pdf.generate_pdf(pdf_address, clean_tex=True)
     except:
         print('-- PDF compilation failure')
 
@@ -1184,3 +1184,33 @@ def reading_epm_grids():
             grid_dict[lineLabel][:, :, j] = lineMatrix[:, :]
 
     return grid_dict, grid_axes
+
+
+def check_previous_measurements(objName, parameter_list, measurements_dict, cfg_dict):
+
+    output_dict = {}
+
+    # Chemical abundances
+    for param in parameter_list:
+        if param in measurements_dict['it3_ionic_Abundances']:
+            output_dict[param] = measurements_dict['it3_ionic_Abundances'][param]
+
+    if 'O2_3726A_m' in measurements_dict['it3_ionic_Abundances']:
+        output_dict['O2'] = measurements_dict['it3_ionic_Abundances']['O2_3726A_m']
+
+    conversion_dict = {'He1': 'He1r', 'He2': 'He2r'}
+    for fit_label, measure_label in conversion_dict.items():
+        if measure_label in measurements_dict['it3_ionic_Abundances']:
+                output_dict[fit_label] = measurements_dict['it3_ionic_Abundances'][measure_label]
+
+    # Extinction
+    cHbeta_key = cfg_dict[objName]['cHbeta_label']
+    output_dict['cHbeta'] = measurements_dict['Extinction_it3'][cHbeta_key]
+
+    # Electron parameters
+    conversion_dict = {'n_e': 'ne', 'T_low': 'Te_low', 'T_high': 'Te_high'}
+    for fit_label, measure_label in conversion_dict.items():
+        if measure_label in measurements_dict['it3_electron_parameters']:
+            output_dict[fit_label] = measurements_dict['it3_electron_parameters'][measure_label]
+
+    return output_dict

@@ -16,11 +16,35 @@ rcParams.update(size_dict)
 
 fig, ax = plt.subplots()
 ax.scatter(np.log10(basesDF.age.values), basesDF.Z.values)
+
+ages = np.log10(np.unique(basesDF.age.values))
+idcs_age = (ages > 0) & (ages < 6)
+subAgeGroup = ages[idcs_age]
+print(f' {subAgeGroup.size} steps with mean step size: {np.mean(np.diff(subAgeGroup)):.2f}')
+
+ages = np.log10(np.unique(basesDF.age.values))
+idcs_age = (ages >= 6) & (ages < 7)
+subAgeGroup = ages[idcs_age]
+print(f' {subAgeGroup.size} steps with mean step size: {np.mean(np.diff(subAgeGroup)):.2f}')
+
+ages = np.log10(np.unique(basesDF.age.values))
+idcs_age = (ages >= 7) & (ages < 8)
+subAgeGroup = ages[idcs_age]
+print(f' {subAgeGroup.size} steps with mean step size: {np.mean(np.diff(subAgeGroup)):.2f}')
+
+ages = np.log10(np.unique(basesDF.age.values))
+idcs_age = (ages >= 6)
+subAgeGroup = ages[idcs_age]
+print(f' {subAgeGroup.size} steps with mean step size: {np.mean(np.diff(subAgeGroup)):.2f}')
+
 ax.update({'xlabel': 'log(Age) (yr)',
            'ylabel': r'Metallicity $(Z_\star)$',
            'title': f'{basesDF.index.size} SSPs Bruzual & Charlot 2003 library'})
 plt.tight_layout()
 plt.show()
+ages = np.unique(basesDF.age.values)
+
+ages = np.unique(basesDF.age.values)
 
 # # Plot the results
 # fig, ax = plt.subplots()

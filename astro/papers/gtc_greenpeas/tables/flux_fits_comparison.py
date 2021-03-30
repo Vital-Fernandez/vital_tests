@@ -37,8 +37,8 @@ for i, obj in enumerate(objList):
 
         measurements_dict = sr.loadConfData(results_file, group_variables=False)
         objLinesDF = sr.import_emission_line_data(lineLog_file)
-        fit_results = sr.load_MC_fitting(outputDb)
         pI_results = sr.load_MC_fitting(outputPiDb)
+        fit_results = sr.load_MC_fitting(outputDb)
         bayes_plus_PI_results = sr.load_MC_fitting(outputDirectHIIchemDb)
 
         # Recover Direct method Bayesian fitting
@@ -152,3 +152,5 @@ for i, obj in enumerate(objList):
 
         table_file = tables_folder/f'{obj}_lineFlux_fit_comparison'
         pdf.generate_pdf(table_file, clean_tex=True)
+
+

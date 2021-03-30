@@ -44,10 +44,11 @@ for i, obj in enumerate(objList):
     wave, flux_array, header = sr.import_fits_data(fits_file, instrument='OSIRIS')
     flux = flux_array[idx_band][0] if ext in ('_B', '_R') else flux_array
     maskDF = pd.read_csv(objMask, delim_whitespace=True, header=0, index_col=0)
+    print('EXPTIME', header['EXPTIME'])
 
     # Create line measurer object
-    lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
-    lm.plot_spectrum_components()
+    # lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
+    # lm.plot_spectrum_components()
 
     # # # Fit and check the regions
     # obsLines = maskDF.index.values

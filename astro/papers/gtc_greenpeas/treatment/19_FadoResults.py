@@ -68,7 +68,7 @@ cycle = 'it3'
 #         sr.parseConfDict(results_file, fado_measurements, section_label, clear_section=True)
 
 
-papaderos_fittings_folder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/Papaderos_Full/6March2021/BCall_z03')
+papaderos_fittings_folder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/Papaderos_Full/6March2021/BCall_z03')
 
 params_per_ext = {'1D': ['ARQ_BASE', 'ARQ_CONF', 'CHI2_VAL', 'CHI2_RED', 'NUMPARAM', 'NUM_BASE'],
                   'EL': ['NE_LINES', 'N_PARAMS', 'LAMBDA_0', 'GALSNORM', 'TELECTRO', 'DELECTRO'],

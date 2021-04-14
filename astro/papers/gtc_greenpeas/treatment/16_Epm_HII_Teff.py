@@ -20,7 +20,8 @@ RV = obsData['sample_data']['RV']
 ext = 'BR'
 cycle = 'it3'
 
-HCm_folder = 'D:/Dropbox/Astrophysics/Tools/HCm-Teff_v5.01/'
+HCm_folder = '/home/vital/Dropbox/Astrophysics/Tools/HCm-Teff_v5.01/'
+# HCm_folder = 'D:/Dropbox/Astrophysics/Tools/HCm-Teff_v5.01/'
 # grid_file = 'C17_bb_Teff_30-90_pp.dat'
 
 conversion_dict = dict(O2_3726A_m='OII_3727',

@@ -58,9 +58,7 @@ for i, obj in enumerate(objList):
         # Confirm temperature and density diagnostics
         obj_model_conf = obsData[f'{obj}_chemical_model']
         obj_lines_conf = obsData[f'{obj}_line_fitting']
-        cm.electron_diagnostics(int_dict,
-                                neSII_limit_check=obj_model_conf['nSII_lowerDist_check'],
-                                Thigh_diag=obj_model_conf['Te_high_diag'])
+        cm.electron_diagnostics(int_dict, neSII_limit_check=obj_model_conf['nSII_lowerDist_check'], Thigh_diag=obj_model_conf['Te_high_diag'])
 
         # Compute ionic abundances
         cm.ionic_abundances(int_dict, obj_lines_conf, obj_model_conf)

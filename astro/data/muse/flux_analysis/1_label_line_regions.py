@@ -6,77 +6,119 @@ from matplotlib import pyplot as plt, rcParams
 from astropy.wcs import WCS
 from src.specsiser.print.plot import STANDARD_PLOT
 from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, image_array_binning
-
+from astropy.io import fits
 
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
-objList = obsData['sample_data']['object_list']
-fileList = obsData['sample_data']['file_list']
-dataFolder = Path(obsData['sample_data']['data_folder'])
-resultsFolder = Path(obsData['sample_data']['results_folder'])
+objList = obsData['data_location']['object_list']
+fileList = obsData['data_location']['file_list']
+fitsFolder = Path(obsData['data_location']['fits_folder'])
+dataFolder = Path(obsData['data_location']['data_folder'])
+resultsFolder = Path(obsData['data_location']['results_folder'])
+coordinates_keys_list = obsData['data_location']['wcs_key_list']
+
 z_objs = obsData['sample_data']['z_array']
 pertil_array = obsData['sample_data']['percentil_array']
+
+# Plot set up
+labelsDict = {'xlabel': r'RA',
+              'ylabel': r'DEC'}
+defaultConf = STANDARD_PLOT.copy()
+defaultConf.update(labelsDict)
+rcParams.update({})
+
 
 for i, obj in enumerate(objList):
 
     # Data location
-    cube_address_i = dataFolder/fileList[i]
+    cube_address_i = fitsFolder/fileList[i]
     objFolder = resultsFolder/obj
-    db_addresss = objFolder/f'{obj}_database.txt'
+    db_addresss = objFolder/f'{obj}_database.fits'
 
     # Load data
     wave, cube, header = sr.import_fits_data(cube_address_i, instrument='MUSE')
     wave = wave / (1 + z_objs[i])
-    obj_db = pd.read_csv(db_addresss, delim_whitespace=True, header=0, index_col=0)
     print(f'\n- {obj}: Cube dimensions {cube.shape}')
 
-    # Get line region data
-    lineFlux_dict, levelFlux_dict, levelText_dict = compute_line_flux_image(lineAreas,
-                                                                            cube,
-                                                                            z_objs[i],
-                                                                            percent_array=pertil_array)
+    # Create empty fits file
+    new_hdul = fits.HDUList()
+    new_hdul.append(fits.PrimaryHDU())
 
-    # Plot the line flux maps
+    # Second page for the fits file plot configuration
+    col_waves = fits.Column(name='wave', array=wave, format='1E')
+    hdu_table = fits.BinTableHDU.from_columns([col_waves], name='PlotConf')
+    new_hdul.append(hdu_table)
+    for key in coordinates_keys_list:
+        new_hdul[1].header[key] = cube.data_header[key]
+    new_hdul[1].header['NPIXWAVE'] = cube.data_header['NAXIS3']
+
+    # Create flux maps for the main lines:
     for lineLabel, lineLimits in lineAreas.items():
 
-        lineFlux_i = lineFlux_dict[lineLabel]
-        levelFlux_i = levelFlux_dict[lineLabel]
-        levelText_i = levelText_dict[lineLabel]
-        flux_bin_i = image_array_binning(lineFlux_i, pertil_array)
+        # Extract cube slice using mpdaf defult tools.
+        # This requires the input wavelengths to be on the same scale as in the cube
+        line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)
+        flux_image = line_image.data.data
 
-        # Save the data to the database
-        obj_db[f'B_{lineLabel}'] = lineFlux_i.flatten()
-        obj_db[f'B_{lineLabel}_bin'] = flux_bin_i.flatten()
+        # Personal scale for the image flux
+        log_flux = np.log10(flux_image)
+        flux_contours = np.zeros(flux_image.shape)
+        idcs_removed = np.logical_or(log_flux < 0.0, np.isnan(log_flux))
+        flux_contours[~idcs_removed] = log_flux[~idcs_removed]
 
-        # Plot line image map with coordinates
-        labelsDict = {'xlabel': r'RA',
-                      'ylabel': r'DEC',
-                      'title': r'Galaxy {} {}'.format(obj, lineLabel)}
+        # Store fluxes and contours
+        new_hdul.append(fits.ImageHDU(name=f'{lineLabel}_flux', data=flux_image, ver=1))
+        new_hdul.append(fits.ImageHDU(name=f'{lineLabel}_contour', data=flux_contours, ver=1))
 
-        # Plot Configuration
-        defaultConf = STANDARD_PLOT.copy()
-        defaultConf.update(labelsDict)
-        rcParams.update({})
+        # Define image countours based on the flux percentiles
+        levelFlux_i = np.percentile(flux_contours[flux_contours > 0], pertil_array)
+        levels_text_i = ['None'] * len(levelFlux_i)
+        for idx, per in enumerate(pertil_array):
+            levels_text_i[idx] = f'{levelFlux_i[idx]:.2f} $P_{{{per}}}$ $log(F_{{\lambda}})$'
 
-        # Selecting plotting value pixels
-        frame_size = lineFlux_i.shape
-        x, y = np.arange(0, frame_size[1]), np.arange(0, frame_size[0])
-        X, Y = np.meshgrid(x, y)
-
+        # Plot the image:
         fig = plt.figure(figsize=(12, 8))
         ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
 
-        CS3 = ax.contourf(X, Y, lineFlux_i, levels=levelFlux_i)
+        frame_size = flux_image.shape
+        x, y = np.arange(0, frame_size[1]), np.arange(0, frame_size[0])
+        X, Y = np.meshgrid(x, y)
+
+        CS3 = ax.contourf(X, Y, flux_contours, levels=levelFlux_i)
         cbar = fig.colorbar(CS3)
-        cbar.ax.set_yticklabels(levelText_i)
+        cbar.ax.set_yticklabels(levels_text_i)
         ax.set_facecolor('black')
         ax.update(labelsDict)
+        ax.set_title(f'Galaxy {obj} {lineLabel}')
         imageName = f'{obj}_{lineLabel}_contours.png'
         plt.savefig(objFolder/imageName, bbox_inches='tight')
-        # plt.show()
 
-    # # Save the dataframe
-    # with open(db_addresss, 'wb') as output_db:
-    #     string_DF = obj_db.to_string()
-    #     output_db.write(string_DF.encode('UTF-8'))
+    # Store the drive
+    new_hdul.writeto(db_addresss, overwrite=True)
 
+    # hdr = fits.getheader(db_addresss, extname='PlotConf')
+    # for lineLabel, lineLimits in lineAreas.items():
+    #     flux_image = fits.getdata(db_addresss, f'{lineLabel}_flux', ver=1)
+    #     flux_contours = fits.getdata(db_addresss, f'{lineLabel}_contour', ver=1)
+    #
+    #     # Define image countours based on the flux percentiles
+    #     levelFlux_i = np.percentile(flux_contours[flux_contours > 0], pertil_array)
+    #     levels_text_i = ['None'] * len(levelFlux_i)
+    #     for idx, per in enumerate(pertil_array):
+    #         levels_text_i[idx] = f'{levelFlux_i[idx]:.2f} $P_{{{per}}}$ $log(F_{{\lambda}})$'
+    #
+    #     # Plot the image:
+    #     fig = plt.figure(figsize=(12, 8))
+    #     ax = fig.add_subplot(projection=WCS(hdr), slices=('x', 'y', 1))
+    #
+    #     frame_size = flux_image.shape
+    #     x, y = np.arange(0, frame_size[1]), np.arange(0, frame_size[0])
+    #     X, Y = np.meshgrid(x, y)
+    #
+    #     CS3 = ax.contourf(X, Y, flux_contours, levels=levelFlux_i)
+    #     cbar = fig.colorbar(CS3)
+    #     cbar.ax.set_yticklabels(levels_text_i)
+    #     ax.set_facecolor('black')
+    #     ax.update(labelsDict)
+    #     ax.set_title(f'Galaxy {obj} {lineLabel}')
+    #     plt.show()

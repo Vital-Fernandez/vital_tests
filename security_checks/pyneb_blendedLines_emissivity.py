@@ -16,8 +16,13 @@ O2 = pn.Atom('O', 2)
 S2 = pn.Atom('S', 2)
 O3 = pn.Atom('O', 3)
 S3 = pn.Atom('S', 3)
+N2 = pn.Atom('N', 2)
 
 ne, Te, abund, abund2 = 10000.0, 14000.0, 0.0005, 0.008
+
+
+print('N2', N2.getEmissivity(Te, ne, wave=6583) / N2.getEmissivity(Te, ne, wave=6548))
+# print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
 
 # print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
 # print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
@@ -111,7 +116,6 @@ print(np.nanmean(nSII_n1), np.nanstd(nSII_n1))
 print(np.nanmean(nSII_n2), np.nanstd(nSII_n2))
 print(np.nanmean(nSII_B), np.nanstd(nSII_B), np.isnan(nSII_B).sum())
 print(np.nanmean(nSII_G), np.nanstd(nSII_G))
-
 
 ne_SII_ = S2.getTemDen(np.array([16.73, 16.07, 3.74, 36.54]) / np.array([13.81, 13.42, 3.93, 31.16]), tem=15010.0, to_eval='L(6717)/L(6731)')
 print(ne_SII_)

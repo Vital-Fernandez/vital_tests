@@ -17,7 +17,7 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i == 0:
+    if i < 3:
 
         print(f'Treating object {obj}')
 

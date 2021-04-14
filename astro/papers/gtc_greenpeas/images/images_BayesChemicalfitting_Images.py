@@ -48,7 +48,7 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i == 0:
+    if i == 2:
 
         # Declare input files
         print(f'- Treating object ({i}): {obj}')
@@ -117,16 +117,16 @@ for i, obj in enumerate(objList):
         # print('-- Flux values table')
         # figure_file = objFolder/f'{obj}_FluxComparison'
         # obj1_model.table_line_fluxes(figure_file, fit_results, combined_dict=combined_line_dict)
+        #
+        # print('-- Model parameters posterior diagram')
+        # figure_file = objFolder/f'{obj}_ParamsPosteriors.png'
+        # fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 8}
+        # obj1_model.tracesPosteriorPlot(None, fit_results, true_values=None)
 
-        print('-- Model parameters posterior diagram')
-        figure_file = objFolder/f'{obj}_ParamsPosteriors.png'
-        fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 8}
-        obj1_model.tracesPosteriorPlot(None, fit_results, true_values=None)
-
-        # print('-- Line flux posteriors')
-        # fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 10, 'axes.labelsize': 10}
-        # obj1_model.fluxes_distribution(None, fit_results, n_columns=3, combined_dict=combined_line_dict,
-        #                                plot_conf=fig_conf)
+        print('-- Line flux posteriors')
+        fig_conf = {'figure.figsize': (5, 10), 'axes.titlesize': 10, 'axes.labelsize': 10}
+        obj1_model.fluxes_distribution(None, fit_results, n_columns=3, combined_dict=combined_line_dict,
+                                       plot_conf=fig_conf)
 
         # print('-- Model parameters corner diagram')
         # figure_file = objFolder/f'{obj}_cornerPlot.png'

@@ -64,7 +64,7 @@ for i, param in enumerate(rows):
         param_mean, param_std = sample_Results[obj][param]
 
         if param != 'He2':
-            round_n = 0 if param_mean > 10 else 3
+            round_n = 0 if param_mean > 10 else 2
             param_formated = r'${}\pm{}$'.format(numberStringFormat(param_mean, round_n), numberStringFormat(param_std, round_n))
         else:
             param_formated = r'$\num{{{:.1e}}}\pm\num{{{:.0e}}}$'.format(param_mean, param_std)

@@ -11,6 +11,7 @@ lineAreas = {'H1_6563A': (6558.0, 6568.0),
 
 STANDARD_IMAGE = {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Cube flux slice'}
 
+
 def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
 
     # Normalizing flux
@@ -27,6 +28,7 @@ def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
         cHbeta = 'none'
 
     return cHbeta, rc
+
 
 def image_array_binning(flux_image, percentil_scale, bad_value=np.nan, below_value=None, above_value=None):
 

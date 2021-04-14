@@ -18,7 +18,7 @@ combined_line_dict = {'O2_3726A_m': 'O2_3726A-O2_3729A', 'O2_7319A_m': 'O2_7319A
 # Analyse the spectrum
 for i, obj in enumerate(objList):
 
-    if i < 3:
+    if i == 0:
 
         # Declare input files
         print(f'- Treating object ({i}): {obj}')
@@ -75,7 +75,7 @@ for i, obj in enumerate(objList):
         obj1_model.inference_model(fit_T_low=False)
 
         # Run the simulation
-        obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
+        obj1_model.run_sampler(objFolder/outputDb, 3000, tuning=3000, nchains=3, njobs=6)
 
         # Plot the results
         fit_results = sr.load_MC_fitting(outputDb)

@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from lmfit.models import ExponentialModel, GaussianModel
-
+from lmfit.models import ExponentialModel, GaussianModel, Model
+import lmfit
+print(lmfit.__version__)
+lmfit.models.ModelRe
 dat = np.loadtxt('NIST_Gauss2.dat')
 x = dat[:, 1]
 y = dat[:, 0]
@@ -27,6 +29,8 @@ init = model.eval(pars, x=x)
 out = model.fit(y, pars, x=x)
 
 print(out.fit_report(min_correl=0.5))
+
+model.plo
 
 fig, axes = plt.subplots(1, 2, figsize=(12.8, 4.8))
 axes[0].plot(x, y, 'b')

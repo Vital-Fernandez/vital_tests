@@ -19,10 +19,12 @@ cycle = 'it3'
 sample_Results = {}
 
 # Personal order:
-rows = ['n_e', 'T_high', 'cHbeta', 'Ar3', 'Ar4', 'Fe3', 'N2', 'Ne3', 'O2', 'O3', 'S2', 'S3', 'He1', 'He2']
+rows = ['n_e', 'T_high', 'cHbeta', 'logU', 'Teff', 'Ar3', 'Ar4', 'Fe3', 'N2', 'Ne3', 'O2', 'O3', 'S2', 'S3', 'He1', 'He2']
 
 # Load the data from every object
 for i, obj in enumerate(objList[:3]):
+
+    print(obj)
 
     objFolder = resultsFolder / f'{obj}'
     outputDb = objFolder / f'{obj}_{ext}_Direct-Teff-logU_{cycle}.db'
@@ -63,11 +65,14 @@ for i, param in enumerate(rows):
     for j, obj in enumerate(objList[:3]):
         param_mean, param_std = sample_Results[obj][param]
 
-        if param != 'He2':
-            round_n = 0 if param_mean > 10 else 3
+        if param == 'logU':
+            param_formated = r'${:.2f}\pm{:.2f}$'.format(param_mean, param_std)
+        elif param != 'He2':
+            round_n = 0 if param_mean > 10 else 2
             param_formated = r'${}\pm{}$'.format(numberStringFormat(param_mean, round_n), numberStringFormat(param_std, round_n))
         else:
             param_formated = r'$\num{{{:.1e}}}\pm\num{{{:.0e}}}$'.format(param_mean, param_std)
+
         row_data[j+1] = param_formated
 
     pdf.addTableRow(row_data, last_row=False)

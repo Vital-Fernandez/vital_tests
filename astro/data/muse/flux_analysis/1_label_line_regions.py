@@ -28,6 +28,8 @@ defaultConf.update(labelsDict)
 rcParams.update({})
 
 
+
+
 for i, obj in enumerate(objList):
 
     # Data location
@@ -94,7 +96,7 @@ for i, obj in enumerate(objList):
         plt.savefig(objFolder/imageName, bbox_inches='tight')
 
     # Store the drive
-    new_hdul.writeto(db_addresss, overwrite=True)
+    new_hdul.writeto(db_addresss, overwrite=True, output_verify='fix')
 
     # hdr = fits.getheader(db_addresss, extname='PlotConf')
     # for lineLabel, lineLimits in lineAreas.items():

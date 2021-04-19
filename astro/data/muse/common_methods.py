@@ -11,6 +11,52 @@ lineAreas = {'H1_6563A': (6558.0, 6568.0),
 
 STANDARD_IMAGE = {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Cube flux slice'}
 
+default_linelog_types = {'index': '<U50',
+                 'wavelength': '<f8',
+                 'intg_flux': '<f8',
+                 'intg_err': '<f8',
+                 'gauss_flux': '<f8',
+                 'gauss_err': '<f8',
+                 'eqw': '<f8',
+                 'eqw_err': '<f8',
+                 'ion': '<U50',
+                 'pynebCode': '<f8',
+                 'pynebLabel': '<f8',
+                 'lineType': '<f8',
+                 'latexLabel': '<U50',
+                 'blended': '<U50',
+                 'w1': '<f8',
+                 'w2': '<f8',
+                 'w3': '<f8',
+                 'w4': '<f8',
+                 'w5': '<f8',
+                 'w6': '<f8',
+                 'm_continuum': '<f8',
+                 'n_continuum': '<f8',
+                 'cont': '<f8',
+                 'std_continuum': '<f8',
+                 'peak_flux': '<f8',
+                 'peak_wave': '<f8',
+                 'snr_line': '<f8',
+                 'snr_cont': '<f8',
+                 'amp': '<f8',
+                 'mu': '<f8',
+                 'sigma': '<f8',
+                 'amp_err': '<f8',
+                 'mu_err': '<f8',
+                 'sigma_err': '<f8',
+                 'v_r': '<f8',
+                 'v_r_err': '<f8',
+                 'sigma_vel': '<f8',
+                 'sigma_err_vel': '<f8',
+                 'observation': '<U50',
+                 'comments': '<U50',
+                 'obsFlux': '<f8',
+                 'obsFluxErr': '<f8',
+                 'f_lambda': '<f8',
+                 'obsInt': '<f8',
+                 'obsIntErr': '<f8'}
+
 
 def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
 
@@ -163,6 +209,16 @@ def plot_voxel_flux(image_bg, voxel_coord, wave_voxel, flux_voxel, image_fg=None
     # plt.savefig(plotAddress, dpi=200, bbox_inches='tight')
 
     return
+
+def voxel_security_check(linesDF):
+
+    check = False
+
+    if 'H1_4861A' in linesDF.index:
+        check = True
+
+    return check
+
 
 
 class VoxelPlotter(object):

@@ -1,4 +1,5 @@
 import numpy as np
+from astropy.io import fits
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec
 from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
@@ -215,11 +216,54 @@ def voxel_security_check(linesDF):
     check = False
 
     if 'H1_4861A' in linesDF.index:
-        check = True
+        if 'S3_6312A' in linesDF.index:
+            check = True
 
     return check
 
+def fits_db(fits_address, model_db, ext_name):
 
+    total_params_list = np.array(list(model_db['Fitting_results'].keys()))
+    inputLabels = model_db['Input_data']['lineLabels_list']
+    inputFlux = model_db['Input_data']['inputFlux_array']
+    inputErr = model_db['Input_data']['inputErr_array']
+
+    # Save variable traces
+    list_columns = []
+    for i, param in enumerate(model_db['trace'].varnames):
+        trace = model_db['trace'][param]
+        if param in total_params_list:
+            col_param = fits.Column(name=param, format='E', array=trace)
+            list_columns.append(col_param)
+        else:
+            if ('_Op' not in param) and ('_log__' not in param):
+                col_param = fits.Column(name=param, format='E', array=trace)
+                list_columns.append(col_param)
+
+    # Save flux traces
+    if 'calcFluxes_Op' in model_db['trace'].varnames:
+        trace = model_db['trace']['calcFluxes_Op']
+        for i in range(trace.shape[1]):
+            flux_trace = trace[:, i]
+            col_param = fits.Column(name=inputLabels[i], format='E', array=flux_trace)
+            list_columns.append(col_param)
+
+    cols = fits.ColDefs(list_columns)
+    hdu = fits.BinTableHDU.from_columns(cols, name=ext_name)
+
+    for i, label in enumerate(inputLabels):
+        hdu.header[f'hierarch flux_{label}'] = inputFlux[i]
+        hdu.header[f'hierarch err_{label}'] = inputErr[i]
+
+    if fits_address.is_file():
+        try:
+            fits.update(fits_address, data=hdu.data, header=hdu.header, extname=ext_name, verify=True)
+        except KeyError:
+            fits.append(fits_address, data=hdu.data, header=hdu.header, extname=ext_name)
+    else:
+        hdu.writeto(fits_address, overwrite=True, output_verify='fix')
+
+    return
 
 class VoxelPlotter(object):
 

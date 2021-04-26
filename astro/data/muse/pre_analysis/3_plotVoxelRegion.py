@@ -19,7 +19,7 @@ from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
 
 
 # Declare data and files location
-obsData = sr.loadConfData( '../muse_greenpeas.ini', group_variables=False)
+obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
 objList = obsData['sample_data']['object_list']
 fileList = obsData['sample_data']['file_list']
 dataFolder = Path(obsData['sample_data']['data_folder'])

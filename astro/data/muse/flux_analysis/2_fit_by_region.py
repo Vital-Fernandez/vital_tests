@@ -5,7 +5,7 @@ import src.specsiser as sr
 from pathlib import Path
 from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, red_corr_HalphaHbeta_ratio, default_linelog_types
 from astropy.io import fits
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
 import time
 
@@ -26,7 +26,9 @@ dict_errs = {}
 dict_nan_values = {}
 
 ref_flux_line = 'S3_6312A'
-int_flux_boundary = -3
+sulfur_bdry = int(obsData['Region_masks']['S3_direct_limit'])
+hydrogen_bdry = int(obsData['Region_masks']['H1_direct_limit'])
+verbose = True
 
 for i, obj in enumerate(objList):
 
@@ -48,20 +50,40 @@ for i, obj in enumerate(objList):
         wave_rest = wave / (1 + z_objs[i])
         mask_df = pd.read_csv(mask_address, delim_whitespace=True, header=0, index_col=0)
 
+        # Extinction model
+        red_model = sr.ExtinctionModel(Rv=obsData['Extinction']['R_v'], red_curve=obsData['Extinction']['red_law'])
+
         # Declare voxels to analyse
         flux6312_image = fits.getdata(db_addresss, f'{ref_flux_line}_flux', ver=1)
-        flux6312_contours = fits.getdata(db_addresss, f'{ref_flux_line}_contour', ver=1)
-        flux6312_levels = np.percentile(flux6312_contours[flux6312_contours > 0], pertil_array)
-        flux6312_boundary = flux6312_levels[int_flux_boundary]
+        flux6312_levels = np.nanpercentile(flux6312_image, pertil_array)
 
         flux6563_image = fits.getdata(db_addresss, f'H1_6563A_flux', ver=1)
-        flux6563_contours = fits.getdata(db_addresss, f'H1_6563A_contour', ver=1)
-        flux6563_levels = np.percentile(flux6563_contours[flux6563_contours > 0], pertil_array)
-        flux6563_boundary = flux6563_levels[int_flux_boundary]
+        flux6563_levels = np.nanpercentile(flux6563_image, pertil_array)
 
-        idcs_bolean = (flux6312_contours >= flux6312_boundary) & (flux6563_contours >= flux6563_boundary)
-        idcs_voxels = np.argwhere(idcs_bolean)
-        print(f'\nUsing line {ref_flux_line} at percentile {pertil_array[int_flux_boundary]} = {flux6312_boundary:.2f} ({idcs_voxels.shape[0]} pixels)')
+        # Search within that limit
+        maFlux_image = np.ma.masked_where((flux6312_image >= flux6312_levels[sulfur_bdry]) &
+                                          (flux6563_image > flux6563_levels[hydrogen_bdry]),
+                                          flux6563_image)
+
+        # Search between two limits
+        # maFlux_image = np.ma.masked_where((flux6312_image >= flux6312_levels[sulfur_bdry]) &
+        #                                   (flux6312_image < flux6312_levels[sulfur_bdry+1]) &
+        #                                   (flux6563_image > flux6563_levels[hydrogen_bdry]),
+        #                                   flux6563_image)
+        idcs_voxels = np.argwhere(maFlux_image.mask)
+
+        # if verbose:
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
+        ax.update({'title': r'{} galaxy, $H\alpha$ flux'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
+        im = ax.imshow(maFlux_image, cmap=cm.gray,
+                       norm=colors.SymLogNorm(linthresh=flux6563_levels[1], vmin=flux6563_levels[1], base=10))
+        cntr1 = ax.contour(flux6312_image, levels=[flux6312_levels[sulfur_bdry]], colors='yellow', alpha=0.5)
+        cntr2 = ax.contour(flux6563_image, levels=[flux6563_levels[hydrogen_bdry]], colors='red', alpha=0.5)
+        plt.show()
+
+        print(f'\nUsing line Halpha at percentile {pertil_array[hydrogen_bdry]} = {flux6563_levels[hydrogen_bdry]:.2f}'
+              f' ({idcs_voxels.shape[0]} pixels)')
 
         # Loop through voxels
         n_lines = 0
@@ -75,14 +97,16 @@ for i, obj in enumerate(objList):
             local_mask = voxelFolder/f'{idx_j}-{idx_i}_mask_{obj}.txt'
             local_lineslog = voxelFolder/f'{idx_j}-{idx_i}_lineslog_{obj}.txt'
             grid_address_i = voxelFolder/f'{idx_j}-{idx_i}_LineGrid_{obj}.png'
-            pdfTableFile = voxelFolder / f'{idx_j}-{idx_i}_linesTable'
-            txtTableFile = voxelFolder / f'{idx_j}-{idx_i}_linesTable.txt'
+            pdfTableFile = voxelFolder/f'{idx_j}-{idx_i}_linesTable'
+            txtTableFile = voxelFolder/f'{idx_j}-{idx_i}_linesTable.txt'
 
             flux_voxel = cube[:, idx_j, idx_i].data.data * norm_flux
             flux_err = cube[:, idx_j, idx_i].var.data * norm_flux
 
             lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
-            # lm.plot_spectrum_components()
+
+            if verbose:
+                lm.plot_spectrum_components(specLabel=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
 
             # Security check for pixels with nan values:
             idcs_nan = np.isnan(lm.flux)
@@ -97,9 +121,11 @@ for i, obj in enumerate(objList):
             # Identify the emission lines
             obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=3)
             maskLinesDF = lm.match_lines(obsLinesTable, mask_df)
-            # lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF)
             idcsObsLines = (maskLinesDF.observation == 'detected')
-            # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
+
+            if verbose:
+                lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
+                # lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
 
             # Reset and measure the lines
             lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
@@ -114,7 +140,14 @@ for i, obj in enumerate(objList):
                     err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
                     err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'
                     voxel_dict[err_label] = err_value
+                    dict_errs[f'{idx_j}-{idx_i}_{lineLabel}'] = e
                     print(f'--- Line measuring failure at {lineLabel} ({err_value})')
+
+            # Check Extinction
+            if verbose:
+                print('Show extinction calculation')
+                lm.plot_line_grid(lm.linesDF)
+                cHbeta, cHbeta_err = red_model.cHbeta_from_log(lm.linesDF, plot_address=True)
 
             # Spectrum data
             n_lines += len(lm.linesDF.index)
@@ -135,18 +168,19 @@ for i, obj in enumerate(objList):
             # lm.table_fluxes(lm.linesDF, pdfTableFile, txtTableFile, rc_pyneb)
 
         # Store the drive
-        hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
+        # hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
         end = time.time()
-        print(f'- Execution time {end - start:.3f}s, for {n_lines} lines')
+
+        # Show summary
+        for voxel_fail, error in dict_errs.items():
+            print(voxel_fail)
+        print(f'- Execution time {end - start:.3f}s, for {n_lines} lines, errors {len(dict_errs.keys())}')
 
 
 
 
-#             print(f'- Printing results tables')
-#             lm.save_lineslog(lm.linesDF, local_lineslog)
-#             lm.table_fluxes(lm.linesDF, pdfTableFile, txtTableFile, rc_pyneb)
-#             lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8, output_address=grid_address_i)
-#
+
+
 # print(dict_errs)
 
 #       IT IS NOT A BAD CODE

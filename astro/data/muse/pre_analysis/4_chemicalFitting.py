@@ -8,7 +8,7 @@ from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, r
 from timeit import default_timer as timer
 
 # Declare data and files location
-obsData = sr.loadConfData( '../muse_greenpeas.ini', group_variables=False)
+obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
 objList = obsData['sample_data']['object_list']
 fileList = obsData['sample_data']['file_list']
 model_conf_file = obsData['sample_data']['file_list']

@@ -79,4 +79,4 @@ for i, obj in enumerate(objList):
     #
     # # Table for the output data
     # print(f'- Printing results tables')
-    # lm.table_fluxes(linesLogOutput_df, lineTable_file, rc_pyneb)
+    lm.table_fluxes(linesLogOutput_df, lineTable_file, rc_pyneb)

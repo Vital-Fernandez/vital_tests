@@ -118,36 +118,38 @@ wave, flux, err_flux = np.loadtxt(outSide_file, unpack=True)
 # linesDF = sr.lineslogFile_to_DF(outSide_df)
 # lm.table_kinematics(linesDF, outSide_kinTable)
 
-#--------------------------------- Copying kinematics -------------------------------------
-lm = sr.LineMesurer(wave, flux, input_err=err_flux, normFlux=norm_flux)
-# linesDF = sr.lineslogFile_to_DF(outSide_df)
+# #--------------------------------- Copying kinematics -------------------------------------
+# lm = sr.LineMesurer(wave, flux, input_err=err_flux, normFlux=norm_flux)
+# # linesDF = sr.lineslogFile_to_DF(outSide_df)
+#
+# obsLines = mask_df.index.to_list()
+# O3_lines = ['O3_5007A', 'O3_4959A', 'O3_4363A']
+# a = sorted(obsLines, key=lambda e: (O3_lines.index(e), e) if e in O3_lines else (len(O3_lines), e))
+# mask_df = mask_df.reindex(index=a)
+# mask_df.rename(index={'H1_6563A': 'H1_6563A_b'}, inplace=True)
+# mask_df.drop(index=['N2_6584A', 'N2_6548A'], inplace=True)
+# mask_df.loc['H1_6563A_b', 'w1':'w6'] = np.array([6499.49, 6526.84, 6530., 6592., 6593.2, 6616.02])
+#
+# line_conf = {'H1_6563A_b': 'H1_6563A-H1_6563A_w1-H1_6563A_w2-N2_6584A-N2_6548A'}
+# line_conf['N2_6548A_sigma'] = {'expr': 'N2_6584A_sigma'}
+# line_conf['N2_6548A_kinem'] = 'N2_6584A'
+# line_conf['N2_6548A_amplitude'] = {'expr': 'N2_6584A_amplitude/2.94'}
+# line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
+# line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
+# line_conf['H1_6563A_w2_sigma'] = {'expr': '>2*H1_6563A_w1_sigma'}
+# line_conf['O3_4959A_kinem'] = 'O3_5007A'
+#
+# for j, lineLabel in enumerate(mask_df.index.values):
+#     print(lineLabel)
+#     wave_regions = mask_df.loc[lineLabel, 'w1':'w6'].values
+#     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
+#     # lm.print_results(show_fit_report=True)
+#     # lm.plot_fit_components(lm.fit_output, logScale=True)
+# idcs_lines = ~lm.linesDF.index.str.contains('_b')
+# lm.save_lineslog(lm.linesDF[idcs_lines], file_address=outSide_kin_df)
+# lm.table_kinematics(lm.linesDF[idcs_lines], table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_kinematics_IMPORT'))
+# lm.table_fluxes(lm.linesDF[idcs_lines], table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_fluxes_IMPORT'))
 
-obsLines = mask_df.index.to_list()
-O3_lines = ['O3_5007A', 'O3_4959A', 'O3_4363A']
-a = sorted(obsLines, key=lambda e: (O3_lines.index(e), e) if e in O3_lines else (len(O3_lines), e))
-mask_df = mask_df.reindex(index=a)
-mask_df.rename(index={'H1_6563A': 'H1_6563A_b'}, inplace=True)
-mask_df.drop(index=['N2_6584A', 'N2_6548A'], inplace=True)
-mask_df.loc['H1_6563A_b', 'w1':'w6'] = np.array([6499.49, 6526.84, 6530., 6592., 6593.2, 6616.02])
-
-line_conf = {'H1_6563A_b': 'H1_6563A-H1_6563A_w1-H1_6563A_w2-N2_6584A-N2_6548A'}
-line_conf['N2_6548A_sigma'] = {'expr': 'N2_6584A_sigma'}
-line_conf['N2_6548A_kinem'] = 'N2_6584A'
-line_conf['N2_6548A_amplitude'] = {'expr': 'N2_6584A_amplitude/2.94'}
-line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
-line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
-line_conf['H1_6563A_w2_sigma'] = {'expr': '>2*H1_6563A_w1_sigma'}
-line_conf['O3_4959A_kinem'] = 'O3_5007A'
-
-for j, lineLabel in enumerate(mask_df.index.values):
-    if lineLabel == 'H1_6563A_b':
-        print(lineLabel, )
-        wave_regions = mask_df.loc[lineLabel, 'w1':'w6'].values
-        lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
-        lm.print_results(show_fit_report=True)
-        lm.plot_fit_components(lm.fit_output, logScale=True)
-lm.save_lineslog(lm.linesDF, file_address=outSide_kin_df)
-lm.table_kinematics(lm.linesDF, table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_kinematics_IMPORT'))
 #--------------------------------- Code failing warning -------------------------------------
 # lm = sr.LineMesurer(wave, flux, input_err=err_flux, normFlux=norm_flux)
 # # lm.plot_spectrum_components(specLabel=f'{obj} voxel', log_scale=True)
@@ -186,3 +188,54 @@ lm.table_kinematics(lm.linesDF, table_address=Path('/home/vital/Astro-data/muse_
 #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
 #     # lm.plot_fit_components(lm.fit_output, logScale=True)
 # lm.save_lineslog(lm.linesDF, file_address=outSide_df)
+
+#--------------------------------- Copying kinematics -------------------------------------
+# linesDF = sr.lineslogFile_to_DF(outSide_df)
+
+obsLines = mask_df.index.to_list()
+O3_lines = ['O3_5007A', 'O3_4959A', 'O3_4363A']
+a = sorted(obsLines, key=lambda e: (O3_lines.index(e), e) if e in O3_lines else (len(O3_lines), e))
+mask_df = mask_df.reindex(index=a)
+mask_df.rename(index={'H1_6563A': 'H1_6563A_b'}, inplace=True)
+mask_df.drop(index=['N2_6584A', 'N2_6548A'], inplace=True)
+mask_df.loc['H1_6563A_b', 'w1':'w6'] = np.array([6499.49, 6526.84, 6530., 6592., 6593.2, 6616.02])
+
+lm = sr.LineMesurer(wave, flux, input_err=err_flux, normFlux=norm_flux)
+
+line_conf = {'H1_6563A_b': 'H1_6563A-H1_6563A_w1-H1_6563A_w2-N2_6584A-N2_6548A'}
+
+line_conf['N2_6548A_sigma'] = {'expr': 'N2_6584A_sigma'}
+line_conf['N2_6548A_kinem'] = 'N2_6584A'
+line_conf['N2_6548A_amplitude'] = {'expr': 'N2_6584A_amplitude/2.94'}
+line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
+line_conf['H1_6563A_w1_sigma'] = {'expr': '>2*H1_6563A_sigma'}
+line_conf['H1_6563A_w2_sigma'] = {'expr': '>2*H1_6563A_w1_sigma'}
+
+line_conf['O3_4959A_kinem'] = 'O3_5007A'
+
+lineLabel = 'H1_6563A_b'
+
+wave_regions = mask_df.loc[lineLabel, 'w1':'w6'].values
+lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
+lm.plot_fit_components(lm.fit_output, logScale=True)
+
+
+idcs_lines = ~lm.linesDF.index.str.contains('_b')
+lm.save_lineslog(lm.linesDF[idcs_lines], file_address=outSide_kin_df)
+lm.table_kinematics(lm.linesDF[idcs_lines], table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_kinematics_IMPORT'))
+lm.table_fluxes(lm.linesDF[idcs_lines], table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_fluxes_IMPORT'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

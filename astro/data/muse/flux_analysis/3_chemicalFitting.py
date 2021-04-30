@@ -96,10 +96,11 @@ for i, obj in enumerate(objList):
 
                 # Data location
                 outputDb = voxelFolder/f'{idx_j}-{idx_i}_fitting.db'
-                ext_ref = f'{idx_j}-{idx_i}_linelog'
+                # ext_ref = f'{idx_j}-{idx_i}_linelog'
                 chem_ref = f'{idx_j}-{idx_i}_chemistry'
 
                 # Load voxel data:
+                ext_ref = f'{idx_j}-{idx_i}_linelog'
                 linesDF = Table.read(fitsLog_addresss, ext_ref, character_as_bytes=False).to_pandas()
                 linesDF.set_index('index', inplace=True)
 

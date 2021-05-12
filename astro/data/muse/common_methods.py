@@ -265,6 +265,20 @@ def fits_db(fits_address, model_db, ext_name):
 
     return
 
+def store_frame_to_fits(fits_address, fits_hdu, ext_name):
+
+    if fits_address.is_file():
+        try:
+            fits.update(fits_address, data=fits_hdu.data, header=fits_hdu.header, extname=ext_name, verify=True)
+        except KeyError:
+            fits.append(fits_address, data=fits_hdu.data, header=fits_hdu.header, extname=ext_name)
+    else:
+        fits_hdu.writeto(fits_address, overwrite=True, output_verify='fix')
+
+    return
+
+
+
 class VoxelPlotter(object):
 
     """

@@ -24,19 +24,19 @@ idx_region = (432 < wavelength) & (wavelength < 439)
 
 figConf = {'text.color': foreground,
             'figure.figsize': (16,5),
-            'figure.facecolor':background,
-            'axes.facecolor':background,
-            'axes.edgecolor':foreground,
-            'axes.labelcolor':foreground,
-            'axes.labelsize':22,
-            'xtick.labelsize':16,
-            'ytick.labelsize':16,
-            'xtick.color':foreground,
-            'ytick.color':foreground,
-            'legend.edgecolor':'inherit',
-            'legend.facecolor':'inherit',
-            'legend.fontsize':16,
-             'legend.loc':"center right"}
+            'figure.facecolor': background,
+            'axes.facecolor': background,
+            'axes.edgecolor': foreground,
+            'axes.labelcolor': foreground,
+            'axes.labelsize': 22,
+            'xtick.labelsize': 16,
+            'ytick.labelsize': 16,
+            'xtick.color': foreground,
+            'ytick.color': foreground,
+            'legend.edgecolor': 'inherit',
+            'legend.facecolor': 'inherit',
+            'legend.fontsize': 16,
+             'legend.loc': "center right"}
 
 matplotlib.rcParams.update(figConf)
 

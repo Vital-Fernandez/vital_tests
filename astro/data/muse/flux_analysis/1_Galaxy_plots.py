@@ -28,8 +28,6 @@ defaultConf = STANDARD_PLOT.copy()
 defaultConf.update(labelsDict)
 rcParams.update({})
 
-idx_ion_boundary = 3
-
 for i, obj in enumerate(objList):
 
     # Data location
@@ -67,26 +65,32 @@ for i, obj in enumerate(objList):
         levelContours = np.nanpercentile(flux_image, pertil_array)
 
         # Store fluxes and contours
-        new_hdul.append(fits.ImageHDU(name=f'{lineLabel}_flux', data=flux_image, ver=1))
+        hdu_image = fits.ImageHDU(name=f'{lineLabel}_flux', data=flux_image, ver=1)
         for idx, level in enumerate(levelContours):
-            level_label = f'hierarch P{pertil_array[idx]}'
-            new_hdul[1].header[level_label] = level
+            level_label = f'hierarch P{int(pertil_array[idx]*100)}'
+            print(level_label)
+            hdu_image.header[level_label] = level
+        new_hdul.append(hdu_image)
+
+        # loop throught the intensity layers
+        # for idx_ion_boundary, flux_perdentil(levelContours):
+        idx_ion_boundary=2
 
         # Plot the image:
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
 
-        im = ax.imshow(flux_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=levelContours[1], vmin=levelContours[1], base=10))
-        cntr1 = ax.contour(flux_image, levels=levelContours[idx_ion_boundary:], cmap='viridis', norm=colors.LogNorm())
+        im = ax.imshow(flux_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=levelContours[-3], vmin=levelContours[-3], base=10))
+        cntr1 = ax.contour(flux_image, levels=levelContours[::-1][idx_ion_boundary:], cmap='viridis', norm=colors.LogNorm())
 
-        for idx, percentile in enumerate(pertil_array[idx_ion_boundary:]):
-            label = r'$P_{{{}}}([SIII]6312\AA)$'.format(percentile)
+        for idx, percentile in enumerate(pertil_array[::-1][idx_ion_boundary:]):
+            label = r'$P_{{{}}}([SIII]6312\AA)$'.format(idx, percentile)
             cntr1.collections[idx].set_label(label)
         ax.legend()
 
         ax.update({'title': r'{} galaxy, {} flux'.format(obj, latexLabel), 'xlabel': r'RA', 'ylabel': r'DEC'})
         plt.savefig(plot_image_file, bbox_inches='tight')
-        plt.show()
+        # plt.show()
 
     # Store the drive
     new_hdul.writeto(db_addresss, overwrite=True, output_verify='fix')

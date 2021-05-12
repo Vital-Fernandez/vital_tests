@@ -25,7 +25,7 @@ print('N2', N2.getEmissivity(Te, ne, wave=6583) / N2.getEmissivity(Te, ne, wave=
 # print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
 
 # print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
-# print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
+print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
 
 Hbeta_em = H1.getEmissivity(Te, ne, wave=4861)
 S2_6717A_em = S2.getEmissivity(Te, ne, wave=6717)

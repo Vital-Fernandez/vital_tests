@@ -7,6 +7,7 @@ from astropy.table import Table
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
+import time
 
 
 # Declare data and files location
@@ -22,81 +23,44 @@ pertil_array = obsData['sample_data']['percentil_array']
 noise_region = obsData['sample_data']['noiseRegion_array']
 norm_flux = obsData['sample_data']['norm_flux']
 
-ref_flux_line = 'S3_6312A'
-sulfur_bdry = int(obsData['Region_masks']['S3_direct_limit'])
-hydrogen_bdry = int(obsData['Region_masks']['H1_direct_limit'])
 verbose = True
-
 
 for i, obj in enumerate(objList):
 
     if i == 0:
 
         # Data location
-        cube_address = fitsFolder/fileList[i]
         objFolder = resultsFolder/obj
         voxelFolder = resultsFolder/obj/'voxel_data'
         db_addresss = objFolder / f'{obj}_database.fits'
         fitsLog_addresss = objFolder / f'{obj}_linesLog.fits'
         chem_conf_file = dataFolder/obj/'chemical_model_config.txt'
 
+        # Output files
         outputFitsFile = resultsFolder/obj/f'{obj}_chemical.fits'
 
         # Load data
         chem_conf = sr.loadConfData(chem_conf_file, group_variables=False)
 
-        # Load data
-        wave, cube, header = sr.import_fits_data(cube_address, instrument='MUSE')
+        # Loop throught the line regions
+        start = time.time()
+        for idx_region in [2]:
 
-        # Declare voxels to analyse
-        # flux6312_image = fits.getdata(db_addresss, f'{ref_flux_line}_flux', ver=1)
-        # flux6312_contours = fits.getdata(db_addresss, f'{ref_flux_line}_contour', ver=1)
-        # flux6312_levels = np.percentile(flux6312_contours[flux6312_contours > 0], pertil_array)
-        # flux6312_boundary = flux6312_levels[int_flux_boundary]
-        #
-        # flux6563_image = fits.getdata(db_addresss, f'H1_6563A_flux', ver=1)
-        # flux6563_contours = fits.getdata(db_addresss, f'H1_6563A_contour', ver=1)
-        # flux6563_levels = np.percentile(flux6563_contours[flux6563_contours > 0], pertil_array)
-        # flux6563_boundary = flux6563_levels[int_flux_boundary]
+            # Voxel mask
+            region_label = f'region_{idx_region}'
+            region_mask = fits.getdata(db_addresss, region_label, ver=1)
+            region_mask = region_mask.astype(bool)
+            idcs_voxels = np.argwhere(region_mask)
+            n_voxels = idcs_voxels.shape[0]
+            print(f'\nTreating {region_label} consisting of {n_voxels}. The estimated time is {(n_voxels*1.65)/60:0.1f} hrs')
 
-        # Declare voxels to analyse
-        flux6312_image = fits.getdata(db_addresss, f'{ref_flux_line}_flux', ver=1)
-        flux6312_levels = np.nanpercentile(flux6312_image, pertil_array)
-
-        flux6563_image = fits.getdata(db_addresss, f'H1_6563A_flux', ver=1)
-        flux6563_levels = np.nanpercentile(flux6563_image, pertil_array)
-
-        # Search within that limit
-        maFlux_image = np.ma.masked_where((flux6312_image >= flux6312_levels[sulfur_bdry]) &
-                                          (flux6312_image < flux6312_levels[sulfur_bdry+1]) &
-                                          (flux6563_image > flux6563_levels[hydrogen_bdry]),
-                                          flux6563_image)
-        idcs_voxels = np.argwhere(maFlux_image.mask)
-        n_voxels = idcs_voxels.shape[0]
-
-        if verbose:
-            fig = plt.figure(figsize=(12, 8))
-            ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
-            ax.update({'title': r'{} galaxy, $H\alpha$ flux'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
-            im = ax.imshow(maFlux_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=flux6563_levels[1],
-                           vmin=flux6563_levels[1], base=10))
-            cntr1 = ax.contour(flux6312_image, levels=[flux6312_levels[sulfur_bdry]], colors='yellow', alpha=0.5)
-            cntr2 = ax.contour(flux6563_image, levels=[flux6563_levels[hydrogen_bdry]], colors='red', alpha=0.5)
-            plt.show()
-
-        print(f'\nUsing line [SIII]6312 at percentile {pertil_array[sulfur_bdry]} = {flux6312_levels[sulfur_bdry]:.2f}'
-              f' ({idcs_voxels.shape[0]} pixels)')
-
-        for idx_voxel, idx_pair in enumerate(idcs_voxels):
-
-            if idx_voxel > 61:
+            for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
                 idx_j, idx_i = idx_pair
                 print(f'\nTreating voxel {idx_j}-{idx_i}: ({idx_voxel}/{n_voxels})')
 
                 # Data location
                 outputDb = voxelFolder/f'{idx_j}-{idx_i}_fitting.db'
-                # ext_ref = f'{idx_j}-{idx_i}_linelog'
                 chem_ref = f'{idx_j}-{idx_i}_chemistry'
 
                 # Load voxel data:
@@ -163,19 +127,23 @@ for i, obj in enumerate(objList):
                         # Store the results
                         fits_db(outputFitsFile, fit_results, chem_ref)
 
-                        print('-- Printing results')
-                        figure_file = voxelFolder / f'{idx_j}-{idx_i}_MeanOutputs'
-                        obj1_model.table_mean_outputs(figure_file, fit_results)
+                        # print('-- Printing results')
+                        # figure_file = voxelFolder / f'{idx_j}-{idx_i}_MeanOutputs'
+                        # obj1_model.table_mean_outputs(figure_file, fit_results)
+                        #
+                        # figure_file = voxelFolder / f'{idx_j}-{idx_i}_FluxComparison'
+                        # obj1_model.table_line_fluxes(figure_file, fit_results, combined_dict={'O2_7319A_b': 'O2_7319A-O2_7330A'})
+                        #
+                        # figure_file = voxelFolder / f'{idx_j}-{idx_i}_ParamsPosteriors.png'
+                        # obj1_model.tracesPosteriorPlot(figure_file, fit_results)
+                        #
+                        # figure_file = voxelFolder / f'{idx_j}-{idx_i}_lineFluxPosteriors.png'
+                        # obj1_model.fluxes_distribution(figure_file, fit_results, combined_dict={'O2_7319A_b': 'O2_7319A-O2_7330A'})
+                        #
+                        # figure_file = voxelFolder / f'{idx_j}-{idx_i}_cornerPlot.png'
+                        # obj1_model.corner_plot(figure_file, fit_results)
+                        # obj1_model.savefig(figure_file, resolution=200)
 
-                        figure_file = voxelFolder / f'{idx_j}-{idx_i}_FluxComparison'
-                        obj1_model.table_line_fluxes(figure_file, fit_results, combined_dict={'O2_7319A_b': 'O2_7319A-O2_7330A'})
-
-                        figure_file = voxelFolder / f'{idx_j}-{idx_i}_ParamsPosteriors.png'
-                        obj1_model.tracesPosteriorPlot(figure_file, fit_results)
-
-                        figure_file = voxelFolder / f'{idx_j}-{idx_i}_lineFluxPosteriors.png'
-                        obj1_model.fluxes_distribution(figure_file, fit_results, combined_dict={'O2_7319A_b': 'O2_7319A-O2_7330A'})
-
-                        figure_file = voxelFolder / f'{idx_j}-{idx_i}_cornerPlot.png'
-                        obj1_model.corner_plot(figure_file, fit_results)
-                        obj1_model.savefig(figure_file, resolution=200)
+        # Show summary
+        end = time.time()
+        print(f'- Execution time {(end - start)/60:.3f} min')

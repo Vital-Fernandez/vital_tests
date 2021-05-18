@@ -58,6 +58,51 @@ default_linelog_types = {'index': '<U50',
                  'obsInt': '<f8',
                  'obsIntErr': '<f8'}
 
+background_color = np.array((43, 43, 43))/255.0
+foreground_color = np.array((179, 199, 216))/255.0
+red_color = np.array((43, 43, 43))/255.0
+yellow_color = np.array((191, 144, 0))/255.0
+
+DARK_PLOT = {'figure.figsize': (14, 7),
+             'axes.titlesize': 14,
+             'axes.labelsize': 14,
+             'legend.fontsize': 12,
+             'xtick.labelsize': 12,
+             'ytick.labelsize': 12,
+             'text.color': foreground_color,
+             'figure.facecolor': background_color,
+             'axes.facecolor': background_color,
+             'axes.edgecolor': foreground_color,
+             'axes.labelcolor': foreground_color,
+             'xtick.color': foreground_color,
+             'ytick.color': foreground_color,
+             'legend.edgecolor': 'inherit',
+             'legend.facecolor': 'inherit'}
+
+label_Conver = {'H1_6563A': 'Halpha',
+               'H1_9229A': 'HPas9',
+               'H1_9015A': 'HPas10',
+               'H1_8863A': 'HPas11',
+               'H1_8750A': 'HPas12'}
+
+latex_Conver = {'H1_6563A': r'H\alpha',
+                'H1_4861A': r'H\beta',
+                'H1_9229A': r'H_{Pas,\,9}',
+                'H1_9015A': r'H_{Pas,\,10}',
+                'H1_8863A': r'H_{Pas,\,11}',
+                'H1_8750A': r'H_{Pas,\,12}',
+                'v_r': r'$v_{r}\,(km/s)$',
+                'sigma_vel': r'$\sigma_{int}\,(km/s)$'}
+
+dinamicLines = {'H1_6563A': r'$H\alpha_{Narrow}$',
+              'H1_6563A_w1': r'$H\alpha_{Broad\,1}$',
+              'H1_6563A_w2': r'$H\alpha_{Broad\,2}$',
+              'H1_4861A': r'$H\beta_{Narrow}$',
+              'H1_4861A_w1': r'$H\beta_{Broad\,1}$',
+              'O3_5007A': r'$[OIII]5007\AA_{Narrow}$',
+              'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$',
+              'O3_5007A': r'$[OIII]5007\AA_{Narrow}$',
+              'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$'}
 
 def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
 

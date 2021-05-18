@@ -1,17 +1,14 @@
 import numpy as np
-import pandas as pd
-from scipy.interpolate import interp1d
 import src.specsiser as sr
 from pathlib import Path
-from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, red_corr_HalphaHbeta_ratio, default_linelog_types
+from astro.data.muse.common_methods import background_color, DARK_PLOT
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
-import time
 from astropy.table import Table
 import pyneb as pn
 from src.specsiser.print.plot import STANDARD_PLOT
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 # Plot set up
 defaultConf = STANDARD_PLOT.copy()
@@ -33,8 +30,6 @@ dict_errs = {}
 dict_nan_values = {}
 
 ref_flux_line = 'S3_6312A'
-sulfur_bdry = int(obsData['Region_masks']['S3_direct_limit'])
-hydrogen_bdry = int(obsData['Region_masks']['H1_direct_limit'])
 verbose = False
 
 H1 = pn.RecAtom('H', 1)
@@ -100,7 +95,7 @@ for i, obj in enumerate(objList):
         with fits.open(fitsLog_addresss) as hdul:
 
             # Loop throught the line regions
-            for idx_region in [0, 1, 2]:
+            for idx_region in [0, 1, 2, 3]:
 
                 # Voxel mask
                 region_label = f'region_{idx_region}'

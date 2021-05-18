@@ -20,9 +20,10 @@ from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
 
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
-objList = obsData['sample_data']['object_list']
-fileList = obsData['sample_data']['file_list']
-dataFolder = Path(obsData['sample_data']['data_folder'])
+objList = obsData['data_location']['object_list']
+fileList = obsData['data_location']['file_list']
+fitsFolder = Path(obsData['data_location']['fits_folder'])
+dataFolder = Path(obsData['data_location']['data_folder'])
 z_objs = obsData['sample_data']['z_array']
 pertil_array = obsData['sample_data']['percentil_array']
 noise_region = obsData['sample_data']['noiseRegion_array']
@@ -35,15 +36,13 @@ for i, obj in enumerate(objList):
 
         # Data location
         db_address_i = dataFolder/f'{obj}_database.txt'
-        cube_address_i = dataFolder/fileList[i]
+        cube_address_i = fitsFolder/fileList[i]
         output_folder = dataFolder/obj
         mask_global_address_i = dataFolder / f'{obj}_mask.txt'
 
         # Load data
         wave, cube, header = sr.import_fits_data(cube_address_i, instrument='MUSE')
         wave_rest = wave / (1 + z_objs[i])
-        obj_db = pd.read_csv(db_address_i, delim_whitespace=True, header=0, index_col=0)
-        mask_df = pd.read_csv(mask_global_address_i, delim_whitespace=True, header=0, index_col=0)
 
         # Reset and measure the lines
         # lm = sr.LineMesurer(wave_rest, flux_voxel * norm_flux, normFlux=norm_flux, linesDF_address=mask_global_address_i)
@@ -54,7 +53,7 @@ for i, obj in enumerate(objList):
         lineFlux_dict, levelFlux_dict, levelText_dict = compute_line_flux_image(lineAreas, cube, z_objs[i],
                                                                                 percent_array=pertil_array)
         # Declare voxels to analyse
-        lineLabel = 'S3_6312A'
+        lineLabel = 'O3_5007A'
         percentil_array = pertil_array
         wcs_cube = WCS(cube.data_header)
         voxel_coord = (173, 169)
@@ -68,7 +67,7 @@ for i, obj in enumerate(objList):
         plotConf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Galaxy {obj} {lineLabel}'}}
 
         plotter = VoxelPlotter(wave_rest, cube, lineFlux_dict['H1_6563A'], voxel_coord, image_fg=lineFlux_dict[lineLabel],
-                              flux_levels=fluxLevels[2:], ax_user_conf=plotConf)
+                              flux_levels=fluxLevels[::-1][2:], ax_user_conf=plotConf)
         # plotter.plot_map_voxel(lineFlux_dict['H1_6563A'], voxel_coord, image_fg=lineFlux_dict[lineLabel],
         #                        flux_levels=fluxLevels[2:])
         # plt.show()

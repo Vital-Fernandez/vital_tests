@@ -56,7 +56,7 @@ for i, obj in enumerate(objList):
         flux6563_levels = np.nanpercentile(flux6563_image, pertil_array)
 
         Halpha_min_level = flux6563_levels[3]
-        sulfur_levels = np.arange(3)
+        sulfur_levels = np.array([0, 1, 2])
 
         for idx_sulfur in sulfur_levels:
 
@@ -90,8 +90,8 @@ for i, obj in enumerate(objList):
             store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 
 
-        # --------------------  Large Region
-        maFlux_image = np.ma.masked_where((flux6312_image < flux6312_levels[2]) &
+        # --------------------  Clusters mask
+        maFlux_image = np.ma.masked_where((flux6312_image < flux6312_levels[sulfur_levels[-1]]) &
                                           (flux6563_image >= Halpha_min_level),
                                           flux6563_image)
 
@@ -106,7 +106,8 @@ for i, obj in enumerate(objList):
         mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
         store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 
-        # ------------------------ Complete galaxy
+
+        # ------------------------ Intermediate galaxy
         maFlux_image = np.ma.masked_where((flux6563_image < Halpha_min_level) &
                                           (flux6563_image >= flux6563_levels[4]),
                                           flux6563_image)
@@ -119,6 +120,24 @@ for i, obj in enumerate(objList):
         plt.show()
 
         mask_name = f'region_4'
+        mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
+        store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
+
+
+
+        # ------------------------ Complete galaxy
+        maFlux_image = np.ma.masked_where((flux6563_image < flux6563_levels[4]) &
+                                          (flux6563_image >= flux6563_levels[5]),
+                                          flux6563_image)
+
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
+        ax.update({'title': r'{} galaxy, $H\alpha$ flux'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
+        im = ax.imshow(maFlux_image, cmap=cm.gray,
+                       norm=colors.SymLogNorm(linthresh=flux6563_levels[-2], vmin=flux6563_levels[-2], base=10))
+        plt.show()
+
+        mask_name = f'region_5'
         mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
         store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 

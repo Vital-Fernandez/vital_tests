@@ -25,9 +25,6 @@ norm_flux = obsData['sample_data']['norm_flux']
 dict_errs = {}
 dict_nan_values = {}
 
-ref_flux_line = 'S3_6312A'
-sulfur_bdry = int(obsData['Region_masks']['S3_direct_limit'])
-hydrogen_bdry = int(obsData['Region_masks']['H1_direct_limit'])
 verbose = False
 
 for i, obj in enumerate(objList):
@@ -52,7 +49,8 @@ for i, obj in enumerate(objList):
         red_model = sr.ExtinctionModel(Rv=obsData['Extinction']['R_v'], red_curve=obsData['Extinction']['red_law'])
 
         # Loop throught the line regions
-        for idx_region in [1]:
+        start = time.time()
+        for idx_region in [0, 1, 2, 3]:
 
             # Voxel mask
             region_label = f'region_{idx_region}'
@@ -65,11 +63,10 @@ for i, obj in enumerate(objList):
             mask_df = pd.read_csv(mask_address, delim_whitespace=True, header=0, index_col=0)
             user_conf = obsData[f'region{idx_region}_line_fitting']
 
-            print(f'\n - Treating {region_label} with {idcs_voxels.shape[0]} pixels)')
+            print(f'\n - Treating {region_label} with {idcs_voxels.shape[0]} pixels')
 
             # Loop through voxels
             n_lines = 0
-            start = time.time()
             for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
                 print(f'-- Treating voxel {idx_voxel} {idx_pair}')
@@ -131,10 +128,10 @@ for i, obj in enumerate(objList):
                     wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
                     try:
                         lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=user_conf)
-                        # if verbose:
-                        if lineLabel in ('H1_6563A_b'):
-                            lm.print_results(show_fit_report=True)
-                            lm.plot_fit_components(lm.fit_output, logScale=True)
+                        if verbose:
+                            if lineLabel in ('H1_6563A_b'):
+                                lm.print_results(show_fit_report=True)
+                                lm.plot_fit_components(lm.fit_output, logScale=True)
                     except ValueError as e:
                         err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
                         err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'
@@ -166,14 +163,14 @@ for i, obj in enumerate(objList):
                 # lm.save_lineslog(lm.linesDF, local_lineslog)
                 # lm.table_fluxes(lm.linesDF, pdfTableFile, txtTableFile, rc_pyneb)
 
-        # # Store the drive
-        # hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
-        # end = time.time()
-        #
-        # # Show summary
-        # for voxel_fail, error in dict_errs.items():
-        #     print(voxel_fail)
-        # print(f'- Execution time {end - start:.3f}s, for {n_lines} lines, errors {len(dict_errs.keys())}')
+            # Store the drive
+            hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
+            end = time.time()
+
+        # Show summary
+        for voxel_fail, error in dict_errs.items():
+            print(voxel_fail)
+        print(f'- Execution time {(end - start)/60:.3f} min, for {n_lines} lines, errors {len(dict_errs.keys())}')
 
 
 

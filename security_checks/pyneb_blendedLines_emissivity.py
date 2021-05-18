@@ -1,31 +1,23 @@
 import numpy as np
 import pyneb as pn
-from scipy.stats import truncnorm
-import matplotlib.pyplot as plt
-
-#
-# def trunc_limits(mu, sigma, lower_limit, upper_limit):
-#     return (lower_limit - mu) / sigma, (upper_limit - mu) / sigma
-#
-# mu, sigma, lower, upper = 75.0, 25.0, 1.0, np.infty,
-# a, b = trunc_limits(mu, sigma, lower, upper)
-# ne_lowReg = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=1000)
 
 H1 = pn.RecAtom('H', 1)
+
+ne, Te = 100, 10000.0
+
+print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
+print('Halpha/Hgamma', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4341))
+print('Halpha/Hdelta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4101))
+
+abund=0.005
+abund2=0.005
+
 O2 = pn.Atom('O', 2)
 S2 = pn.Atom('S', 2)
 O3 = pn.Atom('O', 3)
 S3 = pn.Atom('S', 3)
 N2 = pn.Atom('N', 2)
 
-ne, Te, abund, abund2 = 10000.0, 14000.0, 0.0005, 0.008
-
-
-print('N2', N2.getEmissivity(Te, ne, wave=6583) / N2.getEmissivity(Te, ne, wave=6548))
-# print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
-
-# print('O3', O3.getEmissivity(Te, ne, wave=5007) / O3.getEmissivity(Te, ne, wave=4959))
-print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
 
 Hbeta_em = H1.getEmissivity(Te, ne, wave=4861)
 S2_6717A_em = S2.getEmissivity(Te, ne, wave=6717)
@@ -84,6 +76,7 @@ print(np.nanmean(nSII_B), np.nanstd(nSII_B), np.isnan(nSII_B).sum())
 print(np.nanmean(nSII_G), np.nanstd(nSII_G))
 
 ne_SII_ = S2.getTemDen(np.array([15.61,12.11,27.73]) / np.array([13.59,14.13,27.71]), tem=13430.0, to_eval='L(6717)/L(6731)')
+
 print(ne_SII_)
 
 print()

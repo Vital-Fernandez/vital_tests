@@ -110,38 +110,38 @@ for i, obj in enumerate(objList):
             end = timer()
             print(f'-- Simulation with {HCm_conf["n"]} steps finished in {(end-start)} {HCm_conf["n"]/(end-start)}')
 
-            # Move data to folder
-            headers = ['ID', 'O2Hb', 'eO2Hb', 'O3Hb', 'eO3Hb', '4471Hb', 'e4471Hb', '5876Hb', 'e5876Hb', 'He2Hb', 'eHe2Hb', 'S2Hb', 'eS2Hb', 'S3Hb', 'eS3Hb', 'O/H','eO/H','Teff','eTeff','logU','elogU']
-            HII_chem_array = np.loadtxt(HII_Tef_fit_file)
-            HII_chemDF = pd.DataFrame(columns=headers)
-            HII_chemDF.loc[0] = HII_chem_array
-
-            # Compute the theoretical fluxes
-            logU_fit = (HII_chemDF.loc[0, 'logU'], HII_chemDF.loc[0, 'elogU'])
-            Teff_fit = (HII_chemDF.loc[0, 'Teff'], HII_chemDF.loc[0, 'eTeff'])
-            OH_fit = (HII_chemDF.loc[0, 'O/H'], HII_chemDF.loc[0, 'eO/H'])
-
-            outputFluxes_dict = {}
-            LogU_array = np.random.normal(logU_fit[0], logU_fit[1], size=MC_n)
-            Teff_vector = np.random.normal(Teff_fit[0], Teff_fit[1], size=MC_n)
-            OH_vector = np.random.normal(OH_fit[0], OH_fit[1], size=MC_n)
-            for lineLabel in list(lineInterpolator_dict.keys()):
-                lineOutFluxes = np.zeros(MC_n)
-                for i in np.arange(MC_n):
-                    coord_i = np.stack(([LogU_array[i]], [Teff_vector[i]], [OH_vector[i]]), axis=-1)
-                    lineOutFluxes[i] = lineInterpolator_dict[lineLabel](coord_i).eval()[0][0]
-                outputFluxes_dict[lineLabel] = np.power(10, lineOutFluxes)
-
-            # Store the data
-            HII_Chem_dict = {'logU': [HII_chemDF.loc[0, 'logU'], HII_chemDF.loc[0, 'elogU']],
-                            'Teff': [HII_chemDF.loc[0, 'Teff'], HII_chemDF.loc[0, 'eTeff']],
-                            'O/H':  [HII_chemDF.loc[0, 'O/H'], HII_chemDF.loc[0, 'eO/H']],
-                            'input_OH': [OH, OH_err],
-                            'n_steps': HCm_conf["n"],
-                            'simulation_time': end-start}
-            for lineLabel, lineArray in outputFluxes_dict.items():
-                HII_Chem_dict[lineLabel] = (np.mean(lineArray), np.std(lineArray))
-
-            ref_saving_file = f'HII_Tef_fit_{grid_file}_{cycle}_sed'
-            sr.parseConfDict(results_file, HII_Chem_dict, f'HII_Tef_fit_{grid_file}_{cycle}_sed', clear_section=True)
+            # # Move data to folder
+            # headers = ['ID', 'O2Hb', 'eO2Hb', 'O3Hb', 'eO3Hb', '4471Hb', 'e4471Hb', '5876Hb', 'e5876Hb', 'He2Hb', 'eHe2Hb', 'S2Hb', 'eS2Hb', 'S3Hb', 'eS3Hb', 'O/H','eO/H','Teff','eTeff','logU','elogU']
+            # HII_chem_array = np.loadtxt(HII_Tef_fit_file)
+            # HII_chemDF = pd.DataFrame(columns=headers)
+            # HII_chemDF.loc[0] = HII_chem_array
+            #
+            # # Compute the theoretical fluxes
+            # logU_fit = (HII_chemDF.loc[0, 'logU'], HII_chemDF.loc[0, 'elogU'])
+            # Teff_fit = (HII_chemDF.loc[0, 'Teff'], HII_chemDF.loc[0, 'eTeff'])
+            # OH_fit = (HII_chemDF.loc[0, 'O/H'], HII_chemDF.loc[0, 'eO/H'])
+            #
+            # outputFluxes_dict = {}
+            # LogU_array = np.random.normal(logU_fit[0], logU_fit[1], size=MC_n)
+            # Teff_vector = np.random.normal(Teff_fit[0], Teff_fit[1], size=MC_n)
+            # OH_vector = np.random.normal(OH_fit[0], OH_fit[1], size=MC_n)
+            # for lineLabel in list(lineInterpolator_dict.keys()):
+            #     lineOutFluxes = np.zeros(MC_n)
+            #     for i in np.arange(MC_n):
+            #         coord_i = np.stack(([LogU_array[i]], [Teff_vector[i]], [OH_vector[i]]), axis=-1)
+            #         lineOutFluxes[i] = lineInterpolator_dict[lineLabel](coord_i).eval()[0][0]
+            #     outputFluxes_dict[lineLabel] = np.power(10, lineOutFluxes)
+            #
+            # # Store the data
+            # HII_Chem_dict = {'logU': [HII_chemDF.loc[0, 'logU'], HII_chemDF.loc[0, 'elogU']],
+            #                 'Teff': [HII_chemDF.loc[0, 'Teff'], HII_chemDF.loc[0, 'eTeff']],
+            #                 'O/H':  [HII_chemDF.loc[0, 'O/H'], HII_chemDF.loc[0, 'eO/H']],
+            #                 'input_OH': [OH, OH_err],
+            #                 'n_steps': HCm_conf["n"],
+            #                 'simulation_time': end-start}
+            # for lineLabel, lineArray in outputFluxes_dict.items():
+            #     HII_Chem_dict[lineLabel] = (np.mean(lineArray), np.std(lineArray))
+            #
+            # ref_saving_file = f'HII_Tef_fit_{grid_file}_{cycle}_sed'
+            # sr.parseConfDict(results_file, HII_Chem_dict, f'HII_Tef_fit_{grid_file}_{cycle}_sed', clear_section=True)
 

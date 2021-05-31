@@ -9,6 +9,8 @@ from astropy.table import Table
 import pyneb as pn
 from src.specsiser.print.plot import STANDARD_PLOT
 
+sulfur_lines = {'S2_6716A': r'$[SII]6716\AA', 'S2_6731A': r'$[SII]6716\AA'}
+
 # Plot set up
 defaultConf = STANDARD_PLOT.copy()
 defaultConf['axes.titlesize'] = 20
@@ -51,6 +53,8 @@ for i, obj in enumerate(objList):
         # Extinction model
         red_model = sr.ExtinctionModel(Rv=obsData['Extinction']['R_v'], red_curve=obsData['Extinction']['red_law'])
 
+        regions_to_treat = [0, 1, 2, 3]
+
         # # ----------------------------------------- Generate the image data
         #
         # # Empty containers for the images
@@ -63,11 +67,15 @@ for i, obj in enumerate(objList):
         #     for param in ('v_r', 'sigma_vel'):
         #         image_dict[f'{param}_{dinLabel}'] = np.full(voxel_grid_size.astype(int), np.nan)
         #
+        # for dinLabel, plotLabel in sulfur_lines.items():
+        #     for param in ('v_r', 'sigma_vel'):
+        #         image_dict[f'{param}_{dinLabel}'] = np.full(voxel_grid_size.astype(int), np.nan)
+        #
         # # Open the lines log database
         # with fits.open(fitsLog_address) as hdul:
         #
         #     # Loop throught the line regions
-        #     for idx_region in [0, 1, 2, 3]:
+        #     for idx_region in regions_to_treat:
         #         region_label = f'region_{idx_region}'
         #         region_mask = fits.getdata(db_address, region_label, ver=1)
         #         region_mask = region_mask.astype(bool)
@@ -93,6 +101,32 @@ for i, obj in enumerate(objList):
         #                             image_dict[dict_label][idx_j, idx_i] = lineFlux# - theoEmis_dict[dict_label]
         #
         #                 for dinLabel, plotLabel in dinamicLines.items():
+        #                     if dinLabel in linesDF.index:
+        #                         for param in ('v_r', 'sigma_vel'):
+        #                             image_dict[f'{param}_{dinLabel}'][idx_j, idx_i] = linesDF.loc[dinLabel, param]
+        #
+        # # Open the lines log database
+        # fitsSIILog_address = objFolder / f'{obj}_linesLog_SII.fits'
+        # with fits.open(fitsSIILog_address) as hdul:
+        #
+        #     # Loop throught the line regions
+        #     for idx_region in regions_to_treat:
+        #         region_label = f'region_{idx_region}'
+        #         region_mask = fits.getdata(db_address, region_label, ver=1)
+        #         region_mask = region_mask.astype(bool)
+        #         idcs_voxels = np.argwhere(region_mask)
+        #
+        #         # Loop through the region voxels
+        #         for idx_voxel, idx_pair in enumerate(idcs_voxels):
+        #             idx_j, idx_i = idx_pair
+        #             logLabel = f'{idx_j}-{idx_i}_linelog'
+        #
+        #             # Load lines log data and store it as an image
+        #             if logLabel in hdul:
+        #                 linesDF = Table(hdul[logLabel].data).to_pandas()
+        #                 linesDF.set_index('index', inplace=True)
+        #
+        #                 for dinLabel, plotLabel in sulfur_lines.items():
         #                     if dinLabel in linesDF.index:
         #                         for param in ('v_r', 'sigma_vel'):
         #                             image_dict[f'{param}_{dinLabel}'][idx_j, idx_i] = linesDF.loc[dinLabel, param]
@@ -150,6 +184,7 @@ for i, obj in enumerate(objList):
             plt.show()
 
         # Recombination lines
+        dinamicLines.update(sulfur_lines)
         for dinLabel, latex_label in dinamicLines.items():
             for param in ('v_r', 'sigma_vel'):
 

@@ -30,7 +30,7 @@ for i, obj in enumerate(objList):
         simConf = dataFolder / f'{obj}_config.txt'
 
         # Declare output files
-        outputDb = objFolder / f'{obj}_{ext}_pI_fitting_{cycle}.db'
+        outputDb = objFolder / f'{obj}_{ext}_pI_fitting_{cycle}_2.db'
         outputTxt = objFolder / f'{obj}_{ext}_pI_fitting_{cycle}.txt'
 
         # Load data
@@ -79,27 +79,27 @@ for i, obj in enumerate(objList):
         # Run the simulation
         obj1_model.run_sampler(objFolder/outputDb, 5000, 2000, njobs=1)
 
-        # Plot the results
-        fit_results = sr.load_MC_fitting(outputDb)
-
-        print('-- Model parameters table')
-        figure_file = objFolder / f'{obj}_pI_fitting_MeanOutputs'
-        obj1_model.table_mean_outputs(figure_file, fit_results)
-
-        print('-- Model parameters posterior diagram')
-        figure_file = objFolder / f'{obj}_pI_fitting_ParamsPosteriors.png'
-        obj1_model.tracesPosteriorPlot(figure_file, fit_results)
-
-        print('-- Model parameters corner diagram')
-        figure_file = objFolder / f'{obj}_pI_fitting_cornerPlot.png'
-        obj1_model.corner_plot(figure_file, fit_results)
-
-        print('-- Model emission flux posteriors')
-        figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors.png'
-        obj1_model.fluxes_photoIonization_distribution(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
-                                                                                'S2_6716A_m': 'S2_6716A-S2_6731A'})
-
-        print('-- Model emission flux table')
-        figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors'
-        obj1_model.table_line_fluxes_photoIoniz(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
-                                                                                'S2_6716A_m': 'S2_6716A-S2_6731A'})
+        # # Plot the results
+        # fit_results = sr.load_MC_fitting(outputDb)
+        #
+        # print('-- Model parameters table')
+        # figure_file = objFolder / f'{obj}_pI_fitting_MeanOutputs'
+        # obj1_model.table_mean_outputs(figure_file, fit_results)
+        #
+        # print('-- Model parameters posterior diagram')
+        # figure_file = objFolder / f'{obj}_pI_fitting_ParamsPosteriors.png'
+        # obj1_model.tracesPosteriorPlot(figure_file, fit_results)
+        #
+        # print('-- Model parameters corner diagram')
+        # figure_file = objFolder / f'{obj}_pI_fitting_cornerPlot.png'
+        # obj1_model.corner_plot(figure_file, fit_results)
+        #
+        # print('-- Model emission flux posteriors')
+        # figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors.png'
+        # obj1_model.fluxes_photoIonization_distribution(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
+        #                                                                         'S2_6716A_m': 'S2_6716A-S2_6731A'})
+        #
+        # print('-- Model emission flux table')
+        # figure_file = objFolder/f'{obj}_pI_EmFluxPosteriors'
+        # obj1_model.table_line_fluxes_photoIoniz(figure_file, fit_results, combined_dict={'O2_3726A_m': 'O2_3726A-O2_3729A',
+        #                                                                         'S2_6716A_m': 'S2_6716A-S2_6731A'})

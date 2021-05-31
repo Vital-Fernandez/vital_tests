@@ -74,7 +74,7 @@ for i, obj in enumerate(objList):
 
 
             idcs_voxels = np.argwhere(maFlux_image.mask)
-            print(f'({idcs_voxels.shape[0]} pixels)')
+            print(f'region {idx_sulfur} ({idcs_voxels.shape[0]} pixels)')
 
             # if verbose:
             fig = plt.figure(figsize=(12, 8))
@@ -103,6 +103,8 @@ for i, obj in enumerate(objList):
         plt.show()
 
         mask_name = f'region_3'
+        print(f'{mask_name} ({np.count_nonzero(maFlux_image)} pixels)')
+
         mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
         store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 
@@ -120,6 +122,7 @@ for i, obj in enumerate(objList):
         plt.show()
 
         mask_name = f'region_4'
+        print(f'{mask_name} ({np.count_nonzero(~np.isnan(maFlux_image))} pixels)')
         mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
         store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 
@@ -138,6 +141,7 @@ for i, obj in enumerate(objList):
         plt.show()
 
         mask_name = f'region_5'
+        print(f'{mask_name} ({np.count_nonzero(~np.isnan(maFlux_image))} pixels)')
         mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
         store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
 

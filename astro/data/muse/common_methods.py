@@ -102,7 +102,9 @@ dinamicLines = {'H1_6563A': r'$H\alpha_{Narrow}$',
               'O3_5007A': r'$[OIII]5007\AA_{Narrow}$',
               'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$',
               'O3_5007A': r'$[OIII]5007\AA_{Narrow}$',
-              'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$'}
+              'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$',
+              'S3_9069A': r'$[SIII]9069\AA_{Narrow}$',
+              'He1_5876A': r'$HeI\,5876\AA_{Narrow}$'}
 
 def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
 

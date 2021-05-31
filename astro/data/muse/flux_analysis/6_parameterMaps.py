@@ -40,8 +40,8 @@ for i, obj in enumerate(objList):
         chemMaps_fits_address = objFolder/f'{obj}_ChemParamMaps.fits'
         theoLineMaps_fits_address = objFolder/f'{obj}_fitTheoFluxesMaps.fits'
 
-        # ----------------------------------------- Generate the image data -----------------------------------------
-
+        # # ----------------------------------------- Generate the image data -----------------------------------------
+        #
         # # Empty containers for the images
         # image_dict = {}
         # theoLines_dict = {}
@@ -120,16 +120,27 @@ for i, obj in enumerate(objList):
         halpha_cmap.set_under(background_color)
 
         # param lines
-        for i, param in enumerate(['T_low', 'n_e', 'cHbeta']):
+        for i, param in enumerate(['T_low', 'n_e', 'cHbeta', 'N/O', 'O']):
 
             fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y', 1))
 
-            param_image = fits.getdata(chemMaps_fits_address, param, ver=1)
+            if param != 'N/O' and param  != 'O':
+                param_image = fits.getdata(chemMaps_fits_address, param, ver=1)
+            if param == 'O':
+                O2 = np.power(10, fits.getdata(chemMaps_fits_address, 'O2', ver=1)-12)
+                O3 = np.power(10, fits.getdata(chemMaps_fits_address, 'O3', ver=1)-12)
+                param_image = 12 + np.log10(O2 + O3)
+                latex_labels['O'] = r'12+log(O)'
 
+            else:
+                N2 = np.power(10, fits.getdata(chemMaps_fits_address, 'N2', ver=1)-12)
+                O2 = np.power(10, fits.getdata(chemMaps_fits_address, 'O2', ver=1)-12)
+                param_image = np.log10(N2/O2)
+                latex_labels['N/O'] = r'log(N/O)'
             im = ax.imshow(flux6563_image, cmap=halpha_cmap,
                            norm=colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10))
-            im2 = ax.imshow(param_image, cmap='RdBu')
+            im2 = ax.imshow(param_image, vmin=7.7, vmax=8.5)
 
             cbar = fig.colorbar(im2, ax=ax)
 

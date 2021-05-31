@@ -34,4 +34,4 @@ for ion, params in atomic_data_dict.items():
     pdf.addTableRow(row, last_row=False, color_font='foreground', color_background='background')
 
 pdf.table.add_hline()
-pdf.generate_pdf(tables_folder/'atomic_data', clean_tex=True)
+pdf.generate_pdf(tables_folder/'atomic_data', clean_tex=False)

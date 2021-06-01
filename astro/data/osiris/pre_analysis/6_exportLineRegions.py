@@ -72,7 +72,7 @@ for i, obj in enumerate(objList):
             lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave])
 
             # Find the lines
-            lm.plot_spectrum_components(matchedLinesDF=linesLog_0_DF)
+            lm.plot_spectrum(matchedLinesDF=linesLog_0_DF)
 
             # # Set and crop the wavelength
             # print(f'-- Treating {counter} :{obj}{ext}.fits')

@@ -47,22 +47,24 @@ for i, obj in enumerate(objList):
     print('DATE', header['DATE'])
 
     # Create line measurer object
-    # lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
-    # lm.plot_spectrum_components()
+    lm = sr.LineMesurer(wave, flux, redshift=z_objs[i], normFlux=flux_norm, crop_waves=(wmin_array[i], wmax_array[i]))
+    lm.plot_spectrum()
 
-    # # # Fit and check the regions
-    # obsLines = maskDF.index.values
-    # for j, lineLabel in enumerate(obsLines):
-    #
-    #     print(f'-- {lineLabel}:')
-    #     wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
-    #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData[f'{obj}_line_fitting'])
-    #     # lm.print_results(show_fit_report=True, show_plot=True)
-    #
-    #     if lm.blended_check:
-    #         plotFile = f'{obj}_{ext}_deblend_{lineLabel}_{cycle}.png'
-    #         lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
-    #
+    # # Fit and check the regions
+    obsLines = maskDF.index.values
+    for j, lineLabel in enumerate(obsLines):
+
+        print(f'-- {lineLabel}:')
+        wave_regions = maskDF.loc[lineLabel, 'w1':'w6'].values
+        lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=obsData[f'{obj}_line_fitting'])
+        # lm.print_results(show_fit_report=True, show_plot=True)
+
+        if lm.blended_check:
+            plotFile = f'{obj}_{ext}_deblend_{lineLabel}_{cycle}.png'
+            lm.plot_fit_components(lm.fit_output, output_address=objFolder/plotFile)
+
+    lm.plot_line_grid(lm.linesDF)
+
     # # Save the lines log
     # lm.save_lineslog(lm.linesDF, lineLog_file)
     #

@@ -2,7 +2,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
+from src.specsiser.tools.line_measure import STANDARD_PLOT, STANDARD_AXES
 import pyneb as pn
 
 lineAreas = {'H1_6563A': (6558.0, 6568.0),

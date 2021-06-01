@@ -13,10 +13,6 @@ from src.specsiser.print.plot import STANDARD_PLOT
 from astropy.visualization import mpl_normalize, SqrtStretch
 from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, VoxelPlotter
 
-from matplotlib import pyplot as plt, rcParams, gridspec
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
-
-
 
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)

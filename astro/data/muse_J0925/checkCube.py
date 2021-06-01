@@ -85,7 +85,7 @@ for i, obj in enumerate(objList):
     flux_err = cube[:, idx_j, idx_i].var.data * norm_flux
 
     lm = sr.LineMesurer(wave, flux_voxel, redshift=z_objs[i], normFlux=norm_flux)
-    lm.plot_spectrum_components()
+    lm.plot_spectrum()
 
     # -------- Plot interactive spectrum
     plotConf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Galaxy {obj} O3_5007A'}}

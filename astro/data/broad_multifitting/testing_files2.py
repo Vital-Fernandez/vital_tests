@@ -32,7 +32,7 @@ for idx_obj, obj in enumerate(obj_list):
         # Individual line measurement
         lm = sr.LineMesurer(wave, flux, input_err=flux_data[0][1], normFlux=norm_flux, redshift=z_mean)
         fitConf = obsData[f'{obj}_individual_line_fitting']
-        lm.plot_spectrum_components(continuumFlux=lm.errFlux)
+        lm.plot_spectrum(continuumFlux=lm.errFlux)
 
         # Loop through the lines
         gauss_fluxes = {}

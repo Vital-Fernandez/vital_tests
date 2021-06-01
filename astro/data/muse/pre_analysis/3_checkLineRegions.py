@@ -56,7 +56,7 @@ for idx_obj, obj in enumerate(objList):
                     norm_flux = lm.continuum_remover(noise_region)
                     obsLinesTable = lm.line_finder(norm_flux, noiseWaveLim=noise_region, intLineThreshold=3)
                     obsLinesDF = lm.match_lines(obsLinesTable, sr._linesDb)
-                    lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=obsLinesDF)
+                    lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=obsLinesDF)
 
                     # # Get matched lines
                     # idcsObsLines = (obsLinesDF.observation == 'detected')

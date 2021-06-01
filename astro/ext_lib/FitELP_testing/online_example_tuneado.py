@@ -59,6 +59,7 @@ for rp in regions_parameters:
     plot_profiles(['H-Alpha', 'OIII-5007A', 'NII-6584A', 'SII-6717A'], rp, nameForComps='SII-6717A',
                   title=rp.regionName + ' Strongest Emission Lines', sortedIndex=[0, 1, 2, 3], logscale=True,
                   ymin=None)
+    plt.show()
 
 
 

@@ -104,7 +104,7 @@ for i, obj in enumerate(objList):
             flux_err = cube[:, idx_j, idx_i].var.data * norm_flux
 
             lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
-            lm.plot_spectrum_components(output_address=voxelSpectrum)
+            lm.plot_spectrum(output_address=voxelSpectrum)
 
             # Normalize
             try:

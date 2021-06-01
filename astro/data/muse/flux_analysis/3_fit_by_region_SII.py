@@ -85,7 +85,7 @@ for i, obj in enumerate(objList):
                 lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
 
                 if verbose:
-                    lm.plot_spectrum_components(specLabel=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
+                    lm.plot_spectrum(specLabel=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
 
                 # Security check for pixels with nan values:
                 idcs_nan = np.isnan(lm.flux)
@@ -107,7 +107,7 @@ for i, obj in enumerate(objList):
                 idcsObsLines = (maskLinesDF.observation == 'detected')
 
                 if verbose:
-                    lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
+                    lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
                     lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
 
                 # Reset and measure the lines

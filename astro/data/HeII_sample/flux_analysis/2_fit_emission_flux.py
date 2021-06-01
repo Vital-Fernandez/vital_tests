@@ -94,7 +94,7 @@ for i, obj in enumerate(objList):
 
             idcsObsLines = (local_maskDF.observation == 'detected')
             if verbose:
-                lm.plot_spectrum_components(obsLinesTable=obsLinesTable, matchedLinesDF=local_maskDF, specLabel=f'{obj}')
+                lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=local_maskDF, specLabel=f'{obj}')
                 lm.plot_detected_lines(local_maskDF[idcsObsLines], ncols=8)
 
 

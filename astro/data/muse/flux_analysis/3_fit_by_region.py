@@ -112,6 +112,7 @@ for i, obj in enumerate(objList):
             #         lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
             #
             #     # Reset and measure the lines
+            # TODO add the error as the 1/sqrt(flux_err)
             #     lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
             #
             #     # For central pixels with nan entries

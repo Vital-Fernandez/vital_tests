@@ -30,11 +30,11 @@ STANDARD_PLOT = {'figure.figsize': (7, 20),
                  'ytick.labelsize': 12}
 rcParams.update(STANDARD_PLOT)
 format_image = {}
-format_image['OffsetImage'] = {'zoom': 0.4}
-format_image['AnnotationBbox'] = {'xy': (0.895, 0.65),
+format_image['OffsetImage'] = {'zoom': 0.30}
+format_image['AnnotationBbox'] = {'xy': (0.89, 0.65),
                                   'xybox': (0., 0.),
                                   'xycoords': 'axes fraction',
-                                  'boxcoords': "offset points", "pad": 0.1}
+                                  'boxcoords': "offset points", "pad": 0.01}
 
 
 plot_x_low, plot_x_high = 3450, 7650
@@ -96,8 +96,11 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
             ax_small.set_yscale('log')
             ax_small.xaxis.set_major_locator(plt.NullLocator())
             ax_small.yaxis.set_major_locator(plt.NullLocator())
-            ax_small.yaxis.set_minor_locator(plt.NullLocator())
-            ax_small.yaxis.set_ticklabels([])
+            # ax_small.yaxis.set_minor_locator(plt.NullLocator())
+            ax_small.yaxis.set_ticklabels([], minor=True)
+            # ax_small.minorticks_off()
+            # ax_small.xaxis.set_major_locator(ticker.NullFormatter())
+            # ax_small.xaxis.set_minor_formatter(ticker.NullFormatter())
 
             if 2*i+1 == 5:
                 ax_small.xaxis.set_major_locator(ticker.FixedLocator([3500, 4500, 5500, 6500, 7500]))

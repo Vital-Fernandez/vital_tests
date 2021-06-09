@@ -70,4 +70,4 @@ for i, file_address in enumerate(addressList):
 
         # Plot the single lines:
         idcs_unblended = ~lm.linesDF.index.str.contains('_b')
-        lm.plot_detected_lines(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=plotFolder/plotFile)
+        lm.plot_line_mask_selection(lm.linesDF.loc[idcs_unblended], ncols=8, output_address=plotFolder / plotFile)

@@ -44,10 +44,10 @@ for line in linesForced:
 print(f'Treating {objList.size}')
 for i, obj in enumerate(objList):
 
-    # if obj == '290-51941-177':
+    if i > 223:
 
         # Inputs location
-        print(f'\n- Treating {obj}')
+        print(f'\n- Treating {obj} ({i}/{len(objList)})')
         fits_address = fits_folder/f'{obj}.fits'
         objFolder = results_folder/'line_measurements'/obj
 
@@ -66,73 +66,96 @@ for i, obj in enumerate(objList):
 
         lm = sr.LineMesurer(wave, flux, redshift=z_i, normFlux=normFlux)
 
-        # ------------------------------ Check available lines
-        idcs_nan = np.isnan(lm.flux)
-        flux_interpolated = None
+        norm_spec = lm.continuum_remover(noiseRegionLims=noise_region)
+        obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=1)
+        matchedDF = lm.match_lines(obsLinesTable, maskDF)
+        # lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=matchedDF, specLabel=f'Emission line detection')
 
-        if idcs_nan.any():
-            Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
-            flux_interpolated = Interpolation(lm.wave)
-            lm.flux = flux_interpolated
-            norm_spec = lm.continuum_remover(noise_region)
-        else:
-            try:
-                norm_spec = lm.continuum_remover(noise_region)
-            except:
-                norm_spec = None
+        for line in linesForced:
+            if line not in matchedDF.index:
+                matchedDF.loc[line] = maskDF.loc[line]
+        matchedDF.sort_values(by=['wavelength'], ascending=True, inplace=True)
 
-        if norm_spec is not None:
+        # Adding latex label to the plot
+        ion_array, wavelength_array, latexLabel_array = sr.label_decomposition(matchedDF.index.values)
+        matchedDF['latexLabel'] = latexLabel_array
 
-            # Identify the emission lines
-            obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=1)
-            local_maskDF = lm.match_lines(obsLinesTable, maskDF)
+        # Improve line region selection
+        lm.plot_line_mask_selection(matchedDF, local_mask)
 
-            # Add the following lines if they were missed:
-            for lineLabel in linesForced:
-                if local_maskDF.loc[lineLabel, 'observation'] == 'not detected':
-                    local_maskDF.loc[lineLabel, 'observation'] = 'detected'
-
-            idcsObsLines = (local_maskDF.observation == 'detected')
-            if verbose:
-                lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=local_maskDF, specLabel=f'{obj}')
-                lm.plot_detected_lines(local_maskDF[idcsObsLines], ncols=8)
+        # # Measure the emission lines
+        # lm = sr.LineMesurer(wave, flux, redshift=z_i, normFlux=normFlux)
+        # objMaskDF = sr.lineslogFile_to_DF(local_mask)
+        # for i, lineLabel in enumerate(objMaskDF.index.values):
+        #     wave_regions = objMaskDF.loc[lineLabel, 'w1':'w6'].values
+        #     lm.fit_from_wavelengths(lineLabel, wave_regions)
+        # lm.plot_line_grid(lm.linesDF)
 
 
-            # ------------------------------ Measure the fluxes
-            lm = sr.LineMesurer(wave, flux, redshift=z_i, normFlux=normFlux)
+# ------------------------------ Check available lines
+        # idcs_nan = np.isnan(lm.flux)
+        # flux_interpolated = None
+        #
+        # if idcs_nan.any():
+        #     Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
+        #     flux_interpolated = Interpolation(lm.wave)
+        #     lm.flux = flux_interpolated
+        #     norm_spec = lm.continuum_remover(noise_region)
+        # else:
+        #     try:
+        #         norm_spec = lm.continuum_remover(noise_region)
+        #     except:
+        #         norm_spec = None
+        #
+        # if norm_spec is not None:
+        #
+        #     # Identify the emission lines
+        #     obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=1)
+        #     local_maskDF = lm.match_lines(obsLinesTable, maskDF)
+        #
+        #     # Add the following lines if they were missed:
+        #     for lineLabel in linesForced:
+        #         if local_maskDF.loc[lineLabel, 'observation'] == 'not detected':
+        #             local_maskDF.loc[lineLabel, 'observation'] = 'detected'
 
-            # Fit and check the regions
-            obsLines = local_maskDF.loc[idcsObsLines].index.values
-            for j, lineLabel in enumerate(obsLines):
-                print(f'- {lineLabel}')
-                wave_regions = local_maskDF.loc[lineLabel, 'w1':'w6'].values
-                try:
-                    lm.fit_from_wavelengths(lineLabel, wave_regions)
-                    if lineLabel in ('He2_4686A', 'H1_6563A'):
-                        # if verbose and False:
-                        lm.plot_fit_components(lmfit_output=lm.fit_output, logScale=True, output_address=objFolder/f'{obj}_{lineLabel}_plot.png')
-                except:
-                    print(f'- Failure at: {lineLabel}')
+            # lm.plot_line_mask_selection(local_maskDF, local_mask)
+            #
 
-            # Check Extinction
-            lm.plot_line_grid(lm.linesDF, output_address=objFolder / f'{obj}_grid_plot.png')
-            lm.save_lineslog(local_maskDF.loc[local_maskDF['observation'] == 'detected'], local_mask)
-            lm.save_lineslog(lm.linesDF, local_lineslog)
-            lm.table_fluxes(lm.linesDF, pdf_lineslog)
-
-        for param in ('eqw', 'eqw_err'):
-            if (param in lm.linesDF) and ('H1_6563A' in lm.linesDF.index):
-                if param == 'eqw':
-                    properties_df.loc[obj, 'Eqw_Halpha'] = lm.linesDF.loc['H1_6563A', param]
-                else:
-                    properties_df.loc[obj, 'Eqw_Halpha_err'] = lm.linesDF.loc['H1_6563A', param]
-
-        for lineLabel in linesForced:
-            if lineLabel in lm.linesDF.index:
-                properties_df.loc[obj, f'{lineLabel}'] = lm.linesDF.loc[lineLabel, 'intg_flux']
-                properties_df.loc[obj, f'{lineLabel}_err'] = lm.linesDF.loc[lineLabel, 'intg_err']
-
-sr.save_lineslog(properties_df, properties_df_addresss)
+#             # ------------------------------ Measure the fluxes
+#             lm = sr.LineMesurer(wave, flux, redshift=z_i, normFlux=normFlux)
+#
+#             # Fit and check the regions
+#             obsLines = local_maskDF.loc[idcsObsLines].index.values
+#             for j, lineLabel in enumerate(obsLines):
+#                 print(f'- {lineLabel}')
+#                 wave_regions = local_maskDF.loc[lineLabel, 'w1':'w6'].values
+#                 try:
+#                     lm.fit_from_wavelengths(lineLabel, wave_regions)
+#                     if lineLabel in ('He2_4686A', 'H1_6563A'):
+#                         # if verbose and False:
+#                         lm.plot_fit_components(lmfit_output=lm.fit_output, logScale=True, output_address=objFolder/f'{obj}_{lineLabel}_plot.png')
+#                 except:
+#                     print(f'- Failure at: {lineLabel}')
+#
+#             # Check Extinction
+#             lm.plot_line_grid(lm.linesDF, output_address=objFolder / f'{obj}_grid_plot.png')
+#             lm.save_lineslog(local_maskDF.loc[local_maskDF['observation'] == 'detected'], local_mask)
+#             lm.save_lineslog(lm.linesDF, local_lineslog)
+#             lm.table_fluxes(lm.linesDF, pdf_lineslog)
+#
+#         for param in ('eqw', 'eqw_err'):
+#             if (param in lm.linesDF) and ('H1_6563A' in lm.linesDF.index):
+#                 if param == 'eqw':
+#                     properties_df.loc[obj, 'Eqw_Halpha'] = lm.linesDF.loc['H1_6563A', param]
+#                 else:
+#                     properties_df.loc[obj, 'Eqw_Halpha_err'] = lm.linesDF.loc['H1_6563A', param]
+#
+#         for lineLabel in linesForced:
+#             if lineLabel in lm.linesDF.index:
+#                 properties_df.loc[obj, f'{lineLabel}'] = lm.linesDF.loc[lineLabel, 'intg_flux']
+#                 properties_df.loc[obj, f'{lineLabel}_err'] = lm.linesDF.loc[lineLabel, 'intg_err']
+#
+# sr.save_lineslog(properties_df, properties_df_addresss)
             # if verbose:
 
                     # Save spectrum data:

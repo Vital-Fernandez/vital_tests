@@ -32,7 +32,7 @@ for i, file_address in enumerate(addressList):
     lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave], logFolder / logFile)
 
     # Plot the matched lines:
-    lm.plot_detected_lines(lm.linesDF, ncols=10)
+    lm.plot_line_mask_selection(lm.linesDF, ncols=10)
 
     # # Get observation data
     # objName = header['OBJECT']

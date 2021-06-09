@@ -98,13 +98,17 @@ halpha_cmap.set_under(background_color)
     # plt.tight_layout()
     # plt.show()
 
+dinamicLines = {'H1_6563A': r'$H\alpha_{Narrow}$',
+                'H1_4861A': r'$H\beta_{Narrow}$',
+                'O3_5007A': r'$[OIII]5007\AA_{Narrow}$'}
+# dinamicLines.update(sulfur_lines)
+('v_r', 'sigma_vel')
 # Recombination lines
-dinamicLines.update(sulfur_lines)
 for dinLabel, latex_label in dinamicLines.items():
-    for param in ('v_r', 'sigma_vel'):
+for param in ['v_r']:
 
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y', 1))
+        ax = fig.add_subplot()
 
         dict_label = f'{param}_{dinLabel}'
         param_image = fits.getdata(linesMaps_fits_address, dict_label, ver=1)
@@ -131,11 +135,11 @@ for dinLabel, latex_label in dinamicLines.items():
         cbar.set_label(label_bar, rotation=270, labelpad=50, fontsize=20)
 
         ax.update({'title': r'Galaxy {}: {}'.format(obj, latex_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-        plt.savefig(seminar_folder / f'{param}_{dinLabel}_image', dpi=300, bbox_inches='tight')
+        # plt.savefig(seminar_folder / f'{param}_{dinLabel}_image', dpi=300, bbox_inches='tight')
 
-        # plt.tight_layout()
+        plt.tight_layout()
         # plt.savefig(resultsFolder/obj/f'map_{obj}_{dinLabel}_{param}.png', bbox_inches='tight')
-        # plt.show()
+        plt.show()
 
 
 # # ----------------------------------------- Parameter maps

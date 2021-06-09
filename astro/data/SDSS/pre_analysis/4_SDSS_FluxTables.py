@@ -85,7 +85,7 @@ for i, file_address in enumerate(addressList):
         pdf.addTableRow([label_entry, eqw_entry, intgF_entry, gaussF_color_entry], last_row=lastRow_check)
 
     # Plot the matched lines:
-    lm.plot_detected_lines(lm.linesDF, ncols=5, output_address=figureLogAddress)
+    lm.plot_line_mask_selection(lm.linesDF, ncols=5, output_address=figureLogAddress)
 
     # Generate the table
     pdf.generate_pdf(clean_tex=True)

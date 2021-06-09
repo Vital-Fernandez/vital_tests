@@ -44,7 +44,7 @@ for i, file_address in enumerate(addressList):
     lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave], lineLogFolder / lineLogFile)
 
     # Plot the matched lines:
-    lm.plot_detected_lines(lm.linesDF, ncols=5)
+    lm.plot_line_mask_selection(lm.linesDF, ncols=5)
 
     # # Save dataframe to text file
     # linesLogAddressTreated = str(file_address).replace('.fits', '_treatedlinesLog.txt')

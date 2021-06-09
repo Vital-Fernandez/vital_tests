@@ -39,7 +39,7 @@ linesDb = lm.match_lines(linesTable, linesDb)
 lm.plot_spectrum_components(lm.flux - flux_noContinuum, linesTable, linesDb)
 
 # Plot the matched lines:
-lm.plot_detected_lines(linesDb)
+lm.plot_line_mask_selection(linesDb)
 
 # Measure line fluxes
 idcsObsLines = (linesDb.observation == 'detected')
@@ -68,7 +68,7 @@ linesLogAddress = data_folder / fileList[0].replace('.fits', '_linesLog.txt')
 lm.save_lineslog(linesDb.loc[idcsObsLines], linesLogAddress)
 
 # Plot the matched lines:
-lm.plot_detected_lines(linesDb)
+lm.plot_line_mask_selection(linesDb)
 
 
 # for label in ['H1_4861A', 'Ne3_3869A', 'H1_4341A', 'O3_5007A']:

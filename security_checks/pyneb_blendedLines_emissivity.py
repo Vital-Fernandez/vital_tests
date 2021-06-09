@@ -5,9 +5,7 @@ H1 = pn.RecAtom('H', 1)
 
 ne, Te = 100, 10000.0
 
-print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
-print('Halpha/Hgamma', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4341))
-print('Halpha/Hdelta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4101))
+
 
 abund=0.005
 abund2=0.005
@@ -18,6 +16,10 @@ O3 = pn.Atom('O', 3)
 S3 = pn.Atom('S', 3)
 N2 = pn.Atom('N', 2)
 
+print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
+print('Halpha/Hgamma', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4341))
+print('Halpha/Hdelta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4101))
+print('SIII/SIII', S3.getEmissivity(Te, ne, wave=9531) / S3.getEmissivity(Te, ne, wave=9069))
 
 Hbeta_em = H1.getEmissivity(Te, ne, wave=4861)
 S2_6717A_em = S2.getEmissivity(Te, ne, wave=6717)

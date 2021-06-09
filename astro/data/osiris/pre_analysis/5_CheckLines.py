@@ -80,7 +80,7 @@ for i, obj in enumerate(objList):
             idcsObsLines = (obsLinesDF.observation == 'detected')
             lm.linesDF = obsLinesDF[idcsObsLines]
             lm.linesLogAddress = lineLog_address
-            lm.plot_detected_lines(obsLinesDF[idcsObsLines], ncols=8)
+            lm.plot_line_mask_selection(obsLinesDF[idcsObsLines], ncols=8)
 
         counter += 1
 

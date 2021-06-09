@@ -108,7 +108,7 @@ for i, obj in enumerate(objList):
 
                 if verbose:
                     lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
-                    lm.plot_detected_lines(maskLinesDF[idcsObsLines], ncols=8)
+                    lm.plot_line_mask_selection(maskLinesDF[idcsObsLines], ncols=8)
 
                 # Reset and measure the lines
                 lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)

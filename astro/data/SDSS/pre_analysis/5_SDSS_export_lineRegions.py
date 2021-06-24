@@ -5,9 +5,9 @@ import src.specsiser as sr
 from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
-COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', 'eqw', 'eqw_err', 'm_continuum',
-                    'n_continuum', 'std_continuum', 'amp', 'mu', 'sigma', 'amp_err', 'mu_err', 'sigma_err',
-                    'pynebCode', 'pynebLabel', 'lineType','latexLabel', 'blended', 'observation', 'comments']
+COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', 'eqw', 'eqw_err', 'm_cont',
+                    'n_cont', 'std_cont', 'amp', 'mu', 'sigma', 'amp_err', 'mu_err', 'sigma_err',
+                    'pynebCode', 'pynebLabel', 'lineType','latexLabel', 'blended_label', 'observation', 'comments']
 
 
 def list_files(directory, extension):

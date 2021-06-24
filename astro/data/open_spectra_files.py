@@ -84,7 +84,7 @@ lm.plot_line_mask_selection(linesDb)
 #     lm.line_fitting(idcsLine, idcsContinua, bootstrap_size=1000)
 #
 #     # Pre-print
-#     outputLine = f'Integrated: {lm.lineIntgFlux}+/-{lm.lineIntgErr} -- Gaussian: {lm.lineGaussFlux}+/-{lm.lineGaussErr}'
+#     outputLine = f'Integrated: {lm.intg_flux}+/-{lm.intg_err} -- Gaussian: {lm.gauss_flux}+/-{lm.gauss_err}'
 #     print(outputLine)
 
 # fig, ax = plt.subplots()

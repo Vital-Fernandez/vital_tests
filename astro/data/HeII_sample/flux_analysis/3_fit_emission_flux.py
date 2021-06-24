@@ -210,7 +210,7 @@ sr.save_lineslog(properties_df, properties_df_addresss)
 #                     lm.fit_from_wavelengths(lineLabel, wave_regions)
 #                     if lineLabel in ('He2_4686A', 'H1_6563A'):
 #                         # if verbose and False:
-#                         lm.plot_fit_components(lmfit_output=lm.fit_output, logScale=True, output_address=objFolder/f'{obj}_{lineLabel}_plot.png')
+#                         lm.plot_fit_components(lmfit_output=lm.fit_output, log_scale=True, output_address=objFolder/f'{obj}_{lineLabel}_plot.png')
 #                 except:
 #                     print(f'- Failure at: {lineLabel}')
 #

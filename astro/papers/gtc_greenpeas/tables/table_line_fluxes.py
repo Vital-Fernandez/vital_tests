@@ -104,7 +104,7 @@ for i, obj in enumerate(objList[:3]):
 
 
 # Global tables
-tableDF = pd.DataFrame(columns=['wavelength', 'f_lambda', 'latexLabel', 'blended'])
+tableDF = pd.DataFrame(columns=['wavelength', 'f_lambda', 'latexLabel', 'blended_label'])
 objSubList = ['gp030321', 'gp101157', 'gp121903']
 
 # Combine dictionaries into one DF
@@ -117,7 +117,7 @@ for i, obj in enumerate(objSubList):
     for line in linesDF_i.index:
         if line not in tableDF.index:
             tableDF.loc[line] = [linesDF_i.loc[line, 'wavelength'], linesDF_i.loc[line, 'f_lambda'],
-                                 linesDF_i.loc[line, 'latexLabel'], linesDF_i.loc[line, 'blended']]
+                                 linesDF_i.loc[line, 'latexLabel'], linesDF_i.loc[line, 'blended_label']]
 tableDF.sort_values('wavelength', inplace=True)
 
 # Make table
@@ -146,7 +146,7 @@ pdf.addTableRow(row_subHeaders, last_row=True)
 for i, linelabel in enumerate(tableDF.index):
 
     # Line reference
-    if (tableDF.loc[linelabel, 'blended'] == 'None') or ('_m' in linelabel):
+    if (tableDF.loc[linelabel, 'blended_label'] == 'None') or ('_m' in linelabel):
         label_ref = tableDF.loc[linelabel, 'latexLabel']
     else:
         label_ref = tableDF.loc[linelabel, 'latexLabel'][:-1] + '_g$'

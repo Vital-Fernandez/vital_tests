@@ -9,7 +9,7 @@ from astropy.table import Table
 import pyneb as pn
 from src.specsiser.print.plot import STANDARD_PLOT
 
-sulfur_lines = {'S2_6716A': r'$[SII]6716\AA', 'S2_6731A': r'$[SII]6716\AA'}
+sulfur_lines = {'S2_6716A': r'$[SII]6716\AA$', 'S2_6731A': r'$[SII]6716\AA$'}
 
 # Plot set up
 defaultConf = STANDARD_PLOT.copy()
@@ -105,6 +105,19 @@ for i, obj in enumerate(objList):
         #                         for param in ('v_r', 'sigma_vel'):
         #                             image_dict[f'{param}_{dinLabel}'][idx_j, idx_i] = linesDF.loc[dinLabel, param]
         #
+        # # Storing the dictionary as a fits image file
+        # new_hdul = fits.HDUList()
+        # new_hdul.append(fits.PrimaryHDU())
+        #
+        # # Second page for the fits file plot configuration
+        # hdr_plot = fits.getheader(db_address, extname='PlotConf')
+        # hdu_table = fits.BinTableHDU.from_columns(columns=[], header=hdr_plot, name='PlotConf')
+        # new_hdul.append(hdu_table)
+        #
+        # for param_line, param_map in image_dict.items():
+        #     new_hdul.append(fits.ImageHDU(name=param_line, data=param_map, ver=1))
+        # new_hdul.writeto(linesMaps_fits_address, overwrite=True, output_verify='fix')
+        #
         # # Open the lines log database
         # fitsSIILog_address = objFolder / f'{obj}_linesLog_SII.fits'
         # with fits.open(fitsSIILog_address) as hdul:
@@ -144,8 +157,8 @@ for i, obj in enumerate(objList):
         #     new_hdul.append(fits.ImageHDU(name=param_line, data=param_map, ver=1))
         # new_hdul.writeto(linesMaps_fits_address, overwrite=True, output_verify='fix')
 
-        # ----------------------------------------- Generate the image plots
 
+        # ----------------------------------------- Generate the image plots
         hdr_plot = fits.getheader(linesMaps_fits_address, extname='PlotConf')
         flux6563_image = fits.getdata(db_address, f'H1_6563A_flux', ver=1)
         halpha_min_level = fits.getval(db_address, keyword=f'P9000', extname=f'H1_6563A_flux')
@@ -158,37 +171,43 @@ for i, obj in enumerate(objList):
         halpha_cmap = cm.gray
         halpha_cmap.set_under(background_color)
 
-        # Recombination lines
-        for chemLabel, plotLabel in label_Conver.items():
+        # # Recombination lines
+        # for chemLabel, plotLabel in label_Conver.items():
+        #
+        #     fig = plt.figure(figsize=(10, 10))
+        #     ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y', 1))
+        #
+        #     dict_label = f'{plotLabel}/Hbeta'
+        #     flux_image = fits.getdata(linesMaps_fits_address, dict_label, ver=1)
+        #
+        #     divnorm = colors.TwoSlopeNorm(vmin=np.nanmin(flux_image),
+        #                                   vcenter=theoEmis_dict[dict_label],
+        #                                   vmax=np.nanmax(flux_image))
+        #
+        #     im = ax.imshow(flux6563_image, cmap=halpha_cmap,
+        #                    norm=colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10))
+        #     im2 = ax.imshow(flux_image, cmap='RdBu', norm=divnorm)
+        #
+        #     cbar = fig.colorbar(im2, ax=ax)
+        #     cbar.set_label('Line ratio (white theoretical value)', rotation=270, labelpad=50, fontsize=15)
+        #
+        #     ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_Conver[chemLabel], latex_Conver['H1_4861A'])
+        #     ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+        #     plt.tight_layout()
+        #     plt.show()
 
-            fig = plt.figure(figsize=(10, 10))
-            ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y', 1))
-
-            dict_label = f'{plotLabel}/Hbeta'
-            flux_image = fits.getdata(linesMaps_fits_address, dict_label, ver=1)
-
-            divnorm = colors.TwoSlopeNorm(vmin=np.nanmin(flux_image),
-                                          vcenter=theoEmis_dict[dict_label],
-                                          vmax=np.nanmax(flux_image))
-
-            im = ax.imshow(flux6563_image, cmap=halpha_cmap,
-                           norm=colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10))
-            im2 = ax.imshow(flux_image, cmap='RdBu', norm=divnorm)
-
-            cbar = fig.colorbar(im2, ax=ax)
-            cbar.set_label('Line ratio (white theoretical value)', rotation=270, labelpad=50, fontsize=15)
-
-            ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_Conver[chemLabel], latex_Conver['H1_4861A'])
-            ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-            plt.tight_layout()
-            plt.show()
-
-        # Recombination lines
+        # Line kinematics
         dinamicLines.update(sulfur_lines)
+        vr_Halpha = fits.getdata(linesMaps_fits_address, 'v_r_H1_6563A', ver=1)
+        Halpha_label = dinamicLines['H1_6563A']
+        Halpha_mean, Halpha_std = np.nanmean(vr_Halpha), np.nanstd(vr_Halpha)
+        print(Halpha_mean, Halpha_std)
         for dinLabel, latex_label in dinamicLines.items():
-            for param in ('v_r', 'sigma_vel'):
+            for param in ['v_r']:#('v_r', 'sigma_vel'):
 
                 fig = plt.figure(figsize=(10, 10))
+                fig.tight_layout()
+
                 ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y', 1))
 
                 dict_label = f'{param}_{dinLabel}'
@@ -198,21 +217,25 @@ for i, obj in enumerate(objList):
                                norm=colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10))
 
                 if param == 'v_r':
-                    # param_min, param_max = np.nanmin(param_image), np.nanmax(param_image)
-                    # divnorm = colors.TwoSlopeNorm(vmin=param_min,
-                    #                               vcenter=0.0,
-                    #                               vmax=param_max)
-                    # im2 = ax.imshow(param_image, cmap='RdBu', norm=divnorm)
-                    im2 = ax.imshow(param_image)
+                    param_image = param_image - Halpha_mean
+                    param_min, param_max = np.nanmin(param_image), np.nanmax(param_image)
+                    divnorm = colors.TwoSlopeNorm(vcenter=0.0, vmin=-30, vmax=30)
+                    im2 = ax.imshow(param_image, cmap='RdBu_r', norm=divnorm)
+                    # title_label = f'$v_{{r}}$ {latex_label} - {Halpha_label}'
+                    title_label = f'$v_{{r}}$ {latex_label} -' + r'$\overline{v_{H\alpha}}$' + r' $({:.0f} \pm {:.0f}\,km/s)$'.format(Halpha_mean, Halpha_std)
 
                 else:
                     im2 = ax.imshow(param_image)
+                    title_label = f'$\sigma_{{int}})$ {Halpha_label}'
 
                 cbar = fig.colorbar(im2)
                 label_bar = latex_Conver[param]
                 cbar.set_label(label_bar, rotation=270, labelpad=50, fontsize=20)
 
-                ax.update({'title': r'Galaxy {}: {}'.format(obj, latex_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-                plt.tight_layout()
-                # plt.savefig(resultsFolder/obj/f'map_{obj}_{dinLabel}_{param}.png', bbox_inches='tight')
-                plt.show()
+                ax.update({'title': r'Galaxy {}: {}'.format(obj, title_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+                ax.set_xlim(100, 210)
+                ax.set_ylim(90, 240)
+
+                # plt.subplots_adjust(top=0.85)
+                plt.savefig(resultsFolder/obj/f'map_{obj}_{dinLabel}_{param}.png')
+                # plt.show()

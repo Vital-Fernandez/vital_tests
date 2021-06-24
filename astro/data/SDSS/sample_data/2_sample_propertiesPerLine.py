@@ -125,7 +125,7 @@ for lineLabel in lineList:
             flux_gauss = objDF.loc[lineLabel, 'gauss_flux'] / flux_Hbeta * scaleTable
             flux_gaussErr = objDF.loc[lineLabel, 'gauss_err'] / flux_Hbeta * scaleTable
 
-            if objDF.loc[lineLabel, 'blended'] != 'None':
+            if objDF.loc[lineLabel, 'blended_label'] != 'None':
                 flux, fluxErr = flux_gauss, flux_gaussErr
             else:
                 flux, fluxErr = flux_intg, flux_intgErr

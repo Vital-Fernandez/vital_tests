@@ -108,7 +108,6 @@ for i, obj in enumerate(objList):
 
                 if verbose:
                     lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
-                    lm.plot_line_mask_selection(maskLinesDF[idcsObsLines], ncols=8)
 
                 # Reset and measure the lines
                 lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
@@ -129,12 +128,9 @@ for i, obj in enumerate(objList):
                     # print(wave_regions)
                     # print(user_conf)
                     try:
-                        lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=user_conf)
-                        # lm.plot_fit_components(lm.fit_output, logScale=True)
-                        # if verbose:
-                        #     if lineLabel in ('H1_6563A_b'):
-                        #         lm.print_results(show_fit_report=True)
-                        #         lm.plot_fit_components(lm.fit_output, logScale=True)
+                        lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=user_conf)
+                        # lm.plot_fit_components(lm.fit_output, log_scale=True)
+
                     except ValueError as e:
                         err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
                         err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'

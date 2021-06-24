@@ -84,7 +84,7 @@ for i, obj in enumerate(objList):
         cntr1 = ax.contour(flux_image, levels=levelContours[::-1][idx_ion_boundary:], cmap='viridis', norm=colors.LogNorm())
 
         for idx, percentile in enumerate(pertil_array[::-1][idx_ion_boundary:]):
-            label = r'$P_{{{}}}([SIII]6312\AA)$'.format(idx, percentile)
+            label = r'$P_{{{}}}$({})'.format(idx, latexLabel)
             cntr1.collections[idx].set_label(label)
         ax.legend()
 

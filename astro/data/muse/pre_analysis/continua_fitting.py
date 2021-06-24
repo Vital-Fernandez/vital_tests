@@ -46,7 +46,7 @@ for lineLabel in listLabels:
     idcsLinePeak, idcsContinua = lm.define_masks(wave_regions)
     lm.line_properties(idcsLinePeak, idcsContinua, bootstrap_size=500)
     lm.gauss_mcfit(idcsLinePeak, idcsContinua, bootstrap_size=500)
-    flux_dict[lineLabel] = lm.lineIntgFlux
+    flux_dict[lineLabel] = lm.intg_flux
 
 # Reddening correction
 rc = pn.RedCorr()

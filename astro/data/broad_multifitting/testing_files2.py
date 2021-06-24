@@ -46,8 +46,8 @@ for idx_obj, obj in enumerate(obj_list):
 
             # Display results
             print(lm)
-            gauss_fluxes[lineLabel] = lm.lineGaussFlux
-            gauss_fluxes[lineLabel+'Err'] = lm.lineGaussErr
+            gauss_fluxes[lineLabel] = lm.gauss_flux
+            gauss_fluxes[lineLabel+'Err'] = lm.gauss_err
             sigma_fluxes[lineLabel] = lm.p1[2]
             sigma_fluxes[lineLabel+'Err'] = lm.p1_Err[2]
 

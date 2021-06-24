@@ -44,13 +44,13 @@ for i_obj, obj in enumerate(objList):
         lineLabel = 'H1_6563A'
         lm.fit_from_wavelengths(lineLabel, line_wavelengths=linesDF.loc[lineLabel, 'w1':'w6'].values)
         # lm.print_results(show_plot=True)
-        print(lineLabel, 'Joined', lm.lineIntgFlux, lm.lineIntgErr)
+        print(lineLabel, 'Joined', lm.intg_flux, lm.intg_err)
 
         lm_b.fit_from_wavelengths(lineLabel, line_wavelengths=linesDF.loc[lineLabel, 'w1':'w6'].values)
         # lm_b.print_results(show_plot=True)
-        print(lineLabel, 'Blue', lm_b.lineIntgFlux, lm_b.lineIntgErr)
+        print(lineLabel, 'Blue', lm_b.intg_flux, lm_b.intg_err)
 
-        print(f'Chang in {lineLabel} is b -> p: {1 - lm_b.lineIntgFlux/lm.lineIntgFlux}')
+        print(f'Chang in {lineLabel} is b -> p: {1 - lm_b.intg_flux / lm.intg_flux}')
         # # Plot spectra components
         # fig, ax = plt.subplots(figsize=(12, 8))
         # ax.plot(lm.wave, lm.flux, label='Object combined spectrum', linestyle='--', color='tab:purple')

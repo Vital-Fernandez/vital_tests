@@ -66,7 +66,7 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
         gs_obj = gs[i].subgridspec(2, 1, height_ratios=[2.5, 1], hspace=0.0, wspace=0.0)
         ax_big = fig.add_subplot(gs_obj[0, :])
         ax_small = fig.add_subplot(gs_obj[1, :])
-        # wspace = 0, hspace = 0
+
         if obj in ['gp030321', 'gp101157', 'gp121903']:
             print('- Ax big', 2*i)
             print('- Ax small', 2*i+1)
@@ -79,8 +79,8 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
             lm = sr.LineMesurer(wave, flux, redshift=z, normFlux=flux_norm, crop_waves=(wmin, wmax))
 
             # Big spectrum
-            ax_big.step(lm.wave, lm.flux, color='tab:blue', label=obj.replace('gp','GP'))
-            ax_big.set_xlim(plot_x_low, plot_x_high)
+            ax_big.step(lm.wave, lm.flux, color='tab:blue', label=obj.replace('gp','GP'), linewidth=1)
+            # ax_big.set_xlim(plot_x_low, plot_x_high)
             ax_big.xaxis.set_major_locator(plt.NullLocator())
             ax_big.xaxis.set_ticklabels([])
             if 2*i == 2:
@@ -89,10 +89,10 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
 
 
             # Small spectrum
-            ax_small.step(lm.wave, lm.flux, color='tab:blue')
+            ax_small.step(lm.wave, lm.flux, color='tab:blue', linewidth=0.5)
             low_limit, up_limit = np.median(lm.flux)/2, np.median(lm.flux)*5
             ax_small.set_ylim(low_limit, up_limit)
-            ax_small.set_xlim(plot_x_low, plot_x_high)
+            # ax_small.set_xlim(plot_x_low, plot_x_high)
             ax_small.set_yscale('log')
             ax_small.xaxis.set_major_locator(plt.NullLocator())
             ax_small.yaxis.set_major_locator(plt.NullLocator())

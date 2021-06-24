@@ -7,9 +7,9 @@ import astropy.units as u
 from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
-COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', 'eqw', 'eqw_err', 'm_continuum',
-                    'n_continuum', 'std_continuum', 'amp', 'mu', 'sigma', 'amp_err', 'mu_err', 'sigma_err',
-                    'pynebCode', 'pynebLabel', 'lineType', 'blended', 'comments', 'cont']
+COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', 'eqw', 'eqw_err', 'm_cont',
+                    'n_cont', 'std_cont', 'amp', 'mu', 'sigma', 'amp_err', 'mu_err', 'sigma_err',
+                    'pynebCode', 'pynebLabel', 'lineType', 'blended_label', 'comments', 'cont']
 
 # Declare data and files location
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

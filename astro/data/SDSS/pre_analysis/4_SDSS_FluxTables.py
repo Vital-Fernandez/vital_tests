@@ -75,7 +75,7 @@ for i, file_address in enumerate(addressList):
         intgF_entry = r'${:0.2f}$ $\pm$ ${:0.2f}$'.format(flux_intg/flux_Hbeta, flux_intgErr/flux_Hbeta)
         gaussF_entry = r'${:0.2f}$ $\pm$ ${:0.2f}$'.format(flux_gauss/flux_Hbeta, flux_gaussErr/flux_Hbeta)
 
-        if lm.linesDF.loc[lineLabel, 'blended'] == 'None':
+        if lm.linesDF.loc[lineLabel, 'blended_label'] == 'None':
             colorGrade = colorChooser(flux_intg/flux_gauss, 1.0)
         else:
             colorGrade = 'black'

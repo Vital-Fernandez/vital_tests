@@ -5,8 +5,8 @@ import src.specsiser as sr
 from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
-COLUMNS_TO_CLEAR = ['intg_flux' ,'intg_err','gauss_flux','gauss_err','eqw','eqw_err', 'm_continuum', 'n_continuum',
-                   'std_continuum','amp','mu','sigma','amp_err','mu_err','sigma_err']
+COLUMNS_TO_CLEAR = ['intg_flux' ,'intg_err','gauss_flux','gauss_err','eqw','eqw_err', 'm_cont', 'n_cont',
+                   'std_cont','amp','mu','sigma','amp_err','mu_err','sigma_err']
 
 # Import the observation data
 obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
@@ -52,11 +52,11 @@ for i, file_address in enumerate(addressList):
             line_components = obsData[f'{objName}_blended_lines'][line]
         else:
             line_components = default_blended_groups[line]
-        lm.linesDF.loc[line, 'blended'] = line_components
+        lm.linesDF.loc[line, 'blended_label'] = line_components
         for component in line_components.split('-'):
             if component in lm.linesDF.index:
                 lm.linesDF.drop(component, inplace=True)
-        # print('blended', line, default_blended_groups[line], lm.label_formatter(default_blended_groups[line]))
+        # print('blended_label', line, default_blended_groups[line], lm.label_formatter(default_blended_groups[line]))
         lm.linesDF.loc[line, 'latexLabel'] = lm.label_formatter(default_blended_groups[line])
 
     # Label the merged lines
@@ -67,7 +67,7 @@ for i, file_address in enumerate(addressList):
 
     for line in default_merged_groups:
         if line in lm.linesDF.index:
-            lm.linesDF.loc[line, 'blended'] = default_merged_groups[line]
+            lm.linesDF.loc[line, 'blended_label'] = default_merged_groups[line]
         components_list = default_merged_groups[line]
         for component in default_merged_groups:
             if component in lm.linesDF.index:

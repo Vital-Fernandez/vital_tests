@@ -189,8 +189,8 @@ for j, lineLabel in enumerate(lines_list):
         mu = lm.p1[1][0]
         sigma = lm.p1[2][0]
 
-        vr = c_KMpS * (mu - lm.peakWave)/lm.peakWave
-        sigma_vel = c_KMpS * sigma/lm.peakWave
+        vr = c_KMpS * (mu - lm.peak_wave) / lm.peak_wave
+        sigma_vel = c_KMpS * sigma/lm.peak_wave
 
         output_message = f'Rest frame: amp ({amp:0.2f}); mu ({mu:0.2f}); sigma ({sigma:0.2f}); vr ({vr:0.2f});  sigma_vel ({sigma_vel:0.2f})'
         print(output_message)
@@ -211,12 +211,12 @@ for j, lineLabel in enumerate(lines_list):
         obsLm.line_properties(emisWave, emisFlux, contWave, contFlux, bootstrap_size=5000)
 
         fit_model = Model(linear_model, prefix=f'{lineLabel}_cont_')
-        fit_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': obsLm.m_continuum, 'vary':False})
-        fit_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': obsLm.n_continuum, 'vary':False})
+        fit_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': obsLm.m_cont, 'vary':False})
+        fit_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': obsLm.n_cont, 'vary':False})
 
         fit_model += Model(gaussian_model, prefix=f'{lineLabel}_')
-        fit_model.set_param_hint(f'{lineLabel}_amplitude', value = obsLm.peakFlux - obsLm.cont)
-        fit_model.set_param_hint(f'{lineLabel}_center', value = obsLm.peakWave)
+        fit_model.set_param_hint(f'{lineLabel}_amplitude', value =obsLm.peak_flux - obsLm.cont)
+        fit_model.set_param_hint(f'{lineLabel}_center', value = obsLm.peak_wave)
         fit_model.set_param_hint(f'{lineLabel}_sigma', value = 1.0)
 
         x_array = wave[idcsEmis+idcsCont]
@@ -230,10 +230,10 @@ for j, lineLabel in enumerate(lines_list):
         mu = obs_fit_output.params[f"{lineLabel}_center"].value
         sigma = obs_fit_output.params[f"{lineLabel}_sigma"].value
 
-        vr = c_KMpS * (mu - obsLm.peakWave)/obsLm.peakWave
-        sigma_vel = c_KMpS * sigma/obsLm.peakWave
+        vr = c_KMpS * (mu - obsLm.peak_wave) / obsLm.peak_wave
+        sigma_vel = c_KMpS * sigma/obsLm.peak_wave
 
-        # print(f'intg flux ({obsLm.lineIntgFlux:.3e}); intg err ({obsLm.lineIntgErr:.3e})')
+        # print(f'intg flux ({obsLm.intg_flux:.3e}); intg err ({obsLm.intg_err:.3e})')
         output_message = f'Observed frame: amp ({amp:0.2f}); mu ({mu:0.2f}); sigma ({sigma:0.2f}); vr ({vr:0.2f});  sigma_vel ({sigma_vel:0.2f})'
         print(output_message)
 
@@ -257,10 +257,10 @@ for j, lineLabel in enumerate(lines_list):
         zeroLm.line_properties(emisWave, emisFlux, contWave, contFlux, bootstrap_size=5000)
 
         zerofit_model = Model(linear_model, prefix=f'{lineLabel}_cont_')
-        zerofit_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': zeroLm.m_continuum, 'vary':False})
-        zerofit_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': zeroLm.n_continuum, 'vary':False})
+        zerofit_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': zeroLm.m_cont, 'vary':False})
+        zerofit_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': zeroLm.n_cont, 'vary':False})
         zerofit_model += Model(gaussian_model, prefix=f'{lineLabel}_')
-        zerofit_model.set_param_hint(f'{lineLabel}_amplitude', value= zeroLm.peakFlux - zeroLm.cont)
+        zerofit_model.set_param_hint(f'{lineLabel}_amplitude', value=zeroLm.peak_flux - zeroLm.cont)
         zerofit_model.set_param_hint(f'{lineLabel}_center', value=0)
         zerofit_model.set_param_hint(f'{lineLabel}_sigma', value=30.0)
 
@@ -275,7 +275,7 @@ for j, lineLabel in enumerate(lines_list):
         mu = zeroFit_output.params[f"{lineLabel}_center"].value
         sigma = zeroFit_output.params[f"{lineLabel}_sigma"].value
 
-        # print(f'intg flux ({obsLm.lineIntgFlux:.3e}); intg err ({obsLm.lineIntgErr:.3e})')
+        # print(f'intg flux ({obsLm.intg_flux:.3e}); intg err ({obsLm.intg_err:.3e})')
         output_message = f'Velocity frame: amp ({amp:0.2f}); vr ({mu:0.2f}); sigma_vel ({sigma:0.2f})'
         print(output_message)
 
@@ -300,12 +300,12 @@ for j, lineLabel in enumerate(lines_list):
         # obsLm.line_properties(emisWave, emisFlux, contWave, contFlux, bootstrap_size=5000)
         #
         # unifSpeed_model = Model(linear_model, prefix=f'{lineLabel}_cont_')
-        # unifSpeed_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': obsLm.m_continuum, 'vary':False})
-        # unifSpeed_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': obsLm.n_continuum, 'vary':False})
+        # unifSpeed_model.set_param_hint(f'{lineLabel}_cont_slope', **{'value': obsLm.m_cont, 'vary':False})
+        # unifSpeed_model.set_param_hint(f'{lineLabel}_cont_intercept', **{'value': obsLm.n_cont, 'vary':False})
         #
         # unifSpeed_model += Model(gaussian_model, prefix=f'{lineLabel}_')
-        # unifSpeed_model.set_param_hint(f'{lineLabel}_amplitude', value = obsLm.peakFlux - obsLm.cont)
-        # unifSpeed_model.set_param_hint(f'{lineLabel}_center', value = obsLm.peakWave)
+        # unifSpeed_model.set_param_hint(f'{lineLabel}_amplitude', value = obsLm.peak_flux - obsLm.cont)
+        # unifSpeed_model.set_param_hint(f'{lineLabel}_center', value = obsLm.peak_wave)
         # unifSpeed_model.set_param_hint(f'{lineLabel}_sigma', value = 1.0)
         #
         # x_array = wave[idcsEmis+idcsCont]
@@ -319,10 +319,10 @@ for j, lineLabel in enumerate(lines_list):
         # mu = obs_fit_output.params[f"{lineLabel}_center"].value
         # sigma = obs_fit_output.params[f"{lineLabel}_sigma"].value
         #
-        # vr = c_KMpS * (mu - obsLm.peakWave)/obsLm.peakWave
-        # sigma_vel = c_KMpS * sigma/obsLm.peakWave
+        # vr = c_KMpS * (mu - obsLm.peak_wave)/obsLm.peak_wave
+        # sigma_vel = c_KMpS * sigma/obsLm.peak_wave
         #
-        # # print(f'intg flux ({obsLm.lineIntgFlux:.3e}); intg err ({obsLm.lineIntgErr:.3e})')
+        # # print(f'intg flux ({obsLm.intg_flux:.3e}); intg err ({obsLm.intg_err:.3e})')
         # output_message = f'Observed frame: amp ({amp:0.2f}); mu ({mu:0.2f}); sigma {sigma:0.2f}; vr ({vr:0.2f});  sigma_vel ({sigma_vel:0.2f})'
         # print(output_message)
         #

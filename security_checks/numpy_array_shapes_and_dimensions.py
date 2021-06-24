@@ -1,5 +1,40 @@
 import numpy as np
+
+
+def function_a(a, b, c, d):
+    return a + b + c + d/100000
+
+
+w = np.arange(6.0, 9.0, 0.5)
+x = np.arange(1, 1000, 200)
+y = np.arange(-4.0, -1.5, 0.5)
+z = np.arange(1e6, 1e7, 1e6)
+
+file_matrix = np.zeros((w.size*x.size*y.size*z.size, 5))
+i = 0
+for w_value in w:
+    for x_value in x:
+        for y_value in y:
+            for z_value in z:
+                file_matrix[i, 0] = w_value
+                file_matrix[i, 1] = x_value
+                file_matrix[i, 2] = y_value
+                file_matrix[i, 3] = z_value
+                file_matrix[i, 4] = function_a(w_value, x_value, y_value, z_value)
+                i += 1
+
+file_mdimArray = file_matrix[:, 4].reshape(len(w), len(x), len(y), len(z))
+
+print(file_mdimArray[0, 0, 0, 0])
+print(function_a(w[0], x[0], y[0], z[0]))
+
+# w_grid, x_grid, y_grid, z_grid = np.meshgrid(w, x, y, z)
 #
+# fa = function_a(w_grid, x_grid, y_grid, z_grid)
+# fb = function_b(w_grid, x_grid, y_grid, z_grid)
+#
+# print(fa)
+
 # a = np.array([[1, 2, 3, 4, 5],
 #               [5, 6, 7, 8, 9]])
 #
@@ -80,12 +115,12 @@ import numpy as np
 
 ## ----------------  Rearrenge orientation -----------------------
 
-matrix = np.array([[1,2,3,8,8],[0,0,4,5,6],[8,8,7,8,9],[1,2,0,5,2]])
-print('matrix original\n', matrix)
-matrix_1d = matrix.flatten()
-print('matrix flattend\n', matrix_1d)
-matrix_2d = np.reshape(matrix_1d, (4, 5))
-print('matrix reshaped\n', matrix_2d)
+# matrix = np.array([[1,2,3,8,8],[0,0,4,5,6],[8,8,7,8,9],[1,2,0,5,2]])
+# print('matrix original\n', matrix)
+# matrix_1d = matrix.flatten()
+# print('matrix flattend\n', matrix_1d)
+# matrix_2d = np.reshape(matrix_1d, (4, 5))
+# print('matrix reshaped\n', matrix_2d)
 
 
 

@@ -38,7 +38,7 @@ for i, file_address in enumerate(addressList):
     lm = sr.LineMesurer(wave_rest[idx_wave], flux[idx_wave] / fluxNorm, linesLogAddress)
 
     # Measure line fluxes
-    idcs_lines = (lm.linesDF['blended'] == 'None') | (lm.linesDF.index.str.contains('_b'))
+    idcs_lines = (lm.linesDF['blended_label'] == 'None') | (lm.linesDF.index.str.contains('_b'))
     obsLines = lm.linesDF.loc[idcs_lines].index.values
     blended_groups = obsData['blended_groups']
 

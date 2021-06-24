@@ -68,7 +68,7 @@ wave, flux, err_flux = np.loadtxt(outSide_file, unpack=True)
 #
 # lm.fit_from_wavelengths('H1_6563A_b', wave_regions, fit_conf=line_conf)
 # # lm.print_results(show_fit_report=True)
-# lm.plot_fit_components(lm.fit_output, logScale=True)
+# lm.plot_fit_components(lm.fit_output, log_scale=True)
 # lm.save_lineslog(lm.linesDF, file_address=outSide_df)
 
 #--------------------------------- Multiple lines -------------------------------------
@@ -109,7 +109,7 @@ wave, flux, err_flux = np.loadtxt(outSide_file, unpack=True)
 # for j, lineLabel in enumerate(obsLines):
 #     wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
 #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
-#     # lm.plot_fit_components(lm.fit_output, logScale=True)
+#     # lm.plot_fit_components(lm.fit_output, log_scale=True)
 # lm.save_lineslog(lm.linesDF, file_address=outSide_df)
 
 
@@ -144,7 +144,7 @@ wave, flux, err_flux = np.loadtxt(outSide_file, unpack=True)
 #     wave_regions = mask_df.loc[lineLabel, 'w1':'w6'].values
 #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
 #     # lm.print_results(show_fit_report=True)
-#     # lm.plot_fit_components(lm.fit_output, logScale=True)
+#     # lm.plot_fit_components(lm.fit_output, log_scale=True)
 # idcs_lines = ~lm.linesDF.index.str.contains('_b')
 # lm.save_lineslog(lm.linesDF[idcs_lines], file_address=outSide_kin_df)
 # lm.table_kinematics(lm.linesDF[idcs_lines], table_address=Path('/home/vital/Astro-data/muse_voxel_170-170_kinematics_IMPORT'))
@@ -186,7 +186,7 @@ wave, flux, err_flux = np.loadtxt(outSide_file, unpack=True)
 # for j, lineLabel in enumerate(obsLines):
 #     wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
 #     lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
-#     # lm.plot_fit_components(lm.fit_output, logScale=True)
+#     # lm.plot_fit_components(lm.fit_output, log_scale=True)
 # lm.save_lineslog(lm.linesDF, file_address=outSide_df)
 
 #--------------------------------- Copying kinematics -------------------------------------
@@ -217,7 +217,7 @@ lineLabel = 'H1_6563A_b'
 
 wave_regions = mask_df.loc[lineLabel, 'w1':'w6'].values
 lm.fit_from_wavelengths(lineLabel, wave_regions, fit_conf=line_conf)
-lm.plot_fit_components(lm.fit_output, logScale=True)
+lm.plot_fit_components(lm.fit_output, log_scale=True)
 
 
 idcs_lines = ~lm.linesDF.index.str.contains('_b')

@@ -62,7 +62,7 @@ for i, file_address in enumerate(addressList):
         flux_gauss = lm.linesDF.loc[lineLabel, 'gauss_flux'] / flux_Hbeta * scaleTable
         flux_gaussErr = lm.linesDF.loc[lineLabel, 'gauss_err'] / flux_Hbeta * scaleTable
 
-        if (lm.linesDF.loc[lineLabel, 'blended'] != 'None') and ('_m' not in lineLabel):
+        if (lm.linesDF.loc[lineLabel, 'blended_label'] != 'None') and ('_m' not in lineLabel):
             flux, fluxErr = flux_gauss, flux_gaussErr
             label_entry = label_entry + '$_{gauss}$'
         else:

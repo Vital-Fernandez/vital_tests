@@ -13,7 +13,11 @@ class ElectricCar(Car):
 
     def __init__(self, battery_type, model, color, mpg):
         self.battery_type=battery_type
-        super().__init__(model, color, mpg)
+        self.model = model
+        self.color = color
+        self.mpg = mpg
+
+        # super().__init__(model, color, mpg)
 
     def __str__(self):
         return '{}, {},{},{}'.format(self.battery_type, self.model, self.color, self.mpg)

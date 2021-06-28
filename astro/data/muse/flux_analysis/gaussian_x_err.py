@@ -114,25 +114,25 @@ data_in, curve_out = {}, {}
 mu_array, sigma_array = np.zeros(MC_size), np.zeros(MC_size)
 mu_err_array, sigma_err_array = np.zeros(MC_size), np.zeros(MC_size)
 
-# # Case all pixels share x_error value
-x_err = np.random.normal(loc=0, scale=0.625, size=(MC_size, wave.size))
+# Case all pixels share x_error value
+# x_err = np.random.normal(loc=0, scale=0.625, size=(MC_size, wave.size))
 # x_err = np.random.uniform(low=-0.625, high=0.625, size=MC_size)
-for i in range(MC_size):
-    x_in, y_in, x_out, y_out, mu, sigma, mu_err, sigma_err = lmfit_gaussian(wave + x_err[i], flux_voxel, flux_err, obsLineWaves)
-    data_in[i] = (x_in, y_in)
-    curve_out[i] = (x_out, y_out)
-    mu_array[i], sigma_array[i] = mu, sigma
-    mu_err_array[i], sigma_err_array[i] = mu_err, sigma_err
-
-# Case each pixel has an independent x_error value
-x_err = np.random.normal(loc=0, scale=0.625, size=(MC_size, wave.size))
-# x_err = np.random.uniform(low=-0.625, high=0.625, size=(MC_size, wave.size))
 # for i in range(MC_size):
-#     x_in, y_in, x_out, y_out, mu, sigma, mu_err, sigma_err = lmfit_gaussian(wave + x_err[i, :], flux_voxel, flux_err, obsLineWaves)
+#     x_in, y_in, x_out, y_out, mu, sigma, mu_err, sigma_err = lmfit_gaussian(wave + x_err[i], flux_voxel, flux_err, obsLineWaves)
 #     data_in[i] = (x_in, y_in)
 #     curve_out[i] = (x_out, y_out)
 #     mu_array[i], sigma_array[i] = mu, sigma
 #     mu_err_array[i], sigma_err_array[i] = mu_err, sigma_err
+
+# Case each pixel has an independent x_error value
+# x_err = np.random.normal(loc=0, scale=0.625, size=(MC_size, wave.size))
+x_err = np.random.uniform(low=-0.625, high=0.625, size=(MC_size, wave.size))
+for i in range(MC_size):
+    x_in, y_in, x_out, y_out, mu, sigma, mu_err, sigma_err = lmfit_gaussian(wave + x_err[i, :], flux_voxel, flux_err, obsLineWaves)
+    data_in[i] = (x_in, y_in)
+    curve_out[i] = (x_out, y_out)
+    mu_array[i], sigma_array[i] = mu, sigma
+    mu_err_array[i], sigma_err_array[i] = mu_err, sigma_err
 
 # print(f'Guassian center = {mu_array.mean():.2f} +/- {mu_array.std():.2f} (Angstroms) => uncertainty {300000*(6563*(1+z_galaxy)-mu_array).mean()/6563:.2f} km/s')
 print(f'Guassian center = {mu_array.mean():.2f} +/- {mu_array.std():.2f} (Angstroms) => uncertainty {300000*mu_array.std()/6563:.2f} km/s')
@@ -143,7 +143,7 @@ input_x, input_y = data_in[0]
 ax.step(input_x, input_y, where='mid', label=lineLabel)
 for i in range(MC_size):
     x_out, f_out = curve_out[i]
-    ax.plot(x_out, f_out, alpha=0.1, color='tab:orange')
+    ax.plot(x_out, f_out, alpha=0.05, color='tab:orange')
 ax.set_yscale('log')
 ax.legend()
 plt.show()

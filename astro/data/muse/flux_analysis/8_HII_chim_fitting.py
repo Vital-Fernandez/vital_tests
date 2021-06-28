@@ -1,77 +1,110 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-
-grid_columns = {'logZ': 'logZ',
-                'logU': 'logU',
-                'logNO': 'logNO',
-                'carbon': 'carbon',
-                'o3726': 'O2_3726A',
-                'o3729': 'O2_3729A',
-                'ne3869': 'Ne3_3869A',
-                'ne3968': 'Ne3_3868A',
-                'h3970': 'H1_3970A',
-                's4070': 'S2_4069A',
-                's4078': 'S2_4078A',
-                'h4102': 'H1_4102A',
-                'c4267': 'C2_4267A',
-                'h4341': 'H1_4341A',
-                'o4363': 'O3_4363A',
-                'he4471': 'He1_4471A',
-                'o4651': 'O2_4651A',
-                'c4659': 'C2_4659A',
-                'fe4668': 'Fe3_4668A',
-                'he4686': 'He2_4686A',
-                'ar4711': 'Ar4_4711A',
-                'ar4740': 'Ar4_4740A',
-                'h4861': 'H1_4861A',
-                'o4959': 'O3_4959A',
-                'o5007': 'O3_5007A',
-                'ar5192': 'Ar3_5192A',
-                'n5198': 'N1_5198A',
-                'n5200': 'N1_5200A',
-                'cl5518': 'Cl3_5518A',
-                'cl5538': 'Cl3_5538A',
-                'n5755': 'N2_5755A',
-                'he5876': 'He1_5876A',
-                'o6300': 'O1_6300A',
-                's6312': 'S3_6312A',
-                'n6548': 'N2_6548A',
-                'h6563': 'H1_6563A',
-                'n6584': 'N2_6584A',
-                'he6678': 'He1_6678A',
-                's6716': 'S2_6716A',
-                's6731': 'S2_6731A',
-                'he7065': 'He1_7065A',
-                'ar7135': 'Ar3_7136A',
-                'o7323': 'O2_7319A',
-                'o7332': 'O2_7330A',
-                'ar7751': 'Ar3_7751A',
-                's9069': 'S3_9069A',
-                's9532': 'H1_9229A'}
-
-grid_file = Path('/home/vital/Dropbox/Astrophysics/Data/muse-Ricardo/Data/HII-CHI-mistry_1Myr_grid.csv')
-grid_DF = pd.read_csv(grid_file, skiprows=1, names=grid_columns.values())
-grid_DF.logNO = np.round(grid_DF.logNO.values, decimals=3)
+import src.specsiser as sr
+import time
+from astropy.io import fits
+from astropy.table import Table
+from astro.data.muse.common_methods import grid_HII_CHI_mistry_conversion as labelConver
+from astro.papers.gtc_greenpeas.common_methods import epm_HII_CHI_mistry
 
 
-Halpha = np.power(10, grid_DF['H1_4341A'].values)
+# Declare data and files location
+obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
+objList = obsData['data_location']['object_list']
+fileList = obsData['data_location']['file_list']
+fitsFolder = Path(obsData['data_location']['fits_folder'])
+dataFolder = Path(obsData['data_location']['data_folder'])
+resultsFolder = Path(obsData['data_location']['results_folder'])
 
-w = np.unique(grid_DF.logZ.values)
-x = np.unique(grid_DF.logU.values)
-y = np.unique(grid_DF.logNO.values)
-z = np.unique(grid_DF.carbon.values)
+z_objs = obsData['sample_data']['z_array']
+pertil_array = obsData['sample_data']['percentil_array']
+noise_region = obsData['sample_data']['noiseRegion_array']
+norm_flux = obsData['sample_data']['norm_flux']
 
-file_matrix = grid_DF['O2_3726A'].values
-file_mdimArray = file_matrix.reshape(len(w), len(x), len(y), len(z))
+for i, obj in enumerate(objList):
 
-idx_w = 2
-idx_x = 3
-idx_y = 15
-idx_z = 0
-print(w[idx_w], x[idx_x], y[idx_y], z[idx_z])
+    if i == 0:
 
-print(file_mdimArray[idx_w, idx_x, idx_y, idx_z])
+        # Data location
+        cube_address = fitsFolder/fileList[i]
+        objFolder = resultsFolder/obj
+        voxelFolder = resultsFolder/obj/'voxel_data'
+        db_address = objFolder / f'{obj}_database.fits'
+        fitsLog_address = objFolder / f'{obj}_linesLog.fits'
+
+        # Output data
+        HIIchimistry_fits = objFolder / f'{obj}_HIIchimistry.fits'
+        hdul_lineslog = fits.HDUList()
+
+        # Loop throught the line regions
+        start = time.time()
+        for idx_region in [0, 1, 2]:
+
+            region_label = f'region_{idx_region}'
+            region_mask = fits.getdata(db_address, region_label, ver=1)
+            region_mask = region_mask.astype(bool)
+            idcs_voxels = np.argwhere(region_mask)
+
+            # Loop through the region voxels
+            n_voxels = idcs_voxels.shape[0]
+            for idx_voxel, idx_pair in enumerate(idcs_voxels):
+
+                print(f'-- Treating voxel {idx_voxel}/{n_voxels} ({idx_pair})')
+                idx_j, idx_i = idx_pair
+                logLabel = f'{idx_j}-{idx_i}_linelog'
+                # output_fit_file = objFolder/'voxel_treatments'/f'{idx_j}-{idx_i}_HII_CHI_mistry_fit.txt'
+
+                # Load voxel lines log
+                linesLog_BinTable = fits.getdata(fitsLog_address, logLabel, ver=1)
+                linesDF = Table(linesLog_BinTable).to_pandas()
+                linesDF.set_index('index', inplace=True)
+
+                # Prepare data for HII-CHI-mistry
+                idcs_inputLines = linesDF.index.isin(labelConver.keys())
+                input_lines = linesDF.loc[idcs_inputLines].index.values
+
+                HII_CHI_mistry_DF = pd.DataFrame()
+                HII_CHI_mistry_DF.loc[0, 'ID'] = logLabel
+                flux_Hbeta = linesDF.loc['H1_4861A', 'intg_flux']
+                for lineLabel in input_lines:
+                    HII_CHI_mistry_DF.loc[0, labelConver[lineLabel]] = linesDF.loc[lineLabel, 'intg_flux'] / flux_Hbeta
+                    HII_CHI_mistry_DF.loc[0, f'e{labelConver[lineLabel]}'] = linesDF.loc[lineLabel, 'intg_err'] / flux_Hbeta
+                lineSA = HII_CHI_mistry_DF.to_records(index=False) #column_dtypes=default_linelog_types, index_dtypes='<U50')
+
+                # Run HII-CHI-mistry
+                outputSA = epm_HII_CHI_mistry(lineSA, output_file='None', n=200, sed=1, inter=1)
+                linesCol = fits.ColDefs(outputSA)
+                linesHDU = fits.BinTableHDU.from_columns(linesCol, name=f'{idx_j}-{idx_i}_HIIchimistry')
+                hdul_lineslog.append(linesHDU)
+
+            # Store the drive
+            hdul_lineslog.writeto(HIIchimistry_fits, overwrite=True, output_verify='fix')
+        end = time.time()
+
+print(f'- Execution time {(end - start)/60:.3f} min')
+
+# grid_file = Path('/home/vital/Dropbox/Astrophysics/Data/muse-Ricardo/Data/HII-CHI-mistry_1Myr_grid.csv')
+# grid_DF = pd.read_csv(grid_file, skiprows=1, names=grid_columns.values())
+# grid_DF.logNO = np.round(grid_DF.logNO.values, decimals=3)
+#
+# Halpha = np.power(10, grid_DF['H1_4341A'].values)
+#
+# w = np.unique(grid_DF.logZ.values)
+# x = np.unique(grid_DF.logU.values)
+# y = np.unique(grid_DF.logNO.values)
+# z = np.unique(grid_DF.carbon.values)
+#
+# file_matrix = grid_DF['O2_3726A'].values
+# file_mdimArray = file_matrix.reshape(len(w), len(x), len(y), len(z))
+#
+# idx_w = 2
+# idx_x = 3
+# idx_y = 15
+# idx_z = 0
+# print(w[idx_w], x[idx_x], y[idx_y], z[idx_z])
+#
+# print(file_mdimArray[idx_w, idx_x, idx_y, idx_z])
 # import pandas as pd
 # import pymysql
 # import matplotlib.pyplot as plt

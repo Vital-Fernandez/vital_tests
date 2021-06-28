@@ -2,7 +2,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import src.specsiser as sr
-from astro.papers.gtc_greenpeas.common_methods import epm_fitting
+from astro.papers.gtc_greenpeas.common_methods import
+
 from timeit import default_timer as timer
 from physical_model.gasEmission_functions import gridInterpolatorFunction
 
@@ -106,7 +107,7 @@ for i, obj in enumerate(objList):
 
             start = timer()
             print(f'-- Simulation starting at OH = {OH}+/-{OH_err}')
-            epm_fitting(str(epmLineLog_file), HII_Tef_fit_file, **HCm_conf, HCm_folder=HCm_folder)
+            epm_HII_CHI_mistry_Teff(str(epmLineLog_file), HII_Tef_fit_file, **HCm_conf, HCm_folder=HCm_folder)
             end = timer()
             print(f'-- Simulation with {HCm_conf["n"]} steps finished in {(end-start)} {HCm_conf["n"]/(end-start)}')
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import src.specsiser as sr
 from physical_model.gasEmission_functions import gridInterpolatorFunction
-from astro.papers.gtc_greenpeas.common_methods import epm_fitting
+from astro.papers.gtc_greenpeas.common_methods import epm_HII_CHI_mistry_Teff
 
 conversion_dict = dict(O2_3726A_m='OII_3727',
                        Ne3_3869A='NeIII_3868',
@@ -115,7 +115,7 @@ HCm_conf = dict(n=2000,
                 inter=1,
                 grid_file=f'{HCm_folder}/{grid_file}')
 
-epm_fitting(str(epmLineLog_file), HII_Tef_fit_file, **HCm_conf, HCm_folder=HCm_folder)
+epm_HII_CHI_mistry_Teff(str(epmLineLog_file), HII_Tef_fit_file, **HCm_conf, HCm_folder=HCm_folder)
 
 # Load fit data
 output_headers = ['ID', 'O2Hb', 'eO2Hb', 'O3Hb', 'eO3Hb', '4471Hb', 'e4471Hb', '5876Hb', 'e5876Hb',

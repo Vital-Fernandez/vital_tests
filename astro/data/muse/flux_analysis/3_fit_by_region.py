@@ -70,7 +70,6 @@ for i, obj in enumerate(objList):
             n_voxels = idcs_voxels.shape[0]
             for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
-                print(f'-- Treating voxel {idx_voxel}/{n_voxels} ({idx_pair})')
                 idx_j, idx_i = idx_pair
                 voxel_dict = {}
 

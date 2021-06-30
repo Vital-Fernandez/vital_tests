@@ -35,7 +35,7 @@ def read_multidimensional_txt(file_address, file_headers, O3_label):
             lineCube = lineGrid.reshape((10, 9, lineLabels.size))
             grid_dict[lineLabel][:, :, j] = lineCube[:, :, i]
 
-    # # Testing the recovering data:
+    # # Pre_analysis the recovering data:
     # idx_Line = 0
     # lineLabel = lineLabels[idx_Line]
     # cord_Te0_ne0 = grid_array[90, idx_Line + 3]
@@ -147,7 +147,7 @@ print('6 Exoplanet interpolation array', exop_interp.evaluate(coordB).eval())
 #     print(row[0], row[1], row[2])
 #
 
-# Testing the recovering data:
+# Pre_analysis the recovering data:
 # idx_Line = 0
 # cord_Te0_ne0 = grid_array[0, idx_Line + 3]
 # cord_Te1_ne0 = grid_array[1, idx_Line + 3]

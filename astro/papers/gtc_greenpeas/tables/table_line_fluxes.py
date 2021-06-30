@@ -136,7 +136,7 @@ row_subHeaders = ['Line label', r'$f_{\lambda}$',
 
 # Table heading
 pdf = PdfPrinter()
-pdf.create_pdfDoc(pdf_type=None)
+pdf.create_pdfDoc(pdf_type='table')
 pdf.pdf_insert_table(row_headers, table_format=table_header_format, addfinalLine=False)
 # pdf.table.add_hline(3, 4, cmidruleoption='l{10pt}r{2pt}')
 # pdf.table.add_hline(5, 6)

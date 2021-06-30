@@ -208,10 +208,11 @@ def double_arm_redCorr(wave_spec, flux_spec, wave_boundary, red_law, red_R_V, cH
 
 
 def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
+
     required_columns = {'blended_label', 'intg_flux', 'gauss_flux', 'intg_err', 'gauss_err', 'latexLabel'}
-    assert required_columns.issubset(
-        line_DF.columns), f'-- ERROR: one or severals columns from {required_columns} missing in lines log'
-    assert norm_line in line_DF.index, f'\n-- ERROR: normalizing line {norm_line} was not found in lines log'
+    # assert required_columns.issubset(
+    #     line_DF.columns), f'-- ERROR: one or severals columns from {required_columns} missing in lines log'
+    # assert norm_line in line_DF.index, f'\n-- ERROR: normalizing line {norm_line} was not found in lines log'
 
     # Normalization wave
     flux_label = 'intg_' if line_DF.loc[norm_line, 'blended_label'] == 'None' else 'gauss_'

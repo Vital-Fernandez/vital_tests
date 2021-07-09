@@ -145,24 +145,24 @@ for i, obj in enumerate(objList):
                     lm.plot_line_grid(lm.linesDF)
                     cHbeta, cHbeta_err = red_model.cHbeta_from_log(lm.linesDF, plot_address=True)
 
-        #         # Spectrum data
-        #         n_lines += len(lm.linesDF.index)
-        #         voxel_dict['N_Lines'] = len(lm.linesDF.index)
-        #         voxel_dict['N_nan'] = idcs_nan.sum()
-        #
-        #         # Converting linesLog to fits
-        #         linesSA = lm.linesDF.to_records(index=True, column_dtypes=default_linelog_types, index_dtypes='<U50')
-        #         linesCol = fits.ColDefs(linesSA)
-        #         linesHDU = fits.BinTableHDU.from_columns(linesCol, name=f'{idx_j}-{idx_i}_linelog')
-        #
-        #         # Save spectrum data:
-        #         for key, value in voxel_dict.items():
-        #             linesHDU.header[key] = value
-        #         hdul_lineslog.append(linesHDU)
-        #
-        #     # Store the drive
-        #     hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
-        #     end = time.time()
+                # Spectrum data
+                n_lines += len(lm.linesDF.index)
+                voxel_dict['N_Lines'] = len(lm.linesDF.index)
+                voxel_dict['N_nan'] = idcs_nan.sum()
+
+                # Converting linesLog to fits
+                linesSA = lm.linesDF.to_records(index=True, column_dtypes=default_linelog_types, index_dtypes='<U50')
+                linesCol = fits.ColDefs(linesSA)
+                linesHDU = fits.BinTableHDU.from_columns(linesCol, name=f'{idx_j}-{idx_i}_linelog')
+
+                # Save spectrum data:
+                for key, value in voxel_dict.items():
+                    linesHDU.header[key] = value
+                hdul_lineslog.append(linesHDU)
+
+            # Store the drive
+            hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
+            end = time.time()
         #
         # # Show summary
         # for voxel_fail, error in dict_errs.items():

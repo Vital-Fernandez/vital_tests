@@ -32,6 +32,18 @@ spy_RGridInterp = spy.interpolate.RegularGridInterpolator((Te_range, ne_range), 
 print('2 Scipy RegularGridInterpolator', spy_RGridInterp([[Te_true, ne_true]]))
 
 # Exoplanet interpolation
-coordB = np.stack(([Te_true], [ne_true]), axis=-1)
 exop_interpAxis = xo.interp.RegularGridInterpolator([Te_range, ne_range], emisCube)
+coordB = np.stack(([Te_true],
+                   [ne_true]), axis=-1)
 print('3 Exoplanet Axis Interpolation', exop_interpAxis.evaluate(coordB).eval())
+
+
+#---------------------- point
+
+axes_range = (Te_range, ne_range)
+coord = [[Te_true, ne_true]]
+spy_RGridInterp = spy.interpolate.RegularGridInterpolator(axes_range, emisCube[:, :, 1])
+print('Point Scipy RegularGridInterpolator', spy_RGridInterp(coord))
+
+exop_interpAxis = xo.interp.RegularGridInterpolator(axes_range, emisCube[:, :, 1])
+print('Point Exoplanet Axis Interpolation', exop_interpAxis.evaluate(coord).eval())

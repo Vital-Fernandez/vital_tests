@@ -19,6 +19,7 @@ N2 = pn.Atom('N', 2)
 print('Halpha/Hbeta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4861))
 print('Halpha/Hgamma', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4341))
 print('Halpha/Hdelta', H1.getEmissivity(Te, ne, wave=6563) / H1.getEmissivity(Te, ne, wave=4101))
+print('HPa8/Hbeta', H1.getEmissivity(Te, ne, wave=9229) / H1.getEmissivity(Te, ne, wave=4861))
 print('SIII/SIII', S3.getEmissivity(Te, ne, wave=9531) / S3.getEmissivity(Te, ne, wave=9069))
 
 Hbeta_em = H1.getEmissivity(Te, ne, wave=4861)

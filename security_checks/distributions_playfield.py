@@ -86,3 +86,19 @@ params_prior_conf = {'Teff_prior': ['Uniform', 30000.0, 90000.0, 1.0, 0.0],
 # plt.ylabel('f(x)', fontsize=12)
 # plt.legend(loc=1)
 # plt.show()
+
+x = np.linspace(-10, 10, 1000)
+distr = ['log(O/H)', 'log(U)', 'log(N/O)']
+mus = [8., -2.75, -1.]
+sigmas = [1, 1.5, 0.5]
+xmin = [7.1, -4.0, -2]
+xmax = [9.1, -1.5, 0.0]
+for i in range(len(sigmas)):
+    mu, sigma = mus[i], sigmas[i]
+    pdf = st.norm.pdf(x, mu, sigma)
+    plt.plot(x, pdf, label=r'{} $\mu$ = {}, $\sigma$ = {}'.format(distr[i], mu, sigma))
+    plt.xlabel('x', fontsize=12)
+    plt.ylabel('f(x)', fontsize=12)
+    plt.xlim(xmin[i], xmax[i])
+    plt.legend(loc=1)
+    plt.show()

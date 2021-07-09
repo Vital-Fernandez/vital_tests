@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 import src.specsiser as sr
+from src.specsiser.tools.line_measure import LINELOG_TYPES
 from pathlib import Path
 from astro.data.muse.common_methods import compute_line_flux_image, lineAreas, red_corr_HalphaHbeta_ratio, store_frame_to_fits
 from src.specsiser.print.plot import STANDARD_PLOT
@@ -32,7 +33,7 @@ defaultConf = STANDARD_PLOT.copy()
 defaultConf.update(labelsDict)
 rcParams.update({})
 
-verbose = False
+verbose = True
 
 for i, obj in enumerate(objList):
 
@@ -42,18 +43,20 @@ for i, obj in enumerate(objList):
         objFolder = resultsFolder
         cube_address_i = fitsFolder/fileList[i]
         mask_address = dataFolder/obsConf['data_location']['mask_global']
-        db_address = objFolder / f'{obj}_database.fits'
+        db_address = objFolder / 'J0838_blue_database.fits'
 
         # Output data
         voxelFolder = resultsFolder/obj
         color = 'blue' if 'blue' in obj else 'red'
+        hdul_lineslog = fits.HDUList()
+        fitsLog_addresss = objFolder/f'{obj}_lineslog.fits'
 
         # Load the data
         wave, data, header = import_fits_data(cube_address_i, crval3=obsConf[obj]['CRVAL3'], frame_idx=0)
         mask_global_DF = sr.lineslogFile_to_DF(mask_address)
 
         # Loop throught the line regions
-        for idx_region in [0, 1, 2]:
+        for idx_region in [0]:
 
             # Voxel mask
             region_label = f'region_{idx_region}'
@@ -65,10 +68,11 @@ for i, obj in enumerate(objList):
             # Lines mask
             user_conf = obsConf[f'region{idx_region}_line_fitting']
 
-            print(f'\n - Treating {region_label} with {n_voxels} pixels')
+            print(f'\n - Treating {region_label} with {n_voxels} pixels\n')
             for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
                 idx_j, idx_i = idx_pair
+                print(f'\n - Treating {idx_j}-{idx_i} ({idx_voxel}/{n_voxels})\n')
 
                 local_mask = voxelFolder/f'{idx_j}-{idx_i}_mask_{color}.txt'
                 local_lineslog = voxelFolder/f'{idx_j}-{idx_i}_lineslog_{color}.txt'
@@ -92,11 +96,20 @@ for i, obj in enumerate(objList):
                     lm.plot_line_mask_selection(maskLinesDF, local_mask, logscale=False)
 
                 # Reset and measure the lines
-                lm = sr.LineMesurer(wave, flux_voxel, redshift=z_list[i], normFlux=norm_flux)
-                obsLines = maskLinesDF.index.values
-                for j, lineLabel in enumerate(obsLines):
+                if len(maskLinesDF) > 0:
+                    lm = sr.LineMesurer(wave, flux_voxel, redshift=z_list[i], normFlux=norm_flux)
+                    obsLines = maskLinesDF.index.values
+                    for j, lineLabel in enumerate(obsLines):
+                        # if lineLabel in ['O2_3726A_b','H1_4861A_b', 'O3_4959A_b', 'O3_5007A_b']:
+                            wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
+                            lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=user_conf)
+                            lm.print_results(show_plot=True, show_fit_report=True, log_scale=False)
 
-                    wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
-                    lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=user_conf)
-                    lm.print_results(show_plot=True, show_fit_report=True, log_scale=False)
-
+            #         # Converting linesLog to fits
+            #         linesSA = lm.linesDF.to_records(index=True, column_dtypes=LINELOG_TYPES, index_dtypes='<U50')
+            #         linesCol = fits.ColDefs(linesSA)
+            #         linesHDU = fits.BinTableHDU.from_columns(linesCol, name=f'{idx_j}-{idx_i}_linelog')
+            #         hdul_lineslog.append(linesHDU)
+            #
+            # # Store the drive
+            # hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')

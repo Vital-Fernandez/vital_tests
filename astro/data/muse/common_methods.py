@@ -85,6 +85,7 @@ label_Conver = {'H1_6563A': 'Halpha',
                'H1_8863A': 'HPas11',
                'H1_8750A': 'HPas12'}
 
+
 latex_Conver = {'H1_6563A': r'H\alpha',
                 'H1_4861A': r'H\beta',
                 'H1_9229A': r'H_{Pas,\,9}',
@@ -479,7 +480,7 @@ class IFU_Cube_Plotter(object):
         # Update the axis
         self.ax0.update(conf_dict['image'])
         self.ax1.update(conf_dict['spectrum'])
-
+        # self.ax1.set_yscale('log')
         return
 
     def on_click(self, event, mouse_trigger_buttton=3):

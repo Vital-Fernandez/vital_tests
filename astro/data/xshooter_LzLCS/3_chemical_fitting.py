@@ -37,11 +37,14 @@ objDF = pd.concat(DF_list)
 chemical_fit_file = data_folder/'j131037_chemical_conf.txt'
 objParams = sr.loadConfData(chemical_fit_file, group_variables=False)
 
-for component in ['narrow', 'wide']:
+for component in ['wide', 'narrow']:
 
     # Declare input lines
     input_lines = obsData['chemical_analysis'][f'input_{component}_line_list']
     norm_line = obsData['chemical_analysis'][f'{component}_norm']
+
+    # Outputs
+    output_db = results_folder/f'J131037_{component}_db'
 
     norm_flux = objDF.loc[norm_line, 'gauss_flux']
     idcs_lines = objDF.index.isin(input_lines)
@@ -50,38 +53,37 @@ for component in ['narrow', 'wide']:
     lineFluxes = objDF.loc[idcs_lines, 'gauss_flux'].values / norm_flux
     lineErr = objDF.loc[idcs_lines, 'gauss_err'].values / norm_flux
 
-    # Declare simulation physical properties
-    objRed = sr.ExtinctionModel(Rv=objParams['simulation_properties']['R_v'],
-                                red_curve=objParams['simulation_properties']['reddenig_curve'],
-                                data_folder=objParams['data_location']['external_data_folder'])
-
-    objIons = sr.IonEmissivity(tempGrid=objParams['simulation_properties']['temp_grid'],
-                               denGrid=objParams['simulation_properties']['den_grid'])
-
-    # Generate interpolator from the emissivity grids
-    ionDict = objIons.get_ions_dict(np.unique(lineIons))
-    objIons.computeEmissivityGrids(lineLabels, ionDict)
-
-    # Declare chemical model
-    objChem = sr.DirectMethod(lineLabels, highTempIons=objParams['simulation_properties']['high_temp_ions_list'])
+    # # Declare simulation physical properties
+    # objRed = sr.ExtinctionModel(Rv=objParams['simulation_properties']['R_v'],
+    #                             red_curve=objParams['simulation_properties']['reddenig_curve'],
+    #                             data_folder=objParams['data_location']['external_data_folder'])
+    #
+    # objIons = sr.IonEmissivity(tempGrid=objParams['simulation_properties']['temp_grid'],
+    #                            denGrid=objParams['simulation_properties']['den_grid'])
+    #
+    # # Generate interpolator from the emissivity grids
+    # ionDict = objIons.get_ions_dict(np.unique(lineIons))
+    # objIons.computeEmissivityGrids(lineLabels, ionDict)
+    #
+    # # Declare chemical model
+    # objChem = sr.DirectMethod(lineLabels, highTempIons=objParams['simulation_properties']['high_temp_ions_list'])
 
     # Declare sampler
     obj1_model = sr.SpectraSynthesizer()
-    obj1_model.define_region(lineLabels, lineFluxes, lineErr, objIons, objRed, objChem)
-
-    # Declare sampling properties
-    obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
-                                        prior_conf_dict=objParams['priors_configuration'],
-                                        photo_ionization_grid=False,
-                                        n_regions=1)
-
-    # Declare simulation inference model
-    output_db = results_folder/f'J131037_{component}_db'
-    obj1_model.inference_model()
-
-    # Run the simulation
-    obj1_model.run_sampler(2000, 2000, nchains=4, njobs=4)
-    obj1_model.save_fit(output_db)
+    # obj1_model.define_region(lineLabels, lineFluxes, lineErr, objIons, objRed, objChem)
+    #
+    # # Declare sampling properties
+    # obj1_model.simulation_configuration(objParams['inference_model_configuration']['parameter_list'],
+    #                                     prior_conf_dict=objParams['priors_configuration'],
+    #                                     photo_ionization_grid=False,
+    #                                     n_regions=1)
+    #
+    # # Declare simulation inference model
+    # obj1_model.inference_model()
+    #
+    # # Run the simulation
+    # obj1_model.run_sampler(2000, 2000, nchains=4, njobs=4)
+    # obj1_model.save_fit(output_db)
 
     # Load the results
     fit_pickle = sr.load_MC_fitting(output_db)
@@ -90,14 +92,13 @@ for component in ['narrow', 'wide']:
     traces_dict = fit_pickle['outputs']
 
     # Print the results
-    #TODO make plots independent of obj1_model
     print('-- Model parameters table')
     figure_file = results_folder/f'{component}_MeanOutputs'
-    obj1_model.table_mean_outputs(figure_file, inParameters, traces_dict)
+    obj1_model.table_mean_outputs(figure_file, inParameters, traces_dict, theme='dark')
 
-    print('-- Flux values table')
+    # print('-- Flux values table')
     figure_file = results_folder/f'{component}_FluxComparison'
-    obj1_model.table_line_fluxes(figure_file, inLines, inFlux, inErr, traces_dict)
+    obj1_model.table_line_fluxes(figure_file, inLines, inFlux, inErr, traces_dict, theme='dark')
 
     print('-- Model parameters posterior diagram')
     figure_file = results_folder/f'{component}_ParamsPosteriors.png'
@@ -106,3 +107,4 @@ for component in ['narrow', 'wide']:
     print('-- Line flux posteriors')
     figure_file = results_folder/f'{component}_lineFluxPosteriors.png'
     obj1_model.fluxes_distribution(figure_file, inLines, inFlux, inErr, traces_dict)
+

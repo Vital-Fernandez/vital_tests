@@ -24,22 +24,26 @@ Ne3 = pn.Atom('Ne', 3)
 H1 = pn.RecAtom('H', 1)
 
 temp, den = 10000, 100
-
+# 3.319868495221803
+# 3.3198684952218036
 Ne3_alone = Ne3.getEmissivity(temp, den, wave=3869)/H1.getEmissivity(temp, den, wave=4861)
 Ne3_H7 = Ne3.getEmissivity(temp, den, wave=3970)/H1.getEmissivity(temp, den, wave=4861)
 
-for i, objName in enumerate(objRef_list):
+print(Ne3_alone/Ne3_H7)
+print(Ne3.printSources())
 
-    # Input data
-    spec_file, sigm_file = data_folder/objfile_list[i], data_folder/sigmafile_list[i]
-
-    # Output data
-    lineslog_file = results_folder/f'{objName}_linesLog.txt'
-    lineslog_table = results_folder/f'{objName}_flux_table'
-
-    # Load inputs
-    wave, flux, header = sr.import_fits_data(spec_file, instrument='xshooter', frame_idx=0)
-    wave_sigma, sigma, header_sigma = sr.import_fits_data(sigm_file, instrument='xshooter', frame_idx=0)
-
-    lm = sr.LineMesurer(wave, flux, crop_waves=[wmin_array[i], wmax_array[i]], input_err=sigma, normFlux=norm_flux, redshift=z_obj)
-    lm.plot_spectrum(continuumFlux=lm.errFlux, plotConf=DARK_PLOT)
+# for i, objName in enumerate(objRef_list):
+#
+#     # Input data
+#     spec_file, sigm_file = data_folder/objfile_list[i], data_folder/sigmafile_list[i]
+#
+#     # Output data
+#     lineslog_file = results_folder/f'{objName}_linesLog.txt'
+#     lineslog_table = results_folder/f'{objName}_flux_table'
+#
+#     # Load inputs
+#     wave, flux, header = sr.import_fits_data(spec_file, instrument='xshooter', frame_idx=0)
+#     wave_sigma, sigma, header_sigma = sr.import_fits_data(sigm_file, instrument='xshooter', frame_idx=0)
+#
+#     lm = sr.LineMesurer(wave, flux, crop_waves=[wmin_array[i], wmax_array[i]], input_err=sigma, normFlux=norm_flux, redshift=z_obj)
+#     lm.plot_spectrum(continuumFlux=lm.errFlux, plotConf=DARK_PLOT)

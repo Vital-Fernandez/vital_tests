@@ -169,6 +169,13 @@ grid_HII_CHI_mistry_conversion = {'logOH': '12+log(O/H)',
                                 'S2_6731A': 'SII_6731'}
 
 
+def reconstruct_wavelength(header):
+    dw = header['CDELT3']
+    w_min = header['CRVAL3']
+    nPixels = header['NAXIS3']
+    w_max = w_min + dw * nPixels
+    return np.linspace(w_min, w_max, nPixels, endpoint=False)
+
 def red_corr_HalphaHbeta_ratio(lines_df, default_cHbeta):
 
     # Normalizing flux
@@ -537,7 +544,7 @@ class VoxelPlotter(object):
     """
 
     def __init__(self, obj_wave, obj_cube, image_bg, voxel_coord=None, image_fg=None, flux_levels=None,
-                fig_user_conf={}, ax_user_conf={}):
+                fig_user_conf={}, ax_user_conf={}, header=None):
 
         self.fig = None
         self.ax0, self.ax1, self.in_ax = None, None, None
@@ -549,6 +556,7 @@ class VoxelPlotter(object):
         self.image_fg = image_fg
         self.flux_levels = flux_levels
         self.axConf = dict(image={}, spectrum={})
+        self.header = header
 
         # Plot Configuration
         defaultConf = STANDARD_PLOT.copy()
@@ -562,7 +570,7 @@ class VoxelPlotter(object):
         aee = self.fig.canvas.mpl_connect('axes_enter_event', self.on_enter_axes)
 
         # Axes configuration
-        sky_wcs = WCS(self.cube_data.data_header)
+        sky_wcs = WCS(self.header)
         self.ax0 = self.fig.add_subplot(gs[0], projection=sky_wcs, slices=('x', 'y', 1))
         self.ax1 = self.fig.add_subplot(gs[1])
 
@@ -610,7 +618,7 @@ class VoxelPlotter(object):
         # Voxel spectrum
         if voxel_coord is not None:
             idx_j, idx_i = voxel_coord
-            flux_voxel = self.cube_data[:, idx_j, idx_i].data.data
+            flux_voxel = self.cube_data[:, idx_j, idx_i]
             self.ax1.step(self.wave, flux_voxel)
 
         conf_dict['spectrum']['title'] = f'Voxel {idx_j} - {idx_i}'

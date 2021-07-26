@@ -21,44 +21,47 @@ norm_flux = obsData['sample_data']['norm_flux']
 z_obj = obsData['sample_data']['z_obj']
 profile_conf = obsData['line_fitting']
 
-DF_list = [None, None]
-for i, objName in enumerate(objRef_list):
+# DF_list = [None, None]
+# for i, objName in enumerate(objRef_list):
+#
+#     # input data
+#     lineslog_file = results_folder/f'{objName}_linesLog.txt'
+#
+#     # Load data
+#     linesDF = sr.lineslogFile_to_DF(lineslog_file)
+#     DF_list[i] = linesDF
+#
+# # Join the dataframes
+# objDF = pd.concat(DF_list)
+#
+# S2 = pn.Atom('S', 2)
+# O2 = pn.Atom('O', 2)
+#
+# temp = 10000.0
+#
+# ROII_narrow = objDF.loc['O2_3729A', 'gauss_flux'] / objDF.loc['O2_3726A', 'gauss_flux']
+# ROII_wide = objDF.loc['O2_3729A_w1', 'gauss_flux'] / objDF.loc['O2_3726A_w1', 'gauss_flux']
+#
+# RSII_narrow = objDF.loc['S2_6716A', 'gauss_flux'] / objDF.loc['S2_6731A', 'gauss_flux']
+# RSII_wide = objDF.loc['S2_6716A_w1', 'gauss_flux'] / objDF.loc['S2_6731A_w1', 'gauss_flux']
+#
+# neSII_narrow = S2.getTemDen(RSII_narrow, tem=temp, to_eval='L(6717)/L(6731)')
+# neSII_wide = S2.getTemDen(RSII_wide, tem=temp, to_eval='L(6717)/L(6731)')
+#
+# neOII_narrow = O2.getTemDen(ROII_narrow, tem=temp, to_eval='L(3729)/L(3726)')
+# neOII_wide = O2.getTemDen(ROII_wide, tem=temp, to_eval='L(3729)/L(3726)')
+#
+# print()
+# print('neSII_narrow', neSII_narrow)
+# print('neOII_narrow', neOII_narrow)
+# print()
+# print('neSII_wide', neSII_wide)
+# print('neOII_wide', neOII_wide)
 
-    # input data
-    lineslog_file = results_folder/f'{objName}_linesLog.txt'
+S2 = pn.Atom('S', 3)
 
-    # Load data
-    linesDF = sr.lineslogFile_to_DF(lineslog_file)
-    DF_list[i] = linesDF
-
-# Join the dataframes
-objDF = pd.concat(DF_list)
-
-S2 = pn.Atom('S', 2)
-O2 = pn.Atom('O', 2)
-
-temp = 10000.0
-
-ROII_narrow = objDF.loc['O2_3729A', 'gauss_flux'] / objDF.loc['O2_3726A', 'gauss_flux']
-ROII_wide = objDF.loc['O2_3729A_w1', 'gauss_flux'] / objDF.loc['O2_3726A_w1', 'gauss_flux']
-
-RSII_narrow = objDF.loc['S2_6716A', 'gauss_flux'] / objDF.loc['S2_6731A', 'gauss_flux']
-RSII_wide = objDF.loc['S2_6716A_w1', 'gauss_flux'] / objDF.loc['S2_6731A_w1', 'gauss_flux']
-
-neSII_narrow = S2.getTemDen(RSII_narrow, tem=temp, to_eval='L(6717)/L(6731)')
-neSII_wide = S2.getTemDen(RSII_wide, tem=temp, to_eval='L(6717)/L(6731)')
-
-neOII_narrow = O2.getTemDen(ROII_narrow, tem=temp, to_eval='L(3729)/L(3726)')
-neOII_wide = O2.getTemDen(ROII_wide, tem=temp, to_eval='L(3729)/L(3726)')
-
-print()
-print('neSII_narrow', neSII_narrow)
-print('neOII_narrow', neOII_narrow)
-print()
-print('neSII_wide', neSII_wide)
-print('neOII_wide', neOII_wide)
-
-
+print('S2_6312A', S2.getEmissivity(tem=10000, den=100, wave=6312))
+print('S2_6312A', S2.getEmissivity(tem=8000, den=100, wave=6312))
 
 
 

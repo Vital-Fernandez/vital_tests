@@ -18,8 +18,6 @@ z_obj = obsData['sample_data']['z_obj']
 profile_conf = obsData['line_fitting']
 
 verbose = False
-52.963
-17.601
 
 for i, objName in enumerate(objRef_list):
 
@@ -46,10 +44,10 @@ for i, objName in enumerate(objRef_list):
 
     obsLines = mask_local_df.index.values
     for j, lineLabel in enumerate(obsLines):
-        if lineLabel in ['O2_3726A_b', 'S2_6716A_b']:
-            wave_regions = mask_local_df.loc[lineLabel, 'w1':'w6'].values
-            lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=profile_conf)
-            lm.print_results(show_plot=True, show_fit_report=True, log_scale=False)
+        wave_regions = mask_local_df.loc[lineLabel, 'w1':'w6'].values
+        lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=profile_conf)
+        if verbose:
+            lm.print_results(show_plot=True, show_fit_report=True, log_scale=False, frame='rest')
 
     # Save the results
     lm.save_lineslog(lm.linesDF, lineslog_file)

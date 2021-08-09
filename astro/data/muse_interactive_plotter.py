@@ -207,7 +207,8 @@ class VoxelPlotter(object):
 if __name__ == '__main__':
 
     # Declare the fits file location (you can use a standard string too)
-    cube_address = Path('D:\Google drive\Astrophysics\Datos\MUSE - Amorin\CGCG007.fits')
+    # cube_address = Path('D:\Google drive\Astrophysics\Datos\MUSE - Amorin\CGCG007.fits')
+    cube_address = Path('/home/vital/Astro-data/Observations/MUSE - Amorin/CGCG007.fits')
 
     # Load the data
     z_obj = 0.004691

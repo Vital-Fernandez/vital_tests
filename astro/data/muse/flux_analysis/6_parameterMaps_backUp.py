@@ -2,7 +2,7 @@ import numpy as np
 import src.specsiser as sr
 from src.specsiser.data_printing import latex_labels
 from pathlib import Path
-from astro.data.muse.common_methods import background_color, DARK_PLOT, STANDARD_PLOT, label_Conver, latex_Conver, dinamicLines
+from astro.data.muse.common_methods import background_color, DARK_PLOT, label_Conver, latex_Conver, dinamicLines
 from timeit import default_timer as timer
 from astropy.table import Table
 from astropy.io import fits
@@ -113,7 +113,7 @@ for i, obj in enumerate(objList):
         halpha_min_level = fits.getval(db_address, keyword=f'P9000', extname=f'H1_6563A_flux')
         halpha_thresd_level = fits.getval(db_address, keyword=f'P8000', extname=f'H1_6563A_flux')
 
-        defaultConf = STANDARD_PLOT.copy()
+        defaultConf = DARK_PLOT.copy()
         rcParams.update(defaultConf)
 
         halpha_cmap = cm.gray
@@ -132,8 +132,12 @@ for i, obj in enumerate(objList):
                 O3 = np.power(10, fits.getdata(chemMaps_fits_address, 'O3', ver=1)-12)
                 param_image = 12 + np.log10(O2 + O3)
                 latex_labels['O'] = r'12+log(O)'
+
             else:
-                param_image = fits.getdata(chemMaps_fits_address, param, ver=1)
+                N2 = np.power(10, fits.getdata(chemMaps_fits_address, 'N2', ver=1)-12)
+                O2 = np.power(10, fits.getdata(chemMaps_fits_address, 'O2', ver=1)-12)
+                param_image = np.log10(N2/O2)
+                latex_labels['N/O'] = r'log(N/O)'
             im = ax.imshow(flux6563_image, cmap=halpha_cmap,
                            norm=colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10))
             im2 = ax.imshow(param_image)
@@ -142,8 +146,6 @@ for i, obj in enumerate(objList):
 
             param_label = latex_labels[param]
             ax.update({'title': r'Galaxy {}, {}'.format(obj, param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-            ax.set_xlim(120, 210)
-            ax.set_ylim(110, 220)
             plt.tight_layout()
             plt.show()
 

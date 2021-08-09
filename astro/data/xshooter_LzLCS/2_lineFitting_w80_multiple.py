@@ -53,8 +53,8 @@ for i, objName in enumerate(obj_list):
             global_mask = data_folder/f'global_mask.txt'
             global_mask_df = sr.lineslogFile_to_DF(global_mask)
 
-            lineLabel = 'O3_5007A_b'
-            wave_regions = global_mask_df.loc['O3_5007A_b', 'w1':'w6'].values
+            lineLabel = 'H1_6563A_b'
+            wave_regions = global_mask_df.loc[lineLabel, 'w1':'w6'].values
             lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=profile_conf)
             w80 = lm.plot_line_velocity(plot_title=objName)
             print(f'{objName} {w80} {lineLabel}')

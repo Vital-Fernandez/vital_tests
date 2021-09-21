@@ -4,7 +4,7 @@ import src.specsiser as sr
 from pathlib import Path
 from astro.data.muse.common_methods import lineAreas, store_frame_to_fits
 from astropy.io import fits
-from matplotlib import pyplot as plt, cm, colors
+from matplotlib import pyplot as plt, cm, colors, patches
 from astropy.wcs import WCS
 
 # Declare data and files location
@@ -35,8 +35,9 @@ for i, obj in enumerate(objList):
     mask_address = dataFolder/f'{obj}_mask.txt'
 
     # Output data:
-    fitsLog_addresss = objFolder/f'{obj}_linesLog.fits'
     hdul_lineslog = fits.HDUList()
+    masks_fits = objFolder/f'{obj}_masks.fits'
+    masks_plot = objFolder/f'{obj}_masks.png'
 
     # Load data
     wave, cube, header = sr.import_fits_data(cube_address, instrument='MUSE')
@@ -53,9 +54,10 @@ for i, obj in enumerate(objList):
 
     Halpha_idxMinPercentil = 6
     Halpha_min_level = flux6563_levels[5]
-
     SIII_idxMinPercentil = 3
 
+    # Loop throught the regions
+    region_dict = {}
     for idx_contour in np.arange(Halpha_idxMinPercentil):
 
         # Search within that limit
@@ -82,20 +84,38 @@ for i, obj in enumerate(objList):
                                               (flux6563_image > Halpha_min_level),
                                               flux6563_image)
 
+        region_dict[f'region_{idx_contour}'] = maFlux_image
 
-        idcs_voxels = np.argwhere(maFlux_image.mask)
-        print(f'region {idx_contour} ({idcs_voxels.shape[0]} pixels)')
+    # Plot combined mask
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
+    im = ax.imshow(flux6563_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=flux6563_levels[-2], vmin=flux6563_levels[-2], base=10))
 
-        # if verbose:
-        fig = plt.figure(figsize=(12, 8))
-        ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
-        ax.update({'title': r'{} galaxy, $H\alpha$ flux'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
-        im = ax.imshow(maFlux_image, cmap=cm.gray,
-                       norm=colors.SymLogNorm(linthresh=flux6563_levels[-2], vmin=flux6563_levels[-2], base=10))
-        # plt.savefig(objFolder/f'region_{idx_contour}_mask')
-        plt.show()
+    cmap = cm.get_cmap('viridis', len(region_dict))
+    legend_list = [None] * len(region_dict)
 
-        mask_name = f'region_{idx_contour}'
-        mask_hdu = fits.ImageHDU(name=mask_name, data=maFlux_image.mask.astype(int), ver=1)
-        store_frame_to_fits(db_addresss, fits_hdu=mask_hdu, ext_name=mask_name)
+    for idx_region, region_items in enumerate(region_dict.items()):
 
+        region_label, region_mask = region_items
+        inv_mask_array = np.ma.masked_array(region_mask.data, ~region_mask.mask)
+
+        cm_i = colors.ListedColormap(['black', cmap(idx_region)])
+        legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask: {region_label}')
+
+        ax.imshow(inv_mask_array, cmap=cm_i, vmin=0, vmax=1, alpha=0.5)
+
+    ax.legend(handles=legend_list,  bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    ax.update({'title': r'{} masks'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
+    ax.set_xlim(90, 220)
+    ax.set_ylim(70, 240)
+    # plt.savefig(masks_plot)
+    plt.show()
+
+    # # Store the mask
+    # hdul_masks = fits.HDUList()
+    # hdul_masks.append(fits.PrimaryHDU())
+    # for idx_region, region_items in enumerate(region_dict.items()):
+    #     region_label, region_mask = region_items
+    #     mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
+    #     hdul_masks.append(mask_hdu)
+    # hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')

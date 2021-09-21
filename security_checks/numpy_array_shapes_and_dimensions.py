@@ -1,32 +1,49 @@
 import numpy as np
 
+A = np.matrix([[1,2,3,33],[4,5,6,66],[7,8,9,99]])
+idcs = np.unravel_index(np.argmax(A, axis=None), A.shape)
 
-def function_a(a, b, c, d):
-    return a + b + c + d/100000
+print(np.argmax(A, axis=1))
+print(A[idcs])
+print()
+print(np.max(A))
 
+np.argmax(A)  # 11, which is the position of 99
 
-w = np.arange(6.0, 9.0, 0.5)
-x = np.arange(1, 1000, 200)
-y = np.arange(-4.0, -1.5, 0.5)
-z = np.arange(1e6, 1e7, 1e6)
+np.argmax(A[:,:])  # 11, which is the position of 99
 
-file_matrix = np.zeros((w.size*x.size*y.size*z.size, 5))
-i = 0
-for w_value in w:
-    for x_value in x:
-        for y_value in y:
-            for z_value in z:
-                file_matrix[i, 0] = w_value
-                file_matrix[i, 1] = x_value
-                file_matrix[i, 2] = y_value
-                file_matrix[i, 3] = z_value
-                file_matrix[i, 4] = function_a(w_value, x_value, y_value, z_value)
-                i += 1
+np.argmax(A[:1])  # 3, which is the position of 33
 
-file_mdimArray = file_matrix[:, 4].reshape(len(w), len(x), len(y), len(z))
+np.argmax(A[:,2])  # 2, which is the position of 9
 
-print(file_mdimArray[0, 0, 0, 0])
-print(function_a(w[0], x[0], y[0], z[0]))
+np.argmax(A[1:,2])  # 1, which is the position of 9
+
+# def function_a(a, b, c, d):
+#     return a + b + c + d/100000
+#
+#
+# w = np.arange(6.0, 9.0, 0.5)
+# x = np.arange(1, 1000, 200)
+# y = np.arange(-4.0, -1.5, 0.5)
+# z = np.arange(1e6, 1e7, 1e6)
+#
+# file_matrix = np.zeros((w.size*x.size*y.size*z.size, 5))
+# i = 0
+# for w_value in w:
+#     for x_value in x:
+#         for y_value in y:
+#             for z_value in z:
+#                 file_matrix[i, 0] = w_value
+#                 file_matrix[i, 1] = x_value
+#                 file_matrix[i, 2] = y_value
+#                 file_matrix[i, 3] = z_value
+#                 file_matrix[i, 4] = function_a(w_value, x_value, y_value, z_value)
+#                 i += 1
+#
+# file_mdimArray = file_matrix[:, 4].reshape(len(w), len(x), len(y), len(z))
+#
+# print(file_mdimArray[0, 0, 0, 0])
+# print(function_a(w[0], x[0], y[0], z[0]))
 
 # w_grid, x_grid, y_grid, z_grid = np.meshgrid(w, x, y, z)
 #

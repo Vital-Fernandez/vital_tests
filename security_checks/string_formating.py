@@ -1,9 +1,11 @@
-obj, a = 'gp123', 10.123413549531298956
+obj, a = 'gp123', 10.583413549531298956
 print(f'{a:.2f}')
 print(f'{a:.3e}')
+print(f'{a:.0f}')
 print('{:.8f}'.format(a))
 print('{:.3e}'.format(a))
 print('{:.4e}'.format(a))
+
 cifras = 4
 print(f'{a:.{cifras}e}')
 print(f'{a:.{cifras}f}')

@@ -3,8 +3,11 @@ import src.specsiser as sr
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, gridspec
 import astropy.units as u
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
+# from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
+from src.specsiser.print.plot import STANDARD_PLOT
+
+STANDARD_AXES = {'xlabel': r'Wavelength $(\AA)$', 'ylabel': r'Flux $(erg\,cm^{-2} s^{-1} \AA^{-1})$'}
 
 # Declare data and files location
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

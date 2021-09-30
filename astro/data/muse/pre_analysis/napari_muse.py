@@ -3,7 +3,7 @@ import pandas as pd
 import src.specsiser as sr
 from pathlib import Path
 from mpdaf.obj import Cube
-import napari
+# import napari
 
 
 # Load data
@@ -29,6 +29,6 @@ nPixels = hdr['NAXIS3']
 w_max = w_min + dw * nPixels
 wave = np.linspace(w_min, w_max, nPixels, endpoint=False)
 
-with napari.gui_qt():
-    viewer = napari.view_image(cube.data)
+# with napari.gui_qt():
+#     viewer = napari.view_image(cube.data)
 

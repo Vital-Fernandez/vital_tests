@@ -93,6 +93,7 @@ for i, obj in enumerate(objList):
 
     cmap = cm.get_cmap('viridis', len(region_dict))
     legend_list = [None] * len(region_dict)
+    alpha_levels = np.linspace(0.1, 0.75, len(region_dict))[::-1]
 
     for idx_region, region_items in enumerate(region_dict.items()):
 
@@ -102,7 +103,7 @@ for i, obj in enumerate(objList):
         cm_i = colors.ListedColormap(['black', cmap(idx_region)])
         legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask: {region_label}')
 
-        ax.imshow(inv_mask_array, cmap=cm_i, vmin=0, vmax=1, alpha=0.5)
+        ax.imshow(inv_mask_array, cmap=cm_i, vmin=0, vmax=1, alpha=alpha_levels[idx_region])
 
     ax.legend(handles=legend_list,  bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     ax.update({'title': r'{} masks'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})

@@ -1,5 +1,6 @@
 import numpy as np
 import src.specsiser as sr
+import scipy as sp
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
@@ -67,7 +68,6 @@ for i, obj in enumerate(objList):
         hdu_image = fits.ImageHDU(name=f'{lineLabel}_flux', data=flux_image, ver=1)
         for idx, level in enumerate(levelContours):
             level_label = f'hierarch P{int(pertil_array[idx]*100)}'
-            print(level_label)
             hdu_image.header[level_label] = level
         new_hdul.append(hdu_image)
 
@@ -91,6 +91,11 @@ for i, obj in enumerate(objList):
         ax.update({'title': r'{} galaxy, {} flux'.format(obj, latexLabel), 'xlabel': r'RA', 'ylabel': r'DEC'})
         # plt.savefig(plot_image_file, bbox_inches='tight')
         plt.show()
+
+        # Recover the
+        empty_mask = np.zeros(flux_image.shape)
+        empty_mask[cntr1[:, 0], cntr1[:, 1]] = 1
+        empty_mask = sp.ndimage.morphology.binary_fill_holes(empty_mask)
 
     # Store the drive
     # new_hdul.writeto(db_addresss, overwrite=True, output_verify='fix')

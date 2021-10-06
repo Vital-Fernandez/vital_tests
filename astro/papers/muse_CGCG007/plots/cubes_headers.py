@@ -10,6 +10,7 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt
 import src.specsiser as sr
+from scipy.interpolate import interp1d
 
 
 def reconstruct_wavelength(header):
@@ -92,12 +93,17 @@ data_spaxel = data9[:, coord[0], coord[1]]
 wave_voxel = wave / (1+z_obj)
 flux_voxel = cube[:, coord[0], coord[1]].data.data * 1e-20
 
+percentInterp = interp1d(wave, flux_voxel, kind='slinear', fill_value='extrapolate')
+wave_resample = np.aranage()
+
+
 fig, ax = plt.subplots(figsize=(16, 8))
-ax.plot(wave3, flux3, label=f'3DnebSED')
-ax.plot(wave4, flux4, label=f'3DnoNEB')
-ax.plot(wave5, flux5, label=f'3DOBS')
-ax.plot(wave6, flux6, label=f'3DstelFIT')
-ax.plot(wave_voxel, flux_voxel/norm_flux, label=f'Muse cube / 1e-16')
+# ax.plot(wave3, flux3*norm_flux, label=f'3DnebSED')
+ax.plot(wave4, flux4*norm_flux, label=f'3DnoNEB')
+ax.plot(wave5, flux5*norm_flux, label=f'3DOBS')
+# ax.plot(wave6, flux6*norm_flux, label=f'3DstelFIT')
+# ax.plot(wave6, (flux3 + flux4)*norm_flux, label=f'Stellar + neb')
+ax.plot(wave_voxel, flux_voxel * (1+z_obj), label=f'Muse cube')
 ax.set_yscale('log')
 ax.legend()
 ax.update({'xlabel': r'Wavelength $(\AA)$', r'ylabel': 'Fits normalized flux'})

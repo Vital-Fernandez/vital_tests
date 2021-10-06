@@ -29,17 +29,21 @@ objList = ['J1152', 'J0925']
 compLabels = {'J1152': ['NARROW', 'BROAD', 'GLOBAL'],
               'J0925': ['NARROW1', 'NARROW2', 'BROAD', 'GLOBAL']}
 
-data_dict = {'J1152': {'S2_6717_flux': np.array([15.61, 12.11, 27.73]),
-                       'S2_6717_errF': np.array([1.84, 2.869, 3.409]),
-                       'S2_6731_flux': np.array([13.59, 14.13, 27.71]),
-                       'S2_6731_errF': np.array([1.454, 2.235, 2.667])},
-             'J0925': {'S2_6717_flux': np.array([16.73, 16.07, 3.74, 36.54]),
-                       'S2_6717_errF': np.array([0.827, 0.639, 1.591, 1.903]),
-                       'S2_6731_flux': np.array([13.81, 13.42, 3.93, 31.16]),
-                       'S2_6731_errF': np.array([1.005, 0.860, 2.029, 2.422])}}
+data_dict = {'J1152': {'S2_6717_flux': np.array([15.948, 11.279, 27.227]),
+                       'S2_6717_errF': np.array([1.634, 2.502, 2.988]),
+                       'S2_6731_flux': np.array([13.706, 13.69, 27.396]),
+                       'S2_6731_errF': np.array([1.67, 2.549, 3.047])},
+
+             'J0925': {'S2_6717_flux': np.array([16.978, 16.176, 2.876, 36.030]),
+                       'S2_6717_errF': np.array([0.826, 0.633, 1.609, 1.916]),
+                       'S2_6731_flux': np.array([12.477, 14.289, 4.29, 31.056]),
+                       'S2_6731_errF': np.array([0.852, 0.723, 1.743, 2.07])}}
 
 O3_temp = {'J1152': np.array([13430.0, 900]),
            'J0925': np.array([15010.0, 410])}
+
+Hbeta_flux = {'J1152': np.array([127.579, 130.119, 257.698]),
+              'J0925': np.array([73.504, 96.340, 85.013, 254.856])}
 
 # Number of chains for Monte Carlo error propagation
 n_steps = 5000

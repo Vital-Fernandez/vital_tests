@@ -12,12 +12,12 @@ def change_matplotlib_font(fig_input, prop_legend):
     for ax_obj in fig_input.canvas.figure.get_axes():
         ax_obj.legend(prop=prop_legend)
         print('zero')
-        for label in ax_obj.get_xticklabels():
-            print('un')
-            label.set_fontproperties(prop_legend)
-        for label in ax_obj.get_yticklabels():
-            print('dos')
-            label.set_fontproperties(prop_legend)
+        # for label in ax_obj.get_xticklabels():
+        #     print('un')
+        #     label.set_fontproperties(prop_legend)
+        # for label in ax_obj.get_yticklabels():
+        #     print('dos')
+        #     label.set_fontproperties(prop_legend)
 
 # Set figure conf
 
@@ -131,10 +131,10 @@ sizing_dict['font.family'] = 'Times New Roman'
 sizing_dict['figure.figsize'] = (12, 10)
 sizing_dict['axes.labelsize'] = 20
 sizing_dict['axes.titlesize'] = 20
-sizing_dict['xtick.labelsize'] = 16
-sizing_dict['ytick.labelsize'] = 16
-sizing_dict['legend.fontsize'] = 16
-
+sizing_dict['xtick.labelsize'] = 18
+sizing_dict['ytick.labelsize'] = 18
+sizing_dict['legend.fontsize'] = 20
+sizing_dict['mathtext.default'] = 'regular'
 
 rcParams.update(sizing_dict)
 
@@ -151,7 +151,8 @@ for instr, lm_obj in fit_dict.items():
     cont_plot = lm_obj.m_cont * lm_obj.wave[idcsEmis] + lm_obj.n_cont
     flux_plot = lm_obj.flux[idcsEmis] - cont_plot
 
-    ax.plot(vel_plot, flux_plot/np.max(flux_plot), label=instr)
+    # ax.plot(vel_plot, flux_plot/np.max(flux_plot), label=instr)
+    ax.step(vel_plot, flux_plot/np.max(flux_plot), where='mid')
 
     if 'ISIS' in instr:
 
@@ -163,7 +164,7 @@ for instr, lm_obj in fit_dict.items():
             label_plot = r'$v_{{{}}}$'.format(percentil)
             ax.axvline(x=vel_percentil, label=label_text, linestyle='dotted', alpha=0.5, color='black')
             ax.text(vel_percentil, 0.650, label_plot, ha='center', va='center',
-                    rotation='vertical', transform=trans)
+                    rotation='vertical', transform=trans, fontsize='xx-large', fontdict=None)
 
         v_peak = 0
 
@@ -179,7 +180,8 @@ for instr, lm_obj in fit_dict.items():
                                      arrowstyle='<->',
                                      color='tab:red',
                                      transform=trans,
-                                     mutation_scale=20)
+                                     mutation_scale=20,
+                                     linewidth=2)
         ax.add_patch(p2)
 
         v_5, v_95 = lm_obj.linesDF.loc[lineLabel, f'v_5'], lm_obj.linesDF.loc[lineLabel, f'v_95']
@@ -194,7 +196,8 @@ for instr, lm_obj in fit_dict.items():
                                      arrowstyle='<->',
                                      color='tab:blue',
                                      transform=trans,
-                                     mutation_scale=20)
+                                     mutation_scale=20,
+                                     linewidth=2)
         ax.add_patch(p1)
 
         A = ((v_90 - v_med) - (v_med-v_10)) / w80
@@ -208,8 +211,9 @@ for instr, lm_obj in fit_dict.items():
     # print(lm_obj.linesDF.loc['O3_5007A'].intg_flux)
 
 
+change_matplotlib_font(fig, prop_legend={"family": "Times New Roman"})
 ax.legend(prop={"family": "Times New Roman"})
-# change_matplotlib_font(fig, prop_legend={"family": "Times New Roman"})
+
 ax.update({'xlabel': 'Velocity (km/s)', 'ylabel': 'Normalized flux'})
 plt.tight_layout()
 plt.show()

@@ -1,0 +1,111 @@
+database:
+  oblocks: {}
+  products:
+    1:
+      content: "lines/ThAr/LR-B/LR-B_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-B", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    2:
+      content: "lines/ThAr/LR-U/LR-U_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-U", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    3:
+      content: "lines/ThAr/LR-V/LR-V_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-V", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    4:
+      content: "lines/ThAr/LR-I/LR-I_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-I", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    5:
+      content: "lines/ThAr/LR-Z/LR-Z_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-Z", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    6:
+      content: "lines/ThAr/LR-R/LR-R_ThAr.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-R", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    7:
+      content: calibs/master_bpm.fits
+      id: 3
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {}
+      time_create: '2019-05-14T13:31:36'
+      time_obs: '2017-08-27T17:10:39'
+      type: MasterBPM
+      type_fqn: megaradrp.types.MasterBPM
+      uuid: 20f77fc2-5a71-11e7-9d4f-f48c50066814
+  products_index: [1,2,3,4,5,6,7]
+  requirements:
+   MEGARA:
+    default:
+      MegaraArcCalibration:
+      - {name: nlines, tags: {vph: LR-U, speclamp: ThAr, insmode: LCB}, content: [25,25]}
+      - {name: nlines, tags: {vph: LR-B, speclamp: ThAr, insmode: LCB}, content: [10,10,15,5]}
+      - {name: nlines, tags: {vph: LR-V, speclamp: ThAr, insmode: LCB}, content: [15,5,10,7]}
+      - {name: nlines, tags: {vph: LR-R, speclamp: ThAr, insmode: LCB}, content: [14,7]}
+      - {name: nlines, tags: {vph: LR-I, speclamp: ThAr, insmode: LCB}, content: [14]}
+      - {name: nlines, tags: {vph: LR-Z, speclamp: ThAr, insmode: LCB}, content: [14,9]}
+      - {name: polynomial_degree, tags: {vph: LR-U, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-B, speclamp: ThAr}, content: [5,5]}
+      - {name: polynomial_degree, tags: {vph: LR-V, speclamp: ThAr}, content: [5,5]}
+      - {name: polynomial_degree, tags: {vph: LR-R, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-I, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-Z, speclamp: ThNe}, content: [3,5]}
+  results: {}
+  results_index: []
+  tasks: {}
+  tasks_index: []
+rootdir: ''
+version: 2

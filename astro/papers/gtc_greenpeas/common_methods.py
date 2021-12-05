@@ -691,6 +691,8 @@ def epm_HII_CHI_mistry(input00, output_file, n, sed, inter, HCm_folder=None):
     output['SII_6725'] = SII_6725
     output['eSII_6725'] = eSII_6725
 
+
+
     print('Reading grids ....')
     print('')
     print('')
@@ -945,7 +947,6 @@ def epm_HII_CHI_mistry(input00, output_file, n, sed, inter, HCm_folder=None):
                 grid_c = np.reshape(grid_mac, (int(len(grid_mac) / 9), 9))
 
         # Calculation of O/H and logU
-
         for monte in range(0, n, 1):
 
             OH_p = 0
@@ -1212,7 +1213,6 @@ def epm_HII_CHI_mistry(input00, output_file, n, sed, inter, HCm_folder=None):
                 elogU = logU_e / den_OH_e
 
             # Iterations for interpolated models
-
             if inter == 0 or OH == 0:
                 OHf = OH
                 logUf = logU
@@ -1354,6 +1354,10 @@ def epm_HII_CHI_mistry(input00, output_file, n, sed, inter, HCm_folder=None):
     output['eNO'] = eNOffs
     output['logU'] = logUffs
     output['elogU'] = elogUffs
+
+    mc_dict = {'logU': np.array(logU_mc),
+               'OH': np.array(OH_mc),
+               'NO': np.array(NO_mc)}
 
     # if input0.size == 1:  output = np.delete(output, obj=1, axis=0)
 

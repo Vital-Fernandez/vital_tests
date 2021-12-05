@@ -3,12 +3,14 @@ import pandas as pd
 from scipy.interpolate import interp1d
 import src.specsiser as sr
 from pathlib import Path
-from astro.data.muse.common_methods import STANDARD_AXES, DARK_PLOT, background_color, foreground_color
+from astro.data.muse.common_methods import STANDARD_AXES
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
+from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_color
 
-conf_file = Path('/home/vital/PycharmProjects/vital_tests/astro/data/muse/muse_greenpeas.ini')
+conf_file = Path(r'D:\Pycharm Projects\vital_tests\astro\data\muse\muse_greenpeas.ini')
+# conf_file = Path('/home/vital/PycharmProjects/vital_tests/astro/data/muse/muse_greenpeas.ini')
 
 obsData = sr.loadConfData(conf_file, group_variables=False)
 objList = obsData['data_location']['object_list']
@@ -24,9 +26,7 @@ norm_flux = obsData['sample_data']['norm_flux']
 
 folder = Path('/home/vital/Dropbox/Astrophysics/Seminars/UniVapo 2021/')
 
-# Plot set up
-defaultConf = DARK_PLOT.copy()
-rcParams.update(defaultConf)
+
 
 # Data location
 i = 0
@@ -48,13 +48,26 @@ flux_err = cube[:, idx_j, idx_i].var.data
 
 # Plot set up
 defaultConf = DARK_PLOT.copy()
+
+defaultConf['axes.titlesize']= 14
+defaultConf['axes.labelsize']= 18
+defaultConf['legend.fontsize']= 12
+defaultConf['xtick.labelsize']= 14
+defaultConf['ytick.labelsize']= 14
+
 rcParams.update(defaultConf)
 
 fig = plt.figure(figsize=(16, 9))
 ax = fig.add_subplot()
 ax.step(wave_rest, flux_voxel, color=foreground_color)
-# ax.set_yscale('log')
+ax.set_yscale('log')
 ax.update({'xlabel': r'Wavelength $(\AA)$',
            'ylabel': r'Flux $(10^{20}\,erg\,cm^{-2} s^{-1} \AA^{-1})$'})
+
+ax.spines['left'].set_position(('outward', 10))
+ax.spines['bottom'].set_position(('outward', 10))
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+
 plt.tight_layout()
 plt.show()

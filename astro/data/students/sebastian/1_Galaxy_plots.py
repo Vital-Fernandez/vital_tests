@@ -1,32 +1,31 @@
 import numpy as np
 import src.specsiser as sr
-import scipy as sp
 from pathlib import Path
-from matplotlib import pyplot as plt, rcParams, cm, colors
+from matplotlib import pyplot as plt, cm, colors
 from astropy.wcs import WCS
-from src.specsiser.print.plot import STANDARD_PLOT
-from astro.data.muse.common_methods import lineAreas
 from astropy.io import fits
 
-
 # Declare data and files location
-obsData = sr.loadConfData('../muse_CGCG007.ini')
-objList = obsData['data_location']['object_list']
-fileList = obsData['data_location']['file_list']
-fitsFolder = Path(obsData['data_location']['fits_folder'])
-dataFolder = Path(obsData['data_location']['data_folder'])
-resultsFolder = Path(obsData['data_location']['results_folder'])
-coordinates_keys_list = obsData['data_location']['wcs_key_list']
+objList = ['CGCG007']
+fileList = ['CGCG007.fits']
+fitsFolder = Path('/home/vital/Astro-data/Observations/MUSE - Amorin')
+dataFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data')
+resultsFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/treatment')
+coordinates_keys_list = ['CRPIX1','CRPIX2','CD1_1','CD1_2','CD2_1','CD2_2','CUNIT1','CUNIT2','CTYPE1','CTYPE2',
+                         'CSYER1','CSYER2','CTYPE3','CUNIT3','CD3_3','CRPIX3','CRVAL3','CRDER3','CD1_3','CD2_3',
+                         'CD3_1','CD3_2']
 
-z_objs = obsData['sample_data']['z_array']
-pertil_array = obsData['sample_data']['percentil_array']
+z_objs = np.array([0.004691, 0.005113])
+pertil_array = np.array([0, 90.50, 92.50, 95.50, 97.50, 99.50, 99.90, 99.99])
 
 # Plot set up
 labelsDict = {'xlabel': r'RA',
               'ylabel': r'DEC'}
-defaultConf = STANDARD_PLOT.copy()
-defaultConf.update(labelsDict)
-rcParams.update({})
+
+lineAreas = {'H1_6563A': (6558.0, 6568.0),
+             'S3_6312A': (6308.15, 6317.25),
+             'O3_5007A': (5002.0, 5013.0),
+             'S2_6717A': (6717.0, 6734.0)}
 
 for i, obj in enumerate(objList):
 
@@ -42,6 +41,8 @@ for i, obj in enumerate(objList):
 
     # Create empty fits file
     new_hdul = fits.HDUList()
+
+    # First page has the default (primary) data
     new_hdul.append(fits.PrimaryHDU())
 
     # Second page for the fits file plot configuration
@@ -59,6 +60,7 @@ for i, obj in enumerate(objList):
         ion, wavelength, latexLabel = sr.label_decomposition(lineLabel, scalar_output=True)
 
         # Extract cube slice using mpdaf defult tools.
+        # This requires the input wavelengths to be on the same scale as in the cube
         line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)
         flux_image = line_image.data.data
         levelContours = np.nanpercentile(flux_image, pertil_array)
@@ -88,40 +90,38 @@ for i, obj in enumerate(objList):
         ax.legend()
 
         ax.update({'title': r'{} galaxy, {} flux'.format(obj, latexLabel), 'xlabel': r'RA', 'ylabel': r'DEC'})
-        plt.savefig(plot_image_file, bbox_inches='tight')
+        # plt.savefig(plot_image_file, bbox_inches='tight')
         plt.show()
 
-        # # Recover the
-        # empty_mask = np.zeros(flux_image.shape)
-        # empty_mask[cntr1[:, 0], cntr1[:, 1]] = 1
-        # empty_mask = sp.ndimage.morphology.binary_fill_holes(empty_mask)
+        # Store the drive
+        new_hdul.writeto(db_addresss, overwrite=True, output_verify='fix')
 
-    # Store the drive
-    new_hdul.writeto(db_addresss, overwrite=True, output_verify='fix')
+    # Make plot from stored fits
+    hdr = fits.getheader(db_addresss, extname='PlotConf')
+    for lineLabel, lineLimits in lineAreas.items():
+        flux_image = fits.getdata(db_addresss, f'{lineLabel}_flux', ver=1)
+        flux_contours = fits.getdata(db_addresss, f'{lineLabel}_contour', ver=1)
 
-    # hdr = fits.getheader(db_addresss, extname='PlotConf')
-    # for lineLabel, lineLimits in lineAreas.items():
-    #     flux_image = fits.getdata(db_addresss, f'{lineLabel}_flux', ver=1)
-    #     flux_contours = fits.getdata(db_addresss, f'{lineLabel}_contour', ver=1)
-    #
-    #     # Define image countours based on the flux percentiles
-    #     levelFlux_i = np.percentile(flux_contours[flux_contours > 0], pertil_array)
-    #     levels_text_i = ['None'] * len(levelFlux_i)
-    #     for idx, per in enumerate(pertil_array):
-    #         levels_text_i[idx] = f'{levelFlux_i[idx]:.2f} $P_{{{per}}}$ $log(F_{{\lambda}})$'
-    #
-    #     # Plot the image:
-    #     fig = plt.figure(figsize=(12, 8))
-    #     ax = fig.add_subplot(projection=WCS(hdr), slices=('x', 'y', 1))
-    #
-    #     frame_size = flux_image.shape
-    #     x, y = np.arange(0, frame_size[1]), np.arange(0, frame_size[0])
-    #     X, Y = np.meshgrid(x, y)
-    #
-    #     CS3 = ax.contourf(X, Y, flux_contours, levels=levelFlux_i)
-    #     cbar = fig.colorbar(CS3)
-    #     cbar.ax.set_yticklabels(levels_text_i)
-    #     ax.set_facecolor('black')
-    #     ax.update(labelsDict)
-    #     ax.set_title(f'Galaxy {obj} {lineLabel}')
-    #     plt.show()
+        # Define image countours based on the flux percentiles
+        levelFlux_i = np.percentile(flux_contours[flux_contours > 0], pertil_array)
+        levels_text_i = ['None'] * len(levelFlux_i)
+        for idx, per in enumerate(pertil_array):
+            levels_text_i[idx] = f'{levelFlux_i[idx]:.2f} $P_{{{per}}}$ $log(F_{{\lambda}})$'
+
+        # Plot the image:
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(projection=WCS(hdr), slices=('x', 'y', 1))
+
+        frame_size = flux_image.shape
+        x, y = np.arange(0, frame_size[1]), np.arange(0, frame_size[0])
+        X, Y = np.meshgrid(x, y)
+
+        CS3 = ax.contourf(X, Y, flux_contours, levels=levelFlux_i)
+        cbar = fig.colorbar(CS3)
+        cbar.ax.set_yticklabels(levels_text_i)
+        ax.set_facecolor('black')
+        ax.update(labelsDict)
+        ax.set_title(f'Galaxy {obj} {lineLabel}')
+        ax.set_xlabel('RA')
+        ax.set_ylabel('DEC')
+        plt.show()

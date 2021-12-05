@@ -1,0 +1,16 @@
+id: SHOC579-OB1
+instrument: MEGARA
+mode: MegaraDarkImage
+images:
+  - r0121.fits
+  - r0122.fits
+  - r0123.fits
+  - r0124.fits
+  - r0125.fits
+  - r0126.fits
+  - r0127.fits
+  - r0128.fits
+  - r0129.fits
+  - r0130.fits
+  - r0131.fits
+  - r0132.fits

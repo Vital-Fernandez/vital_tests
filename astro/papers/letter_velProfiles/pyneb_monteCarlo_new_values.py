@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import truncnorm, norm
 import pyneb as pn
 
+pn.atomicData.includeFitsPath()
+pn.atomicData.setDataFileDict("IRAF_09")
+
 
 # Scipy formula for truncation coefficient
 def truncation_limits(mu, sigma, lower_limit, upper_limit):
@@ -94,10 +97,10 @@ for i, galaxy in enumerate(objList):
         #     comp_den_percentiles[i_per] = np.percentile(neSII_dist, percentiles_array)
 
         # Print results
-        results_line = f'{galaxy}-{k_comp}: mean density {neSII:.2f}, ' \
-                       f'distribution {np.nanmean(neSII_dist):.2f} +/- {np.nanstd(neSII_dist):.2f}, ' \
+        results_line = f'{galaxy}-{k_comp}: Mean density (no errors): {neSII:.2f}, ' \
+                       f'Density distribution (mean +/- std): {np.nanmean(neSII_dist):.2f} +/- {np.nanstd(neSII_dist):.2f}, ' \
                        f'emissivity errors {np.isnan(neSII_dist).sum()}'
-        percentiles_line = f'percentiles: {[np.round(per, 2) for per in comp_den_percentiles]}'
+        percentiles_line = f'Density percentiles (-3σ, -2σ, -1σ, median, 1σ, 2σ, 3σ): {[np.round(per, 2) for per in comp_den_percentiles]}'
         print(results_line)
         print(percentiles_line)
         print()

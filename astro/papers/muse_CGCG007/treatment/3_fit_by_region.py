@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
-import src.specsiser as sr
+import time
+import lime
+import progressbar
 from scipy.interpolate import interp1d
 from pathlib import Path
 from astropy.io import fits
-from progressbar import progressbar
-import time
 
+
+from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 # Declare data and files location
-obsData = sr.loadConfData('../muse_CGCG007.ini')
+
+
+obsData = lime.load_cfg('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 fitsFolder = Path(obsData['data_location']['fits_folder'])
@@ -32,16 +37,17 @@ for i, obj in enumerate(objList):
     objFolder = resultsFolder/obj
     voxelFolder = resultsFolder/obj/'voxel_data'
     db_addresss = objFolder/f'{obj}_database.fits'
+    maskFits_address = objFolder/f'{obj}_masks.fits'
 
     # Output data:
     fitsLog_addresss = objFolder/f'{obj}_linesLog.fits'
     hdul_lineslog = fits.HDUList()
 
     # Load data
-    wave, cube, header = sr.import_fits_data(cube_address, instrument='MUSE')
+    wave, cube, header = import_muse_fits(cube_address)
 
     # Extinction model
-    red_model = sr.ExtinctionModel(Rv=obsData['Extinction']['R_v'], red_curve=obsData['Extinction']['red_law'])
+    red_model = ExtinctionModel(Rv=obsData['Extinction']['R_v'], red_curve=obsData['Extinction']['red_law'])
 
     # Loop throught the line regions
     start = time.time()
@@ -50,7 +56,7 @@ for i, obj in enumerate(objList):
 
         # Voxel mask
         region_label = f'region_{idx_region}'
-        region_mask = fits.getdata(db_addresss, region_label, ver=1)
+        region_mask = fits.getdata(maskFits_address, region_label, ver=1)
         region_mask = region_mask.astype(bool)
         idcs_voxels = np.argwhere(region_mask)
 
@@ -59,12 +65,15 @@ for i, obj in enumerate(objList):
         mask_df = pd.read_csv(mask_address, delim_whitespace=True, header=0, index_col=0)
         user_conf = obsData[f'region{idx_region}_line_fitting']
 
-        print(f'\n - Treating {region_label} with {idcs_voxels.shape[0]} pixels')
+        print(f'\n- Treating {region_label} with {idcs_voxels.shape[0]} pixels')
 
         # Loop through voxels
         n_lines = 0
         n_voxels = idcs_voxels.shape[0]
-        for idx_voxel in progressbar(range(n_voxels), redirect_stdout=True):
+        widgets = ['Voxels treated: ', progressbar.AnimatedMarker()]
+        # bar = progressbar.ProgressBar(widgets=widgets).start()
+        bar = progressbar.ProgressBar(maxval=n_voxels, widgets=widgets).start()
+        for idx_voxel in np.arange(n_voxels):
 
             idx_j, idx_i = idcs_voxels[idx_voxel]
             voxel_dict = {}
@@ -78,79 +87,78 @@ for i, obj in enumerate(objList):
             flux_voxel = cube[:, idx_j, idx_i].data.data * norm_flux
             flux_err = np.sqrt(cube[:, idx_j, idx_i].var.data) * norm_flux
 
-            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
+            voxel = lime.Spectrum(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], norm_flux=norm_flux)
 
             if verbose:
-                lm.plot_spectrum(specLabel=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
+                voxel.plot_spectrum(specLabel=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
 
             # Security check for pixels with nan values:
-            idcs_nan = np.isnan(lm.flux)
+            idcs_nan = np.isnan(voxel.flux)
             flux_interpolated = None
 
             if idcs_nan.any():
                 if region_mask[idx_j, idx_i]:
-                    Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
+                    Interpolation = interp1d(voxel.wave[~idcs_nan], voxel.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
                     if verbose:
-                        lm.plot_spectrum(continuumFlux=Interpolation(lm.wave))
-                    flux_interpolated = Interpolation(lm.wave)
-                    lm.flux = flux_interpolated
-                    norm_spec = lm.continuum_remover(noise_region)
+                        voxel.plot_spectrum(continuumFlux=Interpolation(voxel.wave))
+                    flux_interpolated = Interpolation(voxel.wave)
+                    voxel.flux = flux_interpolated
+                    norm_spec = lime.continuum_remover(voxel.wave_rest, voxel.flux, noise_region)
             else:
-                norm_spec = lm.continuum_remover(noise_region)
+                norm_spec = lime.continuum_remover(voxel.wave_rest, voxel.flux, noise_region)
 
             # Identify the emission lines
-            obsLinesTable = lm.line_finder(norm_spec, noiseWaveLim=noise_region, intLineThreshold=3)
-            maskLinesDF = lm.match_lines(obsLinesTable, mask_df)
+            obsLinesTable = lime.line_finder(voxel.wave, norm_spec, noiseWaveLim=noise_region, intLineThreshold=3)
+            maskLinesDF = lime.match_lines(voxel.wave_rest, voxel.flux, obsLinesTable, mask_df)
             idcsObsLines = (maskLinesDF.observation == 'detected')
 
             if verbose:
-                lm.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
-                lm.plot_line_mask_selection(maskLinesDF[idcsObsLines], local_mask)
+                voxel.plot_spectrum(obsLinesTable=obsLinesTable, matchedLinesDF=maskLinesDF, specLabel=f'{obj} voxel {idx_j}-{idx_i}')
 
             # Reset and measure the lines
-            # TODO add the error as the 1/sqrt(flux_err)
-            lm = sr.LineMesurer(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], normFlux=norm_flux)
+            voxel = lime.Spectrum(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i], norm_flux=norm_flux)
 
             # For central pixels with nan entries
-            idcs_nan = np.isnan(lm.flux)
+            idcs_nan = np.isnan(voxel.flux)
             if idcs_nan.any():
                 if region_mask[idx_j, idx_i]:
-                    Interpolation = interp1d(lm.wave[~idcs_nan], lm.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
-                    Interpolation_err = interp1d(lm.wave[~idcs_nan], lm.errFlux[~idcs_nan], kind='slinear', fill_value="extrapolate")
-                    lm.flux = Interpolation(lm.wave)
-                    lm.errFlux = Interpolation_err(lm.wave)
+                    Interpolation = interp1d(voxel.wave[~idcs_nan], voxel.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
+                    Interpolation_err = interp1d(voxel.wave[~idcs_nan], voxel.errFlux[~idcs_nan], kind='slinear', fill_value="extrapolate")
+                    voxel.flux = Interpolation(voxel.wave)
+                    voxel.errFlux = Interpolation_err(voxel.wave)
 
             # Fit and check the regions
             obsLines = maskLinesDF.loc[idcsObsLines].index.values
             for j, lineLabel in enumerate(obsLines):
                 wave_regions = maskLinesDF.loc[lineLabel, 'w1':'w6'].values
                 try:
-                    lm.fit_from_wavelengths(lineLabel, wave_regions, user_conf=user_conf)
-                    # if verbose:
-                        # lm.plot_fit_components(lm.fit_output, log_scale=True)
+                    voxel.fit_from_wavelengths(lineLabel, wave_regions, user_cfg=user_conf)
+                    if verbose:
+                        voxel.plot_fit_components(voxel.fit_output, log_scale=True)
 
                 except ValueError as e:
                     err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
                     err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'
                     voxel_dict[err_label] = err_value
                     dict_errs[f'{idx_j}-{idx_i}_{lineLabel}'] = e
-                    print(f'--- Line measuring failure at {lineLabel} ({err_value})')
+                    print(f'--- Line measuring failure at {lineLabel} ({err_value}), {idx_j}-{idx_i}')
 
             # Check Extinction
             if verbose:
-                lm.plot_line_grid(lm.linesDF)
-                cHbeta, cHbeta_err = red_model.cHbeta_from_log(lm.linesDF, plot_address=True)
+                voxel.plot_line_grid(voxel.linesDF)
+                cHbeta, cHbeta_err = red_model.cHbeta_from_log(voxel.linesDF, plot_address=True)
 
             # Spectrum data
-            n_lines += len(lm.linesDF.index)
-            voxel_dict['N_Lines'] = len(lm.linesDF.index)
+            n_lines += len(voxel.linesDF.index)
+            voxel_dict['N_Lines'] = len(voxel.linesDF.index)
             voxel_dict['N_nan'] = idcs_nan.sum()
 
             # Converting linesLog to fits
-            linesHDU = sr.lineslog_to_HDU(lm.linesDF, ext_name=f'{idx_j}-{idx_i}_linelog', header_dict=voxel_dict)
+            linesHDU = lime.io.lineslog_to_HDU(voxel.linesDF, ext_name=f'{idx_j}-{idx_i}_linelog', header_dict=voxel_dict)
 
             # Save spectrum data:
             hdul_lineslog.append(linesHDU)
+            bar.update(idx_voxel)
 
         # Store the drive
         hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')

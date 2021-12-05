@@ -3,6 +3,9 @@ import pyneb as pn
 Ar3 = pn.Atom('Ar', 3)
 Ar4 = pn.Atom('Ar', 4)
 He1 = pn.RecAtom('He', 1)
+O2 = pn.Atom('O', 3)
+
+O2.printSources()
 # Ar3.printSources()
 # Ar4.printSources()
 
@@ -14,6 +17,3 @@ He1 = pn.RecAtom('He', 1)
 #
 # print(coso2)
 
-He1.got(wave=4925)
-
-Grotrian

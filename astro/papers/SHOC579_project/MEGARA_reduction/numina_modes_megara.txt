@@ -1,0 +1,63 @@
+Observing Mode: 'Success' (MegaraSuccess)
+ summary: A mode where the recipe successes
+ instrument: MEGARA
+Observing Mode: 'Fail' (MegaraFail)
+ summary: A mode where the recipe fails
+ instrument: MEGARA
+Observing Mode: 'Bias Image' (MegaraBiasImage)
+ summary: Recipe to process bias images
+ instrument: MEGARA
+Observing Mode: 'Dark current Image' (MegaraDarkImage)
+ summary: Summary of Dark current Image
+ instrument: MEGARA
+Observing Mode: 'Fiber Flat Image' (MegaraFiberFlatImage)
+ summary: Summary of Fiber Flat Image
+ instrument: MEGARA
+Observing Mode: 'Image with the MOS' (MegaraMosImage)
+ summary: Image with the MOS
+ instrument: MEGARA
+Observing Mode: 'Trace Map' (MegaraTraceMap)
+ summary: Summary of Fiber MOS image
+ instrument: MEGARA
+Observing Mode: 'Arc Calibration' (MegaraArcCalibration)
+ summary: Summary of Arc Calibration
+ instrument: MEGARA
+Observing Mode: 'Bad Pixel Mask' (MegaraBadPixelMask)
+ summary: Bad Pixel Mask
+ instrument: MEGARA
+Observing Mode: 'Slit Flat' (MegaraSlitFlat)
+ summary: Slit Flat
+ instrument: MEGARA
+Observing Mode: 'ModelMap' (MegaraModelMap)
+ summary: Computes a ModelMap
+ instrument: MEGARA
+Observing Mode: 'Focus Spectrograph' (MegaraFocusSpectrograph)
+ summary:
+ instrument: MEGARA
+Observing Mode: 'Twillight fiber flat' (MegaraTwilightFlatImage)
+ summary: Twillight fiber flat spectrum
+ instrument: MEGARA
+Observing Mode: 'Image with the LCB' (MegaraLcbImage)
+ summary: Image with the LCB
+ instrument: MEGARA
+Observing Mode: 'Extinction Star Recipe' (MegaraExtinctionStar)
+ summary: Extinction Star Recipe
+ instrument: MEGARA
+Observing Mode: 'LCB Standard Recipe' (MegaraLcbStdStar)
+ summary: LCB Standard Recipe
+ instrument: MEGARA
+Observing Mode: 'MOS Standard Recipe' (MegaraMosStdStar)
+ summary: MOS Standard Recipe
+ instrument: MEGARA
+Observing Mode: 'Sensivity Star Recipe' (MegaraSensitivityStar)
+ summary: Sensivity Star Recipe
+ instrument: MEGARA
+Observing Mode: 'Telescope Focus' (MegaraFocusTelescope)
+ summary: Telescope Focus
+ instrument: MEGARA
+Observing Mode: 'Acquisition with the LCB IFU' (MegaraLcbAcquisition)
+ summary: Acquisition with the LCB IFU
+ instrument: MEGARA
+Observing Mode: 'Acquisition with the Fiber MOS' (MegaraMosAcquisition)
+ summary: Acquisition with the Fiber MOS
+ instrument: MEGARA

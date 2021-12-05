@@ -6,10 +6,10 @@ from src.specsiser.inference_model import fits_db
 from astro.data.muse.common_methods import grid_columns
 from timeit import default_timer as timer
 from astropy.io import fits
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 from lmfit import models
+from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_color
 
-models.skewed_gaussian()
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
 objList = obsData['data_location']['object_list']
@@ -24,7 +24,7 @@ noise_region = obsData['sample_data']['noiseRegion_array']
 norm_flux = obsData['sample_data']['norm_flux']
 
 # Load the data
-grid_file = Path('/home/vital/Dropbox/Astrophysics/Data/muse-Ricardo/Data/HII-CHI-mistry_1Myr_grid.csv')
+grid_file = Path('D:/Dropbox/Astrophysics//Data/muse-Ricardo/Data/HII-CHI-mistry_1Myr_grid.csv')
 grid_DF = pd.read_csv(grid_file, skiprows=1, names=grid_columns.values())
 grid_DF.logNO = np.round(grid_DF.logNO.values, decimals=3)
 df_columns = np.array(['wavelength', 'ion',	'intg_flux', 'intg_err'])
@@ -137,13 +137,25 @@ with fits.open(outputFits) as hdul:
                 r_hat_mean[i_step] = (r_hat_logU[i_step] + r_hat_logOH[i_step] + r_hat_logNO[i_step]) / 3.0
                 i_step += 1
 
+# Plot combined mask
+defaultConf = DARK_PLOT.copy()
+rcParams.update(defaultConf)
 
 fig = plt.figure(figsize=(10, 10))
+fig.patch.set_facecolor(background_color)
 ax = fig.add_subplot(projection='3d')
 sc = ax.scatter(logOH_fit, logU_fit, logNO_fit, c=r_hat_logOH)
-cbar = fig.colorbar(sc)
-ax.set_xlabel('logOH')
+cbar = fig.colorbar(sc,fraction=0.046)
+cbar.set_label(r'R-hat', rotation=270, labelpad=30)
+
+ax.set_xlabel('log(O/H)')
 ax.set_ylabel('logU')
-ax.set_zlabel('logNO')
+ax.set_zlabel('log(N/O)')
+ax.xaxis.labelpad=15
+ax.yaxis.labelpad=15
+ax.zaxis.labelpad=15
 plt.show()
+
+
+
 

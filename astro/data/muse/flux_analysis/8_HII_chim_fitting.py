@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-import src.specsiser as sr
 import time
 from astropy.io import fits
 from astropy.table import Table

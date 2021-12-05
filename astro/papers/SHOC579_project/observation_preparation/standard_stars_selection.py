@@ -8,8 +8,6 @@ from matplotlib import pyplot as plt
 import mplcursors
 
 
-
-
 megara_library_stars = ['HR1544', 'HR5501', 'HR5501', 'HR5501', 'HR1544']
 
 conf_file = Path('../obsConf.ini')

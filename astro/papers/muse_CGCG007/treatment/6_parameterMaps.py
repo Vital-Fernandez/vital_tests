@@ -138,5 +138,6 @@ for i, obj in enumerate(objList):
                 ax.update({'title': r'Galaxy {}, {}'.format(obj, param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
                 ax.set_xlim(120, 210)
                 ax.set_ylim(110, 220)
-                # plt.tight_layout()
-                plt.savefig(objFolder/f'{obj}_parameter_map_{ext_label}')
+                plt.tight_layout()
+                # plt.savefig(objFolder/f'{obj}_parameter_map_{ext_label}')
+                plt.show()

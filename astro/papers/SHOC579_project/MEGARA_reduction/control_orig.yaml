@@ -1,0 +1,105 @@
+database:
+  oblocks: {}
+  products:
+    2:
+      content: "lines/ThNe/HR-R/HR-R_ThNe.lis"
+      id: 1
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "HR-R", "speclamp": "ThNe"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    1:
+      content: "lines/ThAr/LR-R/LR-R_ThAr.lis"
+      id: 2
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {"vph": "LR-R", "speclamp": "ThAr"}
+      time_create: '2019-05-10T19:16:39'
+      time_obs: '2017-08-27T17:10:39'
+      type: LinesCatalog
+      type_fqn: megaradrp.types.LinesCatalog
+    3:
+      content: calibs/master_bpm.fits
+      id: 3
+      instrument: MEGARA
+      oblock_id: null
+      qc: GOOD
+      result_id: null
+      tags: {}
+      time_create: '2019-05-14T13:31:36'
+      time_obs: '2017-08-27T17:10:39'
+      type: MasterBPM
+      type_fqn: megaradrp.types.MasterBPM
+      uuid: 20f77fc2-5a71-11e7-9d4f-f48c50066814
+  products_index: [1, 2, 3]
+  requirements:
+   MEGARA:
+    default:
+      MegaraArcCalibration:
+      - {name: nlines, tags: {vph: LR-U, speclamp: ThAr, insmode: LCB}, content: [25,25]}
+      - {name: nlines, tags: {vph: LR-U, speclamp: ThAr, insmode: MOS}, content: [25,25]}
+      - {name: nlines, tags: {vph: LR-B, speclamp: ThAr, insmode: LCB}, content: [10,10,15,5]}
+      - {name: nlines, tags: {vph: LR-B, speclamp: ThAr, insmode: MOS}, content: [10,10,15,5]}
+      - {name: nlines, tags: {vph: LR-V, speclamp: ThAr, insmode: LCB}, content: [15,5,10,7]}
+      - {name: nlines, tags: {vph: LR-V, speclamp: ThAr, insmode: MOS}, content: [15,5,10,7]}
+      - {name: nlines, tags: {vph: LR-R, speclamp: ThAr, insmode: LCB}, content: [14,7]}
+      - {name: nlines, tags: {vph: LR-R, speclamp: ThAr, insmode: MOS}, content: [14,7]}
+      - {name: nlines, tags: {vph: LR-I, speclamp: ThAr, insmode: LCB}, content: [14]}
+      - {name: nlines, tags: {vph: LR-I, speclamp: ThAr, insmode: MOS}, content: [14]}
+      - {name: nlines, tags: {vph: LR-Z, speclamp: ThNe, insmode: LCB}, content: [14,9]}
+      - {name: nlines, tags: {vph: LR-Z, speclamp: ThNe, insmode: MOS}, content: [14,9]}
+      - {name: nlines, tags: {vph: MR-U, speclamp: ThAr, insmode: LCB}, content: [8,10]}
+      - {name: nlines, tags: {vph: MR-U, speclamp: ThAr, insmode: MOS}, content: [8,10]}
+      - {name: nlines, tags: {vph: MR-UB, speclamp: ThAr, insmode: LCB}, content: [20]}
+      - {name: nlines, tags: {vph: MR-UB, speclamp: ThAr, insmode: MOS}, content: [20]}
+      - {name: nlines, tags: {vph: MR-B, speclamp: ThAr, insmode: LCB}, content: [11]}
+      - {name: nlines, tags: {vph: MR-B, speclamp: ThAr, insmode: MOS}, content: [11]}
+      - {name: nlines, tags: {vph: MR-G, speclamp: ThAr, insmode: LCB}, content: [10,10,8]}
+      - {name: nlines, tags: {vph: MR-G, speclamp: ThAr, insmode: MOS}, content: [10,10,8]}
+      - {name: nlines, tags: {vph: MR-V, speclamp: ThAr, insmode: LCB}, content: [13,8]}
+      - {name: nlines, tags: {vph: MR-V, speclamp: ThAr, insmode: MOS}, content: [13,8]}
+      - {name: nlines, tags: {vph: MR-VR, speclamp: ThNe, insmode: LCB}, content: [14]}
+      - {name: nlines, tags: {vph: MR-VR, speclamp: ThNe, insmode: MOS}, content: [14]}
+      - {name: nlines, tags: {vph: MR-R, speclamp: ThNe, insmode: LCB}, content: [9]}
+      - {name: nlines, tags: {vph: MR-R, speclamp: ThNe, insmode: MOS}, content: [9]}
+      - {name: nlines, tags: {vph: MR-RI, speclamp: ThNe, insmode: LCB}, content: [7]}
+      - {name: nlines, tags: {vph: MR-RI, speclamp: ThNe, insmode: MOS}, content: [7]}
+      - {name: nlines, tags: {vph: MR-I, speclamp: ThNe, insmode: LCB}, content: [5,5,5]}
+      - {name: nlines, tags: {vph: MR-I, speclamp: ThNe, insmode: MOS}, content: [5,5,5]}
+      - {name: nlines, tags: {vph: MR-Z, speclamp: ThNe, insmode: LCB}, content: [4,5,3]}
+      - {name: nlines, tags: {vph: MR-Z, speclamp: ThNe, insmode: MOS}, content: [4,5,3]}
+      - {name: nlines, tags: {vph: HR-R, speclamp: ThNe, insmode: LCB}, content: [5]}
+      - {name: nlines, tags: {vph: HR-R, speclamp: ThNe, insmode: MOS}, content: [5]}
+      - {name: nlines, tags: {vph: HR-I, speclamp: ThNe, insmode: LCB}, content: [10]}
+      - {name: nlines, tags: {vph: HR-I, speclamp: ThNe, insmode: MOS}, content: [10]}
+      - {name: polynomial_degree, tags: {vph: LR-U, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-B, speclamp: ThAr}, content: [5,5]}
+      - {name: polynomial_degree, tags: {vph: LR-V, speclamp: ThAr}, content: [5,5]}
+      - {name: polynomial_degree, tags: {vph: LR-R, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-I, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: LR-Z, speclamp: ThNe}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-U, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-UB, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-B, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-G, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-V, speclamp: ThAr}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-VR, speclamp: ThNe}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-R, speclamp: ThNe}, content: [3,3]}
+      - {name: polynomial_degree, tags: {vph: MR-RI, speclamp: ThNe}, content: [3,3]}
+      - {name: polynomial_degree, tags: {vph: MR-I, speclamp: ThNe}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: MR-Z, speclamp: ThNe}, content: [3,3]}
+      - {name: polynomial_degree, tags: {vph: HR-R, speclamp: ThNe}, content: [3,5]}
+      - {name: polynomial_degree, tags: {vph: HR-I, speclamp: ThNe}, content: [3,5]}
+  results: {}
+  results_index: []
+  tasks: {}
+  tasks_index: []
+rootdir: ''
+version: 2

@@ -7,7 +7,6 @@ from astro.data.muse.common_methods import grid_columns
 from astropy.io import fits
 
 
-
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)
 objList = obsData['data_location']['object_list']

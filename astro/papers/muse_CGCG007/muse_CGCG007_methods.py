@@ -4,6 +4,7 @@ from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec
 from src.specsiser.tools.line_measure import STANDARD_PLOT, STANDARD_AXES
 import pyneb as pn
+from mpdaf.obj import Cube
 
 label_Conver = {'H1_6563A': 'Halpha',
                 'H1_4861A': 'Hbeta'}
@@ -58,6 +59,21 @@ def store_frame_to_fits(fits_address, fits_hdu, ext_name):
         fits_hdu.writeto(fits_address, overwrite=True, output_verify='fix')
 
     return
+
+def import_muse_fits(file_address):
+    cube = Cube(filename=str(file_address))
+    header = cube.data_header
+
+    cube.wave.info()
+    dw = header['CD3_3']
+    w_min = header['CRVAL3']
+    nPixels = header['NAXIS3']
+    w_max = w_min + dw * nPixels
+    wave = np.linspace(w_min, w_max, nPixels, endpoint=False)
+
+    return wave, cube, header
+
+
 
 # STANDARD_IMAGE = {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Cube flux slice'}
 #
@@ -135,14 +151,14 @@ def store_frame_to_fits(fits_address, fits_hdu, ext_name):
 #                'H1_8750A': 'HPas12'}
 #
 #
-# latex_Conver = {'H1_6563A': r'H\alpha',
-#                 'H1_4861A': r'H\beta',
-#                 'H1_9229A': r'H_{Pas,\,9}',
-#                 'H1_9015A': r'H_{Pas,\,10}',
-#                 'H1_8863A': r'H_{Pas,\,11}',
-#                 'H1_8750A': r'H_{Pas,\,12}',
-#                 'v_r': r'$v_{r}\,(km/s)$',
-#                 'sigma_vel': r'$\sigma_{int}\,(km/s)$'}
+latex_Conver = {'H1_6563A': r'H\alpha',
+                'H1_4861A': r'H\beta',
+                'H1_9229A': r'H_{Pas,\,9}',
+                'H1_9015A': r'H_{Pas,\,10}',
+                'H1_8863A': r'H_{Pas,\,11}',
+                'H1_8750A': r'H_{Pas,\,12}',
+                'v_r': r'$v_{r}\,(km/s)$',
+                'sigma_vel': r'$\sigma_{int}\,(km/s)$'}
 #
 # dinamicLines = {'H1_6563A': r'$H\alpha_{Narrow}$',
 #               'H1_6563A_w1': r'$H\alpha_{Broad\,1}$',
@@ -204,20 +220,20 @@ def store_frame_to_fits(fits_address, fits_hdu, ext_name):
 #                 's9069': 'S3_9069A',
 #                 's9532': 'S3_9531A'}
 #
-# grid_HII_CHI_mistry_conversion = {'logOH': '12+log(O/H)',
-#                                 'logNO': 'log(N/O)',
-#                                 'logU': 'log(U)',
-#                                 'O2_3726A_b': 'OII_3727',
-#                                 'Ne3_3869A': 'NeIII_3868',
-#                                 'O3_4363A': 'OIII_4363',
-#                                 'O3_4959A': 'OIII_4959',
-#                                 'O3_5007A': 'OIII_5007',
-#                                 'N2_6584A': 'NII_6584',
-#                                 'S2_6716A_b': 'SII_6725',
-#                                 'S2_6716A': 'SII_6716',
-#                                 'S2_6731A': 'SII_6731'}
-#
-#
+grid_HII_CHI_mistry_conversion = {'logOH': '12+log(O/H)',
+                                'logNO': 'log(N/O)',
+                                'logU': 'log(U)',
+                                'O2_3726A_b': 'OII_3727',
+                                'Ne3_3869A': 'NeIII_3868',
+                                'O3_4363A': 'OIII_4363',
+                                'O3_4959A': 'OIII_4959',
+                                'O3_5007A': 'OIII_5007',
+                                'N2_6584A': 'NII_6584',
+                                'S2_6716A_b': 'SII_6725',
+                                'S2_6716A': 'SII_6716',
+                                'S2_6731A': 'SII_6731'}
+
+
 # def reconstruct_wavelength(header):
 #     dw = header['CDELT3']
 #     w_min = header['CRVAL3']

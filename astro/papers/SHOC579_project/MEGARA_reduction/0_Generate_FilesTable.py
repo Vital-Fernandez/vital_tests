@@ -1,27 +1,20 @@
+import os
 import shutil
-
-import lime
-import numpy as np
+import pandas as pd
+import lime as lm
 from astropy.io import fits
 from pathlib import Path
-import lime as lm
-import os
-from shutil import copyfile
-import pandas as pd
 
-# Loading project configuration file
-obs_conf = lm.load_cfg(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\obsConf.ini')
+# Configuration file
+cfg_file = '../obsConf.ini'
+obs_conf = lm.load_cfg(Path(cfg_file))
 reduction_cfg = obs_conf['Megara_reduction']
 
-# Dataframe with files list
-rd_df_address = Path(reduction_cfg['rd_df_address'])
-# sample_DF = lm.load_lines_log(f'{rd_df_address}.txt')
-
-# Stating folder structure
-instructions_folder = Path(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\MEGARA_reduction')
+# Data location
 reduction_folder = Path(reduction_cfg['root_folder'])
 data_folder = reduction_folder/'data'
-source_folder = f'S:\Astro_data\Observations\SHOC579\MEGARA\orig_files\GTC27-21B'
+rd_df_address = Path(reduction_cfg['rd_df_address'])
+source_folder = Path(reduction_cfg['fits_folder'])
 
 # Checking the files
 sample_DF = pd.DataFrame(columns=['OB', 'index_type', 'object', 'type', 'reduc_tag', 'VPH', 'address', 'old_address'])
@@ -55,11 +48,11 @@ for root, dirs, files in os.walk(source_folder):
             new_name = f'{OB_name}_{ref_obj}_{i}.fits'
             rename_dict[f'{root}\{old_name}'] = new_name
 
-            print(f'{root}\{old_name}', f'->', f'{data_folder}\{new_name}')
-            shutil.copyfile(f'{root}\{old_name}', f'{data_folder}\{new_name}')
+            # print(f'{root}\{old_name}', f'->', f'{data_folder}\{new_name}')
+            # shutil.copyfile(f'{root}\{old_name}', f'{data_folder}\{new_name}')
 
             # Saving the files data to a dataframe
-            sample_DF.loc[new_name, 'OB'] = OB_name
+            sample_DF.loc[new_name, 'OB'] = OB_name if OB_name != 'OB0004' else 'OB0003'
             sample_DF.loc[new_name, 'index_type'] = i
             sample_DF.loc[new_name, 'object'] = ref_obj
             sample_DF.loc[new_name, 'VPH'] = VPH
@@ -68,4 +61,4 @@ for root, dirs, files in os.walk(source_folder):
             sample_DF.loc[new_name, 'address'] = f'{data_folder}\{new_name}'
             sample_DF.loc[new_name, 'old_address'] = f'{root}\{old_name}'
 
-lime.save_line_log(sample_DF, rd_df_address)
+lm.save_line_log(sample_DF, rd_df_address)

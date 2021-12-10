@@ -26,29 +26,32 @@ def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_task
 
     return
 
-# Loading project configuration file
-obs_conf = lm.load_cfg(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\obsConf.ini')
+
+# Configuration file
+cfg_file = '../obsConf.ini'
+obs_conf = lm.load_cfg(Path(cfg_file))
 reduction_cfg = obs_conf['Megara_reduction']
+
+# Data location
+reduction_folder = Path(reduction_cfg['root_folder'])
+data_folder = reduction_folder/'data'
+rd_df_address = Path(reduction_cfg['rd_df_address'])
+
+# Loading project configuration file
 obj_list = reduction_cfg['obj_list']
 std_list = reduction_cfg['std_star_list']
 bad_file_list = reduction_cfg['issue_frames_list']
 
 # Dataframe with files list
-rd_df_address = Path(reduction_cfg['rd_df_address'])
 files_DF = lm.load_lines_log(f'{rd_df_address}.txt')
-
-# Stating folder structure
-instructions_folder = Path(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\MEGARA_reduction')
-reduction_folder = Path(reduction_cfg['root_folder'])
-data_folder = reduction_folder/'data'
 
 # Generate the task files for each OB:
 OB_list = files_DF['OB'].unique()
 OB_list.sort()
 
 # List of tasks in the reduction
-task_list = ['bias', 'trace_map', 'arc', 'fiber_flat', 'lcb_std', 'lcb_image']
-# task_list = ['bias', 'trace_map', 'model_map', 'arc', 'fiber_flat', 'lcb_std', 'lcb_image']
+# task_list = ['bias', 'trace_map', 'arc', 'fiber_flat', 'lcb_std', 'lcb_image']
+task_list = ['bias', 'trace_map', 'model_map', 'arc', 'fiber_flat', 'lcb_std', 'lcb_image']
 
 for OB in OB_list:
 
@@ -57,7 +60,8 @@ for OB in OB_list:
 
     for VPH in VPH_list:
 
-        if VPH != 'MR-B': # Exclude the MR-B
+        # Exclude the MR-B
+        if VPH != 'MR-B':
 
             # Dataframe for storing the tasks:
             i_task = 1
@@ -137,26 +141,6 @@ for OB in OB_list:
                             store_task(task_ID, VPH, reduction_folder, files_DF, task, task_DF, i_task, extra_conf)
                             i_task += 1
 
-
-                            # if files_DF.loc[idcs_OB, 'object'].str.contains('HR8634').any():
-                            #     extra_conf['master_sensitivity'] = 'master_sensitivity'
-
-                # # Generate task yml
-                # yml_dict = {'id': task_ID,
-                #             'mode': megaradrp_modes[task],
-                #             'instrument': 'MEGARA',
-                #             'frames': list(files_DF.loc[idcs_fits].index.values)}
-                # yml_dict.update(extra_conf)
-                #
-                # # Save yml to a text file
-                # dict_adress = f'{reduction_folder}\{task_ID}.yml'
-                # with open(dict_adress, 'w') as f:
-                #     yaml.dump(yml_dict, f, sort_keys=False)
-                #
-                # # Store DataFrame data
-                # task_DF.loc[i_task, 'task_id'] = task_ID
-                # task_DF.loc[i_task, 'file_name'] = f'{task_ID}.yml'
-                # task_DF.loc[i_task, 'VPH'] = VPH
 
             # Save task DF to a text file
             with open(f'{reduction_folder}\{OB}_{VPH}_task_list.txt', 'wb') as output_file:

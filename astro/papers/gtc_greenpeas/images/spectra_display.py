@@ -5,11 +5,16 @@ from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, colors, cm, ticker, gridspec
 from matplotlib.cbook import get_sample_data
 from matplotlib.offsetbox   import OffsetImage, AnnotationBbox
+from lime.tools import label_decomposition
 
 def double_line_blended(lineList):
+    new_list = []
     for idx, line in enumerate(lineList):
         if '+' in line:
-            lineList[idx] = line.replace('+', '\n+\n')
+            new_list.append(line.replace('+', '$\n+\n$'))
+        else:
+            new_list.append(line)
+    return new_list
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)
@@ -25,9 +30,9 @@ wmax_array = obsData['sample_data']['wmax_array']
 flux_norm = obsData['sample_data']['norm_flux']
 noise_region = obsData['sample_data']['noiseRegion_array']
 idx_band = int(obsData['file_information']['band_flux'])
-plots_folder = Path('/home/vital/Desktop')
+plots_folder = Path(obsData['file_information']['images_folder'])
 
-STANDARD_PLOT = {'figure.figsize': (7, 20),
+STANDARD_PLOT = {'figure.figsize': (14, 18),
                  'axes.titlesize': 14,
                  'axes.labelsize': 14,
                  'legend.fontsize': 12,
@@ -35,7 +40,7 @@ STANDARD_PLOT = {'figure.figsize': (7, 20),
                  'ytick.labelsize': 12}
 rcParams.update(STANDARD_PLOT)
 format_image = {}
-format_image['OffsetImage'] = {'zoom': 0.30}
+format_image['OffsetImage'] = {'zoom': 0.50}
 format_image['AnnotationBbox'] = {'xy': (0.89, 0.65),
                                   'xybox': (0., 0.),
                                   'xycoords': 'axes fraction',
@@ -61,7 +66,7 @@ labels_dict = {'gp030321': ['O2_3726A_m', 'He1_4026A', 'O3_4363A', 'Ar4_4740A', 
 
 plot_x_low, plot_x_high = 3450, 7650
 
-fig = plt.figure()
+fig = plt.figure(dpi=300)
 gs = fig.add_gridspec(nrows=3, ncols=1)
 
 counter = 0
@@ -95,8 +100,8 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
 
             # Labels for object
             obj_labels = labels_dict[obj]
-            ion_array, wave_array, latex_array = sr.label_decomposition(input_lines=obj_labels, combined_dict=obsData[f'{obj}_line_fitting'])
-            double_line_blended(latex_array)
+            ion_array, wave_array, latex_array = label_decomposition(input_lines=obj_labels, combined_dict=obsData[f'{obj}_line_fitting'])
+            latex_array = double_line_blended(latex_array)
 
             # Big spectrum
             ax_big.step(lm.wave_rest, lm.flux, color='tab:blue', label=obj.replace('gp','GP'), linewidth=1)
@@ -108,7 +113,7 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
             ax_big.set_xlim(plot_x_low, plot_x_high)
 
             lineid_plot.plot_line_ids(lm.wave_rest, lm.flux, wave_array, latex_array, ax=ax_big,
-                                      annotate_kwargs=ak_big, plot_kwargs=pk, label1_size=7)
+                                      annotate_kwargs=ak_big, plot_kwargs=pk, label1_size=9)
 
             # Small spectrum
             ax_small.step(lm.wave_rest, lm.flux, color='tab:blue', linewidth=0.5)
@@ -135,13 +140,14 @@ for i, obj in enumerate(['gp030321', 'gp101157', 'gp121903']):
             ax_big.add_artist(ab)
 
 plt.tight_layout()
-# plt.savefig(plots_folder/'sample_spectra3.png', pdi=300)
-plt.show()
+plt.savefig(plots_folder/'sample_spectra_1200DPI.png')
+# plt.show()
 
 
 
 
 # import numpy as np
+
 # import pandas as pd
 # import src.specsiser as sr
 # from pathlib import Path

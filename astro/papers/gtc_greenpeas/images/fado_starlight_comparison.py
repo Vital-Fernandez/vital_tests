@@ -15,18 +15,20 @@ z_objs = obsData['sample_data']['z_array']
 flux_norm = obsData['sample_data']['norm_flux']
 wmin_array = obsData['sample_data']['wmin_array']
 wmax_array = obsData['sample_data']['wmax_array']
+plots_folder = Path(obsData['file_information']['images_folder'])
 
 ext = 'BR'
 cycle = 'it3'
 
-papaderos_fittings_folder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/Papaderos_Full/6March2021/BCall_z03')
+papaderos_fittings_folder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/Papaderos_Full/6March2021/BCall_z03')
+# papaderos_fittings_folder = Path('/home/vital/Dropbox/Astrophysics/Papers/gtc_greenpeas/data/Papaderos_Full/6March2021/BCall_z03')
 
 
 
-STANDARD_PLOT = {'figure.figsize': (12, 10),
+STANDARD_PLOT = {'figure.figsize': (10, 10),
                  'axes.titlesize': 14,
                  'axes.labelsize': 14,
-                 'legend.fontsize': 12,
+                 'legend.fontsize': 14,
                  'xtick.labelsize': 12,
                  'ytick.labelsize': 12}
 rcParams.update(STANDARD_PLOT)
@@ -66,18 +68,24 @@ for i, obj in enumerate(objList):
         normCoeff = np.mean(lm.flux[idcs_normObs])/np.mean(data[0][idcs_normFado])
 
         print(normCoeff)
-        fig, ax = plt.subplots()
-        ax.plot(lm.wave, lm.flux/normCoeff, label='Observed spectrum')
+        # fig, ax = plt.subplots(pdi=300)
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot()
+
+        ax.plot(lm.wave_rest, lm.flux/normCoeff*(1+lm.redshift), label='Observed spectrum')
         # ax.plot(wave_fado, data[0] * 1.0, label='Input spectrum Fado')
         # ax.plot(np.arange(len(data[2])), data[2], label='Masked pixels different than zero')
 
-        ax.plot(wave_fado, data[3] * 1.0, label=f'FADO fit', linestyle='--')
+        ax.plot(wave_fado, data[3] * (1*1.03), label=f'FADO fit', linestyle='--')
         # ax.plot(wave_star, flux_star, label=f'STARLIGHT fit')
         ax.plot(wave_star, (flux_star + flux_neb)/normF_fado/normCoeff, label=f'STARLIGHT + nebular continuum fit', linestyle=':')
         ax.set_yscale('log')
-        # ax.set_xlim(3500, 4200)
+        ax.set_xlim(3550, 4200)
+        ax.set_ylim(1, 7)
+
         ax.legend()
         ax.update({'xlabel': r'Wavelength $(\AA)$', 'ylabel': r'Flux $(erg\,cm^{-2}s^{-1}\AA^{-1}) \cdot 1.132 \times 10^{-17}$'})
         plt.tight_layout()
-        plt.show()
+        plt.savefig(plots_folder/'SSP_synthesis_comparison_300DPI.png')
+        # plt.show()
 

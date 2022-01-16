@@ -36,11 +36,11 @@ for root, dirs, files in os.walk(source_folder):
             obj = fits.getval(f'{root}\{old_name}', 'OBJECT')
 
             # Moving the file
-            if obj == 'SHOC579':
+            if obj == 'SHOC579': # Target
                 ref_obj = 'SHOC579'
-            elif obj == 'SPSTD_HR8634':
+            elif obj == 'SPSTD_HR8634': # Standard star
                 ref_obj = 'HR8634'
-            elif obj == 'HR7596':
+            elif obj == 'HR7596': # Standard star
                 ref_obj = 'HR7596'
             else:
                 ref_obj = type_name
@@ -48,6 +48,7 @@ for root, dirs, files in os.walk(source_folder):
             new_name = f'{OB_name}_{ref_obj}_{i}.fits'
             rename_dict[f'{root}\{old_name}'] = new_name
 
+            # Copy the files to another folder with a new name
             # print(f'{root}\{old_name}', f'->', f'{data_folder}\{new_name}')
             # shutil.copyfile(f'{root}\{old_name}', f'{data_folder}\{new_name}')
 

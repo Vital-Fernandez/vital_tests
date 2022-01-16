@@ -107,6 +107,8 @@ for i, obj in enumerate(objList):
 
         region_label, region_mask = region_items
         inv_mask_array = np.ma.masked_array(region_mask.data, ~region_mask.mask)
+        print(region_label, np.sum(region_mask.mask))
+
 
         cm_i = colors.ListedColormap(['black', cmap(idx_region)])
         legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask: {region_label}')
@@ -121,11 +123,11 @@ for i, obj in enumerate(objList):
     plt.show()
     # plt.savefig(masks_plot)
 
-    # Store the mask
-    hdul_masks = fits.HDUList()
-    hdul_masks.append(fits.PrimaryHDU())
-    for idx_region, region_items in enumerate(region_dict.items()):
-        region_label, region_mask = region_items
-        mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
-        hdul_masks.append(mask_hdu)
-    hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')
+    # # Store the mask
+    # hdul_masks = fits.HDUList()
+    # hdul_masks.append(fits.PrimaryHDU())
+    # for idx_region, region_items in enumerate(region_dict.items()):
+    #     region_label, region_mask = region_items
+    #     mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
+    #     hdul_masks.append(mask_hdu)
+    # hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')

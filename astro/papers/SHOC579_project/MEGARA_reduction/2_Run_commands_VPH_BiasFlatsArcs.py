@@ -53,8 +53,8 @@ files_DF = lm.load_lines_log(f'{rd_df_address}.txt')
 # Generate the task files for each OB:
 OB_list = files_DF['OB'].unique()
 OB_list.sort()
-idx_start = 0
-idx_finish = 4
+idx_start = 0 # Bias
+idx_finish = 5 # Arc
 
 # Run the pipeline one OB and VPH at a time:
 for OB in OB_list:

@@ -38,62 +38,49 @@ data_folder = reduction_folder/'data'
 # Generate the task files for each OB:
 OB_list = files_DF['OB'].unique()
 OB_list.sort()
-idx_start = 0
+idx_start = 6
 
 # Run the pipeline one OB and VPH at a time:
 for OB in OB_list:
 
-    if OB == 'OB0002':
+    idcs_OB = files_DF.OB == OB
+    VPH_list = files_DF.loc[idcs_OB, 'VPH'].unique()
 
-        idcs_OB = files_DF.OB == OB
-        VPH_list = files_DF.loc[idcs_OB, 'VPH'].unique()
+    for VPH in VPH_list:
+        if VPH != 'MR-B':
 
-        for VPH in VPH_list:
-            if VPH != 'MR-B':
+            task_file_address = f'{reduction_folder}/{OB}_{VPH}_task_list.txt'
+            task_DF = pd.read_csv(task_file_address, delim_whitespace=True, header=0, index_col=0)
 
-                task_file_address = f'{reduction_folder}/{OB}_{VPH}_task_list.txt'
-                task_DF = pd.read_csv(task_file_address, delim_whitespace=True, header=0, index_col=0)
+            # Create clean requirements file at each run
+            input_yml = reduction_folder/f'control_{OB}_{VPH}_phase1.yaml'
+            req_yml = reduction_folder/f'control_{OB}_{VPH}_phase2.yaml'
 
-                # Create clean requirements file at each run
-                original_yml = instructions_folder/'SHOC579_req.yml'
-                req_yml = reduction_folder/f'control_{OB}_{VPH}.yaml'
+            # Copy previous yml so the original is not rewritten in current phase
+            shutil.copyfile(input_yml, req_yml)
 
-                # Decide tasks to run
-                idcs_tasks = task_DF.index >= idx_start
-                task_list = task_DF.loc[idcs_tasks].task_id.values
-                task_file_list = task_DF.loc[idcs_tasks].file_name.values
-                idcs_tasks = task_DF.loc[idcs_tasks].index.values
+            # Decide tasks to run
+            idcs_tasks = task_DF.index >= idx_start
+            task_list = task_DF.loc[idcs_tasks].task_id.values
+            task_file_list = task_DF.loc[idcs_tasks].file_name.values
+            idcs_tasks = task_DF.loc[idcs_tasks].index.values
 
-                # Delete previous runs for security
-                if idx_start == 0:
-                    shutil.copyfile(original_yml, req_yml)
-                else:
-                    print('- Deleting from previous steps')
-                for i, task in enumerate(task_list):
-                    delete_task_temp_folder(task, idcs_tasks[i], reduction_folder)
+            # Define data manager
+            dm = create_datamanager(req_yml, reduction_folder, data_folder)
 
-                # Define data manager
-                dm = create_datamanager(req_yml, reduction_folder, data_folder)
+            with open(req_yml) as f:
+                # use safe_load instead load
+                dataMap = yaml.safe_load(f)
 
-                with open(req_yml) as f:
-                    # use safe_load instead load
-                    dataMap = yaml.safe_load(f)
+            req_yml = yaml.safe_load(str(req_yml))
 
-                req_yml = yaml.safe_load(str(req_yml))
+            # Load the observation files
+            with ctx.working_directory(reduction_folder):
+                sessions, loaded_obs = load_observations(task_file_list, is_session=False)
+                dm.backend.add_obs(loaded_obs)
 
-                # Load the observation files
-                with ctx.working_directory(reduction_folder):
-                    sessions, loaded_obs = load_observations(task_file_list, is_session=False)
-                    dm.backend.add_obs(loaded_obs)
-
-                # Run the tasks
-                for run_id in task_list:
-                    print(f'Running: {run_id}')
-                    if 'arc' in run_id:
-                        with open(reduction_folder/f'{run_id}.yml', "r") as stream:
-                            yml_dict = yaml.safe_load(stream)
-                            for fits_frame in yml_dict['frames']:
-                                print(fits_frame, fits.getval(data_folder/fits_frame, 'VPH'), fits.getval(data_folder/fits_frame, 'SPECLAMP'))
-
-                    output_run = run_reduce(dm, run_id)
+            # Run the tasks
+            for run_id in task_list:
+                print(f'Running: {run_id}')
+                output_run = run_reduce(dm, run_id)
 

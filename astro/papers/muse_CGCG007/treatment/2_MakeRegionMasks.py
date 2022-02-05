@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import src.specsiser as sr
+import lime as lm
 from pathlib import Path
 from astro.data.muse.common_methods import lineAreas, store_frame_to_fits
 from astropy.io import fits
@@ -10,7 +10,7 @@ from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 
 # Declare data and files location
-obsData = sr.loadConfData('../muse_CGCG007.ini')
+obsData = lm.load_cfg('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 fitsFolder = Path(obsData['data_location']['fits_folder'])
@@ -86,7 +86,7 @@ for i, obj in enumerate(objList):
                                               (flux6563_image > Halpha_min_level),
                                               flux6563_image)
 
-        region_dict[f'region_{idx_contour}'] = maFlux_image
+        region_dict[f'mask_{idx_contour}'] = maFlux_image
 
     # Plot combined mask
     defaultConf = DARK_PLOT.copy()
@@ -94,7 +94,9 @@ for i, obj in enumerate(objList):
 
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
-    im = ax.imshow(flux6563_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=flux6563_levels[-2], vmin=flux6563_levels[-2], base=10))
+    im = ax.imshow(flux6563_image, cmap=cm.gray, norm=colors.SymLogNorm(linthresh=flux6563_levels[-2],
+                                                                        vmin=flux6563_levels[-2],
+                                                                        base=10))
 
     halpha_cmap = cm.gray
     halpha_cmap.set_under(background_color)
@@ -109,7 +111,6 @@ for i, obj in enumerate(objList):
         inv_mask_array = np.ma.masked_array(region_mask.data, ~region_mask.mask)
         print(region_label, np.sum(region_mask.mask))
 
-
         cm_i = colors.ListedColormap(['black', cmap(idx_region)])
         legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask: {region_label}')
 
@@ -120,14 +121,14 @@ for i, obj in enumerate(objList):
     ax.set_xlim(90, 220)
     ax.set_ylim(70, 240)
     fig.patch.set_facecolor(background_color)
-    plt.show()
-    # plt.savefig(masks_plot)
+    # plt.show()
+    plt.savefig(masks_plot)
 
-    # # Store the mask
-    # hdul_masks = fits.HDUList()
-    # hdul_masks.append(fits.PrimaryHDU())
-    # for idx_region, region_items in enumerate(region_dict.items()):
-    #     region_label, region_mask = region_items
-    #     mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
-    #     hdul_masks.append(mask_hdu)
-    # hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')
+    # Store the mask
+    hdul_masks = fits.HDUList()
+    hdul_masks.append(fits.PrimaryHDU())
+    for idx_region, region_items in enumerate(region_dict.items()):
+        region_label, region_mask = region_items
+        mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
+        hdul_masks.append(mask_hdu)
+    hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')

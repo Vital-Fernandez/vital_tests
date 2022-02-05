@@ -1,16 +1,14 @@
 import numpy as np
-import src.specsiser as sr
-import scipy as sp
+import lime as lm
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
 from src.specsiser.print.plot import STANDARD_PLOT
-from astro.data.muse.common_methods import lineAreas
+from astro.data.muse.common_methods import lineAreas, import_fits_data
 from astropy.io import fits
 
-
 # Declare data and files location
-obsData = sr.loadConfData('../muse_CGCG007.ini')
+obsData = lm.load_cfg('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 fitsFolder = Path(obsData['data_location']['fits_folder'])
@@ -36,7 +34,7 @@ for i, obj in enumerate(objList):
     db_addresss = objFolder/f'{obj}_database.fits'
 
     # Load data
-    wave, cube, header = sr.import_fits_data(cube_address_i, instrument='MUSE')
+    wave, cube, header = import_fits_data(cube_address_i, instrument='MUSE')
     wave = wave / (1 + z_objs[i])
     print(f'\n- {obj}: Cube dimensions {cube.shape}')
 
@@ -56,7 +54,7 @@ for i, obj in enumerate(objList):
     for lineLabel, lineLimits in lineAreas.items():
 
         plot_image_file = objFolder/f'{obj}_{lineLabel}_contours.png'
-        ion, wavelength, latexLabel = sr.label_decomposition(lineLabel, scalar_output=True)
+        ion, wavelength, latexLabel = lm.label_decomposition(lineLabel, scalar_output=True)
 
         # Extract cube slice using mpdaf defult tools.
         line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)

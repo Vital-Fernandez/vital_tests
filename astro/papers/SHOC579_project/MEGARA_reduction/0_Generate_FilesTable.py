@@ -26,14 +26,14 @@ for root, dirs, files in os.walk(source_folder):
 
             # Renaming data
             OB_name = root[root.find('OB'):root.find('OB')+6]
-            type_name = root[root.rfind("\\")+1:]
+            type_name = root[root.rfind("/")+1:]
 
-            with fits.open(f'{root}\{old_name}') as hdu_list:
+            with fits.open(f'{root}/{old_name}') as hdu_list:
                 data = hdu_list[0].data
                 hdr = hdu_list[0].header
 
-            VPH = fits.getval(f'{root}\{old_name}', 'VPH')
-            obj = fits.getval(f'{root}\{old_name}', 'OBJECT')
+            VPH = fits.getval(f'{root}/{old_name}', 'VPH')
+            obj = fits.getval(f'{root}/{old_name}', 'OBJECT')
 
             # Moving the file
             if obj == 'SHOC579': # Target
@@ -46,11 +46,12 @@ for root, dirs, files in os.walk(source_folder):
                 ref_obj = type_name
 
             new_name = f'{OB_name}_{ref_obj}_{i}.fits'
-            rename_dict[f'{root}\{old_name}'] = new_name
+            rename_dict[f'{root}/{old_name}'] = new_name
 
             # Copy the files to another folder with a new name
-            # print(f'{root}\{old_name}', f'->', f'{data_folder}\{new_name}')
-            # shutil.copyfile(f'{root}\{old_name}', f'{data_folder}\{new_name}')
+            new_path = Path(data_folder/new_name)
+            print(f'{old_name}', f'->', f'{new_name} {"" if new_path.is_file() else "(False)"}')
+            # shutil.copyfile(f'{root}/{old_name}', f'{data_folder}\{new_name}')
 
             # Saving the files data to a dataframe
             sample_DF.loc[new_name, 'OB'] = OB_name if OB_name != 'OB0004' else 'OB0003'
@@ -59,7 +60,7 @@ for root, dirs, files in os.walk(source_folder):
             sample_DF.loc[new_name, 'VPH'] = VPH
             sample_DF.loc[new_name, 'type'] = type_name
             sample_DF.loc[new_name, 'reduc_tag'] = 'raw'
-            sample_DF.loc[new_name, 'address'] = f'{data_folder}\{new_name}'
-            sample_DF.loc[new_name, 'old_address'] = f'{root}\{old_name}'
+            sample_DF.loc[new_name, 'address'] = f'{data_folder}/{new_name}'
+            sample_DF.loc[new_name, 'old_address'] = f'{root}/{old_name}'
 
 lm.save_line_log(sample_DF, rd_df_address)

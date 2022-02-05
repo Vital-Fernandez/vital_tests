@@ -2,6 +2,8 @@ from pprint import pprint
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate import interp1d
+
 import src.specsiser as sr
 from pathlib import Path
 import astropy.units as u
@@ -36,7 +38,6 @@ coord = (170, 170)
 file_path = Path('/home/vital/Astro-data/Observations/MUSE - Amorin/CGCG007.fits')
 wave, cube, header = sr.import_fits_data(file_path, instrument='MUSE')
 z_obj = 0.004691
-norm_flux = 1e-4
 
 file_address, ext = fits_folder/fits_3, 0
 with fits.open(file_address) as hdu_list:
@@ -72,15 +73,38 @@ flux6 = data6[:, coord[0], coord[1]]
 
 
 wave_voxel = wave / (1+z_obj)
-flux_voxel = cube[:, coord[0], coord[1]].data.data
+flux_voxel = cube[:, coord[0], coord[1]].data.data * (1 + z_obj)
 
+
+w_min, w_max = 4800, 8200
+idcs_orig = np.searchsorted(wave_voxel, (w_min-1, w_max))
+idcs_fado = np.searchsorted(wave5, (w_min, w_max))
+
+wave_fado = wave5[idcs_fado[0]:idcs_fado[-1]]
+flux_fado = flux5[idcs_fado[0]:idcs_fado[-1]]
+
+orig_interpolator = interp1d(wave_voxel, flux_voxel)
+flux_orig_interp = orig_interpolator(wave_fado)
+
+# print(wave_voxel)
+# print(wave5)
+
+# flux_orig_full = orig_interpolator(wave5[5:-5])
+
+
+const = flux_orig_interp/flux_fado
+print(const.mean())
+print(const.std())
 
 fig, ax = plt.subplots(figsize=(16, 8))
-ax.plot(wave3, flux3, label=f'3DnebSED')
-ax.plot(wave4, flux4, label=f'3DnoNEB')
+ax.plot(wave_voxel, flux_voxel, label=f'Original')
+# ax.plot(wave3, flux3, label=f'3DnebSED')
+# ax.plot(wave4, flux4, label=f'3DnoNEB')
 ax.plot(wave5, flux5, label=f'3DOBS')
-ax.plot(wave6, flux6, label=f'3DstelFIT')
-ax.plot(wave_voxel, flux_voxel/12232.104277936236, label=f'Original')
+# ax.plot(wave6, flux6, label=f'3DstelFIT ')
+ax.plot(wave_fado, flux_fado, label=f'3DOBS_section', linestyle='--')
+ax.plot(wave_fado, flux_orig_interp/const.mean(), label=f'Orig interp', linestyle='--')
+
 ax.set_yscale('log')
 ax.legend()
 ax.update({'xlabel': r'Wavelength $(\AA)$', r'ylabel': 'Fits normalized flux'})

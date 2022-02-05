@@ -235,6 +235,7 @@ def normalize_flux(line_DF, norm_line, scale_factor=1, flux_mode='auto'):
 
 
 def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
+
     # Generate uncertainty variables to propagate the error
     cHbeta = ufloat(cHbeta_nom, cHbeta_err),
     obsFlux_uarray = unumpy.uarray(obs_flux, obs_err)

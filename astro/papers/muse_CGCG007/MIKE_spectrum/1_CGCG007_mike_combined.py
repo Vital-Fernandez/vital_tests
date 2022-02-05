@@ -8,9 +8,9 @@ from astro.papers.muse_CGCG007.muse_CGCG007_methods import read_lines_fits, comp
 from lime.tools import label_decomposition
 from lime import load_cfg
 
-
 # Cfg file
-cfg_file = Path(r'D:\Pycharm Projects\vital_tests\astro\papers\muse_CGCG007\muse_CGCG007.ini')
+# cfg_file = Path(r'D:\Pycharm Projects\vital_tests\astro\papers\muse_CGCG007\muse_CGCG007.ini')
+cfg_file = Path(r'/home/vital/PycharmProjects/vital_tests/astro/papers/muse_CGCG007/muse_CGCG007.ini')
 obsCfg = load_cfg(cfg_file)
 
 # Reddening parameters
@@ -18,8 +18,11 @@ red_curve = obsCfg['Extinction']['red_law']
 R_v = obsCfg['Extinction']['R_v']
 
 # Fits files
-arms_dict = {'blue': Path(r'D:\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesBlueArm.fits'),
-             'red': Path(r'D:\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesRedArm.fits')}
+# arms_dict = {'blue': Path(r'D:\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesBlueArm.fits'),
+#              'red': Path(r'D:\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesRedArm.fits')}
+
+arms_dict = {'blue': Path(r'~\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesBlueArm.fits'),
+             'red': Path(r'~\Dropbox\Astrophysics\Data\CGCG0707_mike\AllLinesRedArm.fits')}
 
 # Number of lines per fit
 nights_range = range(1, 4)

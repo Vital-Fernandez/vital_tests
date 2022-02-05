@@ -43,7 +43,7 @@ std_list = reduction_cfg['std_star_list']
 bad_file_list = reduction_cfg['issue_frames_list']
 
 # Dataframe with files list
-files_DF = lm.load_lines_log(f'{rd_df_address}.txt')
+files_DF = lm.load_lines_log(f'{rd_df_address}')
 
 # Generate the task files for each OB:
 OB_list = files_DF['OB'].unique()
@@ -141,8 +141,7 @@ for OB in OB_list:
                             store_task(task_ID, VPH, reduction_folder, files_DF, task, task_DF, i_task, extra_conf)
                             i_task += 1
 
-
             # Save task DF to a text file
-            with open(f'{reduction_folder}\{OB}_{VPH}_task_list.txt', 'wb') as output_file:
+            with open(f'{reduction_folder}/{OB}_{VPH}_task_list.txt', 'wb') as output_file:
                 string_DF = task_DF.to_string()
                 output_file.write(string_DF.encode('UTF-8'))

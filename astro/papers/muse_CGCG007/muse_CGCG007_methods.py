@@ -9,11 +9,35 @@ from mpdaf.obj import Cube
 from astropy.table import Table
 from lime.tools import label_decomposition
 from lmfit.models import LinearModel
-from lime.io import formatStringEntry
+from lime.io import format_for_table
 from collections import Sequence
 
+# State target lines and parameters
+target_lines = ['H1_4861A', 'H1_4861A_w1', 'H1_6563A',  'H1_6563A_w1', 'H1_6563A_w2', 'H1_8750A', 'H1_8863A', 'H1_9015A', 'H1_9229A',
+                'O3_4959A', 'O3_5007A', 'O3_5007A_w1',
+                'S2_6716A', 'S2_6731A',
+                'S3_6312A', 'S3_9069A',
+                'He1_5876A', 'He1_6678A']
+
+# Generate the parameter maps data
+param_images = {'intg_flux': target_lines,
+                'intg_err': target_lines,
+                'gauss_flux': target_lines,
+                'gauss_err': target_lines,
+                'v_r': target_lines,
+                'v_r_err': target_lines,
+                'z_line': target_lines,
+                'center': target_lines,
+                'center_err': target_lines,
+                'sigma_vel': target_lines,
+                'sigma_vel_err': target_lines}
+
 label_Conver = {'H1_6563A': 'Halpha',
-                'H1_4861A': 'Hbeta'}
+                'H1_4861A': 'Hbeta',
+                'H1_9229A': 'HPas9',
+                'H1_9015A': 'HPas10',
+                'H1_8863A': 'HPas11',
+                'H1_8750A': 'HPas12'}
 
 lineAreas = {'H1_6563A': (6558.0, 6568.0),
              'S3_6312A': (6308.15, 6317.25),
@@ -21,13 +45,13 @@ lineAreas = {'H1_6563A': (6558.0, 6568.0),
              'S2_6717A': (6717.0, 6734.0)}
 
 dinamicLines = {'H1_6563A': r'$H\alpha_{Narrow}$',
-              'H1_6563A_w1': r'$H\alpha_{Broad\,1}$',
-              'H1_6563A_w2': r'$H\alpha_{Broad\,2}$',
+              # 'H1_6563A_w1': r'$H\alpha_{Broad\,1}$',
+              # 'H1_6563A_w2': r'$H\alpha_{Broad\,2}$',
               'H1_4861A': r'$H\beta_{Narrow}$',
-              'H1_4861A_w1': r'$H\beta_{Broad\,1}$',
+              # 'H1_4861A_w1': r'$H\beta_{Broad\,1}$',
               'O3_4959A': r'$[OIII]5007\AA_{Narrow}$',
               'O3_5007A': r'$[OIII]5007\AA_{Narrow}$',
-              'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$',
+              # 'O3_5007A_w1': r'$[OIII]5007\AA_{Broad\,1}$',
               'S2_6716A': r'$[SII]6716\AA_{Narrow}$',
               'S2_6731A': r'$[SII]6731\AA_{Narrow}$',
               'S3_9069A': r'$[SIII]9069\AA_{Narrow}$',
@@ -94,6 +118,21 @@ def import_muse_fits(file_address):
 
     return wave, cube, header
 
+
+def import_fado_cube(file_address, ext=0):
+
+    with fits.open(file_address) as hdu_list:
+
+        data = hdu_list[ext].data
+        hdr = hdu_list[ext].header
+
+        dw = hdr['CDELT3']
+        w_min = hdr['CRVAL3']
+        nPixels = hdr['NAXIS3']
+        w_max = w_min + dw * nPixels
+        wave = np.linspace(w_min, w_max, nPixels, endpoint=False)
+
+    return wave, data, hdr
 
 def read_lines_fits(files_dict, night_list):
 

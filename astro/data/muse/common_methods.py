@@ -1,5 +1,6 @@
 import numpy as np
 from astropy.io import fits
+from mpdaf.obj import Cube
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec
 from src.specsiser.tools.line_measure import STANDARD_PLOT, STANDARD_AXES
@@ -23,6 +24,20 @@ def store_frame_to_fits(fits_address, fits_hdu, ext_name):
 
     return
 
+
+def import_fits_data(file_address, instrument, frame_idx=None):
+
+    cube = Cube(filename=str(file_address))
+    header = cube.data_header
+
+    cube.wave.info()
+    dw = header['CD3_3']
+    w_min = header['CRVAL3']
+    nPixels = header['NAXIS3']
+    w_max = w_min + dw * nPixels
+    wave = np.linspace(w_min, w_max, nPixels, endpoint=False)
+
+    return wave, cube, header
 
 
 # STANDARD_IMAGE = {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'Cube flux slice'}

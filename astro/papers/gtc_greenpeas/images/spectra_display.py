@@ -4,7 +4,7 @@ import lineid_plot
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, colors, cm, ticker, gridspec
 from matplotlib.cbook import get_sample_data
-from matplotlib.offsetbox   import OffsetImage, AnnotationBbox
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from lime.tools import label_decomposition
 
 def double_line_blended(lineList):

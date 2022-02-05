@@ -1,13 +1,14 @@
 import pyneb as pn
 
-Ar3 = pn.Atom('Ar', 3)
-Ar4 = pn.Atom('Ar', 4)
 He1 = pn.RecAtom('He', 1)
-O2 = pn.Atom('O', 3)
 
-O2.printSources()
-# Ar3.printSources()
-# Ar4.printSources()
+print(pn.__version__)
+He1.printSources()
+
+# H1 = pn.RecAtom('H', 1)
+# print('HBeta/Halpha Paschen', H1.getEmissivity(8000, 1000, wave=4861) / H1.getEmissivity(8000, 1000, wave=18751))
+# print('HBeta/Halpha Paschen', H1.getEmissivity(20000, 10, wave=4861) / H1.getEmissivity(20000, 10, wave=18751))
+# print('HBeta/Halpha Paschen', H1.getEmissivity(10000, 100, wave=4861) / H1.getEmissivity(10000, 100, wave=18751))
 
 # coso = pn.getAtomDict(['Ar3', 'Ar4', 'He1'])
 #

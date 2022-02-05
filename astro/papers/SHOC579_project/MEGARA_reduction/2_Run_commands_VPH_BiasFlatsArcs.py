@@ -48,7 +48,7 @@ obj_list = reduction_cfg['obj_list']
 std_list = reduction_cfg['std_star_list']
 
 # Dataframe with files list
-files_DF = lm.load_lines_log(f'{rd_df_address}.txt')
+files_DF = lm.load_lines_log(f'{rd_df_address}')
 
 # Generate the task files for each OB:
 OB_list = files_DF['OB'].unique()
@@ -99,6 +99,7 @@ for OB in OB_list:
                 for i, idx_task in enumerate(idcs_tasks):
                     if idx_task <= idx_finish:
                         run_id = task_list[i]
-                        print(f'Running: {run_id}')
+                        print(f'\n=================================Running: {run_id}================================\n')
                         warning_messange(run_id, reduction_folder)
-
+                        run_reduce(dm, run_id)
+                print()

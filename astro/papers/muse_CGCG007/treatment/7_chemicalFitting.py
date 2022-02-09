@@ -1,13 +1,13 @@
 import numpy as np
 import src.specsiser as sr
-from pathlib import Path
-# from astro.data.muse.common_methods import voxel_security_check, fits_db
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import voxel_security_check
-from astropy.table import Table
-from astropy.io import fits
 import time
+import lime
 
+from pathlib import Path
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import voxel_security_check
+from astropy.io import fits
 
+import os
 # Declare data and files location
 obsData = sr.loadConfData('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
@@ -21,8 +21,6 @@ pertil_array = obsData['sample_data']['percentil_array']
 noise_region = obsData['sample_data']['noiseRegion_array']
 norm_flux = obsData['sample_data']['norm_flux']
 
-verbose = True
-
 merge_dict = {'O2_7319A_b': 'O2_7319A-O2_7330A'}
 
 for i, obj in enumerate(objList):
@@ -31,6 +29,7 @@ for i, obj in enumerate(objList):
     objFolder = resultsFolder/obj
     db_addresss = objFolder / f'{obj}_database.fits'
     fitsLog_addresss = objFolder / f'{obj}_linesLog.fits'
+    maskFits_address = objFolder/f'{obj}_masks.fits'
 
     # Output files
     outputDb = objFolder/f'{obj}_chemical.fits'
@@ -38,18 +37,33 @@ for i, obj in enumerate(objList):
     # Loop throught the line regions
     start = time.time()
     for idx_region in [0, 1, 2]:
+    # for idx_region in [0]:
 
         # Voxel mask
-        region_label = f'region_{idx_region}'
-        region_mask = fits.getdata(db_addresss, region_label, ver=1)
+        region_label = f'mask_{idx_region}'
+        region_mask = fits.getdata(maskFits_address, region_label, ver=1)
         region_mask = region_mask.astype(bool)
         idcs_voxels = np.argwhere(region_mask)
+
+        # Simulation time estimation
         n_voxels = idcs_voxels.shape[0]
         print(f'\nTreating {region_label} consisting of {n_voxels}. The estimated time is {(n_voxels*1.85)/60:0.1f} hrs')
 
         # Region chemical configuration
         chem_conf_file = dataFolder/f'{obj}_chemical_model_region_{idx_region}.txt'
         chem_conf = sr.loadConfData(chem_conf_file, group_variables=False)
+
+        # Load emission lines
+        input_lines = chem_conf['inference_model_configuration']['input_lines']
+        ion_array, wave_array, latex_array = lime.label_decomposition(input_lines)
+
+        objIons = sr.IonEmissivity(tempGrid=chem_conf['simulation_properties']['temp_grid'],
+                                   denGrid=chem_conf['simulation_properties']['den_grid'])
+
+        ionDict = objIons.get_ions_dict(ion_array)
+
+        # Generate interpolator from the emissivity grids
+        objIons.computeEmissivityGrids(input_lines, ionDict, combined_dict=merge_dict)
 
         for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
@@ -61,8 +75,8 @@ for i, obj in enumerate(objList):
 
             # Load voxel data:
             ext_ref = f'{idx_j}-{idx_i}_linelog'
-            linesDF = Table.read(fitsLog_addresss, ext_ref, character_as_bytes=False).to_pandas()
-            linesDF.set_index('index', inplace=True)
+            linesDF = lime.load_lines_log(fitsLog_addresss, ext_ref)
+
             if voxel_security_check(linesDF):
 
                 linesDF.insert(loc=1, column='obsFlux', value=np.nan)
@@ -87,8 +101,6 @@ for i, obj in enumerate(objList):
                     linesDF.loc['O2_7319A_b', ['wavelength', 'obsFlux', 'obsFluxErr']] = 7325, flux_comb, err_comb
                     linesDF.loc['O2_7319A_b', 'ion'] = 'O2'
 
-                # Load emission lines
-                input_lines = chem_conf['inference_model_configuration']['input_lines']
                 objLinesDF = sr.import_emission_line_data(linesDF=linesDF, include_lines=input_lines)
 
                 normLine = 'H1_4861A'
@@ -102,13 +114,6 @@ for i, obj in enumerate(objList):
                 objRed = sr.ExtinctionModel(Rv=chem_conf['simulation_properties']['R_v'],
                                             red_curve=chem_conf['simulation_properties']['reddenig_curve'],
                                             data_folder=chem_conf['data_location']['external_data_folder'])
-
-                objIons = sr.IonEmissivity(tempGrid=chem_conf['simulation_properties']['temp_grid'],
-                                           denGrid=chem_conf['simulation_properties']['den_grid'])
-
-                # Generate interpolator from the emissivity grids
-                ionDict = objIons.get_ions_dict(np.unique(objLinesDF.ion.values))
-                objIons.computeEmissivityGrids(lineLabels, ionDict, combined_dict=merge_dict)
 
                 # Declare chemical model
                 objChem = sr.DirectMethod(lineLabels, highTempIons=chem_conf['simulation_properties']['high_temp_ions_list'])
@@ -129,15 +134,47 @@ for i, obj in enumerate(objList):
                 obj1_model.inference_model()
 
                 # Run the simulation
-                obj1_model.run_sampler(2000, tuning=3000, nchains=4, njobs=4)
+                # obj1_model.run_sampler(1000, tuning=4000, nchains=6, njobs=6)
+                # obj1_model.run_sampler(1000, tuning=1000, nchains=6, njobs=6, init='adapt_diag') # few divergences (75 in one voxel), 23 min
+                # obj1_model.run_sampler(1000, tuning=1000, nchains=6, njobs=6, init='advi+adapt_diag' # no divergences 25 min
+                # obj1_model.run_sampler(1000, tuning=1000, nchains=6, njobs=6, init='advi+adapt_diag_grad') # no divergences 25 min
+
+
+                obj1_model.run_sampler(500, tuning=1000, nchains=10, njobs=10, init='advi+adapt_diag') # no divergences 25 min
                 obj1_model.save_fit(outputDb, ext_name=chem_ref, output_format='fits')
 
-                # # Plot the results
-                # fit_results = sr.load_MC_fitting(outputDb)
+                # # Load the results
+                # fit_pickle = sr.load_MC_fitting(outputDb, ext_name=chem_ref, output_format='fits')
+                # inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
+                # inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
+                # inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
+                # inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']
+                # traces_dict = fit_pickle[f'{chem_ref}_traces'][0]
 
-                # # Store the results
-                # sr.fits_db(outputFitsFile, fit_results, chem_ref)
+                # # Print the results
+                # chemFolder = objFolder/'chemistry'
+                # print('-- Model parameters table')
+                # figure_file = chemFolder/f'{idx_j}-{idx_i}_table_params'
+                # obj1_model.table_mean_outputs(figure_file, inParameters, traces_dict)
+                #
+                # print('-- Flux values table')
+                # figure_file = chemFolder/f'{idx_j}-{idx_i}_table_flux'
+                # obj1_model.table_line_fluxes(figure_file, inLines, inFlux, inErr, traces_dict)
+
+                # print('-- Model parameters posterior diagram')
+                # figure_file = chemFolder/f'{idx_j}-{idx_i}_plot_params'
+                # obj1_model.tracesPosteriorPlot(figure_file, inParameters, traces_dict)
+                #
+                # print('-- Line flux posteriors')
+                # figure_file = chemFolder/f'{idx_j}-{idx_i}_plot_flux'
+                # obj1_model.fluxes_distribution(figure_file, inLines, inFlux, inErr, traces_dict)
+
+                # print('-- Model parameters corner diagram')
+                # figure_file = chemFolder/f'{idx_j}-{idx_i}_plot_corner'
+                # obj1_model.corner_plot(figure_file, inParameters, traces_dict)
+
 
     # Show summary
     end = time.time()
     print(f'- Execution time {(end - start)/60:.3f} min')
+os.system('spd-say "done"')

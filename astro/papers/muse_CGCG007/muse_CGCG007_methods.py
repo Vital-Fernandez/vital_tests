@@ -13,7 +13,8 @@ from lime.io import format_for_table
 from collections import Sequence
 
 # State target lines and parameters
-target_lines = ['H1_4861A', 'H1_4861A_w1', 'H1_6563A',  'H1_6563A_w1', 'H1_6563A_w2', 'H1_8750A', 'H1_8863A', 'H1_9015A', 'H1_9229A',
+target_lines = ['H1_4861A', 'H1_4861A_w1', 'H1_6563A',  'H1_6563A_w1', 'H1_6563A_w2',
+                'H1_8750A', 'H1_8863A', 'H1_9015A', 'H1_9229A',
                 'O3_4959A', 'O3_5007A', 'O3_5007A_w1',
                 'S2_6716A', 'S2_6731A',
                 'S3_6312A', 'S3_9069A',

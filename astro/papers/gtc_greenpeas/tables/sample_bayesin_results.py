@@ -4,7 +4,7 @@ import src.specsiser as sr
 from pathlib import Path
 from astro.papers.gtc_greenpeas.common_methods import compute_arms_flambda, deredd_fluxes, normalize_flux, table_fluxes
 import pyneb as pn
-from src.specsiser.data_printing import PdfPrinter, latex_labels, numberStringFormat
+from delete.data_printing import PdfPrinter, latex_labels, numberStringFormat
 import pylatex
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

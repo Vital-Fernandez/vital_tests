@@ -1,8 +1,8 @@
 import src.specsiser as sr
 import numpy as np
 from pathlib import Path
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer
-from src.specsiser.data_printing import PdfPrinter
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer
+from delete.data_printing import PdfPrinter
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 dataFolder = Path('D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/data')

@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.specsiser.data_printing import PdfPrinter, latex_labels
+from delete.data_printing import PdfPrinter, latex_labels
 from pylatex import NoEscape
 
 atomic_data_dict = {'T_low': r'$Normal(\mu=15,000K,\sigma=5000K)$',

@@ -2,7 +2,7 @@ import src.specsiser as sr
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
-from src.specsiser.data_printing import PdfPrinter
+from delete.data_printing import PdfPrinter
 import pyneb as pn
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

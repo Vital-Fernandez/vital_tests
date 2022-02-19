@@ -1,6 +1,6 @@
 import numpy as np
 
-A = np.matrix([[1,2,3,33],[4,5,6,66],[7,8,9,99]])
+A = np.matrix([[1, 2, 3, 33], [4,5,6,66], [7,8,9,99]])
 idcs = np.unravel_index(np.argmax(A, axis=None), A.shape)
 
 print(np.argmax(A, axis=1))

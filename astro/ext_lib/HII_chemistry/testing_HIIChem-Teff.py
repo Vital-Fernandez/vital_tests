@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import src.specsiser as sr
-from physical_model.gasEmission_functions import gridInterpolatorFunction
+from components.gasEmission_functions import gridInterpolatorFunction
 from astro.papers.gtc_greenpeas.common_methods import epm_HII_CHI_mistry_Teff
 
 conversion_dict = dict(O2_3726A_m='OII_3727',

@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
-from src.specsiser.inference_model import displaySimulationData
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer
+from src.specsiser.components.gasContinuum_functions import NebularContinua
+from src.specsiser.treatment import displaySimulationData
 from matplotlib import pyplot as plt, rcParams
 import scipy as spy
 import theano.tensor as tt

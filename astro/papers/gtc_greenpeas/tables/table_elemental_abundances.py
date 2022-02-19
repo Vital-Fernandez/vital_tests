@@ -1,7 +1,7 @@
 import numpy as np
 import src.specsiser as sr
 import pylatex
-from src.specsiser.data_printing import PdfPrinter, latex_labels, numberStringFormat
+from delete.data_printing import PdfPrinter, latex_labels, numberStringFormat
 from pathlib import Path
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

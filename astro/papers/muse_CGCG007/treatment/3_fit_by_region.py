@@ -6,7 +6,7 @@ from scipy.interpolate import interp1d
 from pathlib import Path
 from astropy.io import fits
 
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 from progressbar import progressbar
 
@@ -27,7 +27,7 @@ thres_array = obsData['sample_data']['detect_lim_array']
 dict_errs = {}
 dict_nan_values = {}
 
-verbose = False
+verbose = True
 
 for i, obj in enumerate(objList):
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import src.specsiser as sr
-from src.specsiser.physical_model.chemical_model import Standard_DirectMetchod
+from src.specsiser.components.chemical_model import Standard_DirectMetchod
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)

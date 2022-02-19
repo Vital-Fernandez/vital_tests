@@ -11,7 +11,7 @@ from astropy.table import Table
 
 from src.specsiser.print.plot import STANDARD_PLOT
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import label_Conver, dinamicLines, import_muse_fits, latex_Conver
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 
 
 import sys

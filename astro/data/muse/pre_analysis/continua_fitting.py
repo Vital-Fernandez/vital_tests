@@ -5,11 +5,11 @@ import pyneb as pn
 import src.specsiser as sr
 import matplotlib.pyplot as plt
 from pathlib import Path
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
+from src.specsiser.components.gasContinuum_functions import NebularContinua
 
 
 # Load data
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx')
 files_path = Path('D:/Google drive/Astrophysics/Datos/MUSE - Amorin')
 spectrum_file = 'voxel_cluster.txt'
 idx_voxel = (170, 170)

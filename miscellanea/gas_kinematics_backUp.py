@@ -3,9 +3,9 @@ import theano.tensor as tt
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from src.specsiser.physical_model.line_tools import EmissionFitting, gauss_func
+from src.specsiser.components.line_tools import EmissionFitting, gauss_func
 from matplotlib import pyplot as plt, rcParams
-from inference_model import displaySimulationData
+from treatment import displaySimulationData
 
 
 def mixture_density_single(w, mu, sd, x):
@@ -25,7 +25,7 @@ lm = EmissionFitting()
 data_folder, data_file = Path('C:/Users/Vital/OneDrive/Desktop/'), 'test_spec2.txt'
 file_to_open = data_folder / data_file
 linesLogAdress = data_folder / data_file.replace('.txt', '_linesLog.txt')
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx') # TODO change to open format to avoid new dependency
+linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx') # TODO change to open format to avoid new dependency
 linesDF = lm.load_lineslog(linesLogAdress)
 
 # Load spectrum

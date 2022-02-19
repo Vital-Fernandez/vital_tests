@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 
 objList = ['gp030321', 'gp101157', 'gp121903']

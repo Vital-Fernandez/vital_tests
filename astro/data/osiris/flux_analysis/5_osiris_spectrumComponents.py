@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 

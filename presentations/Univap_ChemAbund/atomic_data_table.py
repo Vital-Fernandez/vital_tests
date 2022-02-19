@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.specsiser.data_printing import PdfPrinter, latex_labels
+from delete.data_printing import PdfPrinter, latex_labels
 from pylatex import NoEscape
 
 atomic_data_dict = {'O2': ['Pradhan et al. (2006); Tayal (2007)', 'Zeippen (1982); Wiese et al. (1996)'],

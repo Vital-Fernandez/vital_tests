@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 
 # Import the observation data

@@ -3,7 +3,7 @@ import pyneb as pn
 import pandas as pd
 import src.specsiser as sr
 from astro.papers.gtc_greenpeas.common_methods import compute_arms_flambda
-from src.specsiser.physical_model.chemical_model import Standard_DirectMetchod
+from src.specsiser.components.chemical_model import Standard_DirectMetchod
 import pyneb as pn
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

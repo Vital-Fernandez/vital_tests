@@ -2,13 +2,10 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import src.specsiser as sr
-from src.specsiser.inference_model import fits_db
 from astro.data.muse.common_methods import grid_columns
-from timeit import default_timer as timer
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams
-from lmfit import models
-from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_color
+from delete.data_printing import DARK_PLOT, background_color
 
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)

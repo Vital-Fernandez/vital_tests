@@ -1,13 +1,10 @@
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 import src.specsiser as sr
 from pathlib import Path
-from astro.data.muse.common_methods import STANDARD_AXES, DARK_PLOT, background_color, foreground_color
-from astropy.io import fits
+from astro.data.muse.common_methods import DARK_PLOT, foreground_color
 from matplotlib import pyplot as plt, rcParams, cm, colors
-from astropy.wcs import WCS
-from src.specsiser.data_printing import latex_labels, numberStringFormat, label_decomposition, PdfPrinter
+from delete.data_printing import latex_labels, numberStringFormat, label_decomposition, PdfPrinter
 import matplotlib.gridspec as gridspec
 from pylatex import NoEscape
 

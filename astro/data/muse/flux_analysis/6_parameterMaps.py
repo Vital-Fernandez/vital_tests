@@ -1,10 +1,8 @@
 import numpy as np
 import src.specsiser as sr
-from src.specsiser.data_printing import latex_labels
+from delete.data_printing import latex_labels
 from pathlib import Path
-from astro.data.muse.common_methods import background_color, DARK_PLOT, STANDARD_PLOT, label_Conver, latex_Conver, dinamicLines
-from timeit import default_timer as timer
-from astropy.table import Table
+from astro.data.muse.common_methods import background_color, STANDARD_PLOT
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS

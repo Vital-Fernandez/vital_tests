@@ -1,13 +1,9 @@
-import numpy as np
 import src.specsiser as sr
 from pathlib import Path
-from astro.data.muse.common_methods import background_color, DARK_PLOT, label_Conver, latex_Conver, dinamicLines
+from astro.data.muse.common_methods import background_color, DARK_PLOT, label_Conver, latex_Conver
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
-from astropy.wcs import WCS
-from astropy.table import Table
 import pyneb as pn
-from src.specsiser.data_printing import latex_labels
 
 sulfur_lines = {'S2_6716A': r'$[SII]6716\AA', 'S2_6731A': r'$[SII]6716\AA'}
 

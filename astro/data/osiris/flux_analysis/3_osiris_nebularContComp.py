@@ -2,13 +2,13 @@ from pathlib import Path
 import numpy as np
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
-from src.specsiser.physical_model.chemical_model import TOIII_from_TSIII_relation
+from src.specsiser.components.gasContinuum_functions import NebularContinua
+from src.specsiser.components.chemical_model import TOIII_from_TSIII_relation
 import matplotlib.pyplot as plt
 
 # Import the observation data
 obsData = sr.loadConfData('../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini', group_variables=False)
-# linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+# linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx')
 data_folder = Path(obsData['file_information']['data_folder'])
 file_list = obsData['file_information']['files_list']
 addressList = list(data_folder/file for file in file_list)

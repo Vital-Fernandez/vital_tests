@@ -3,7 +3,7 @@ from pathlib import Path
 import pyneb as pn
 import src.specsiser as sr
 import matplotlib.pyplot as plt
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
+from src.specsiser.components.gasContinuum_functions import NebularContinua
 from astro.papers.gtc_greenpeas.common_methods import double_arm_redCorr
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

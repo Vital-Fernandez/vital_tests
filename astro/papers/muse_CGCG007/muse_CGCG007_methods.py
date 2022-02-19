@@ -1,3 +1,4 @@
+import lime
 import numpy as np
 import pandas as pd
 import configparser
@@ -9,7 +10,8 @@ from mpdaf.obj import Cube
 from astropy.table import Table
 from lime.tools import label_decomposition
 from lmfit.models import LinearModel
-from lime.io import format_for_table
+from lime.io import progress_bar
+from lime.plots import format_for_table
 from collections import Sequence
 
 # State target lines and parameters
@@ -18,7 +20,12 @@ target_lines = ['H1_4861A', 'H1_4861A_w1', 'H1_6563A',  'H1_6563A_w1', 'H1_6563A
                 'O3_4959A', 'O3_5007A', 'O3_5007A_w1',
                 'S2_6716A', 'S2_6731A',
                 'S3_6312A', 'S3_9069A',
-                'He1_5876A', 'He1_6678A']
+                'He1_5876A', 'He1_6678A',  'He1_4922A', 'He1_5016A', 'He1_6678A', 'He1_7065A', 'He1_7281A', 'He1_8446A']
+
+# State target lines and parameters
+abs_target_lines = ['H1_4861A', 'He1_4922A', 'He1_5016A',
+                    'He1_5876A', 'H1_6563A', 'He1_6678A',
+                    'H1_8750A', 'H1_8863A', 'H1_9015A', 'H1_9229A']
 
 # Generate the parameter maps data
 param_images = {'intg_flux': target_lines,
@@ -31,7 +38,20 @@ param_images = {'intg_flux': target_lines,
                 'center': target_lines,
                 'center_err': target_lines,
                 'sigma_vel': target_lines,
-                'sigma_vel_err': target_lines}
+                'sigma_vel_err': target_lines,
+                'cont': target_lines}
+
+param_images_abs = {'intg_flux': abs_target_lines,
+                    'intg_err': abs_target_lines,
+                    'gauss_flux': abs_target_lines,
+                    'gauss_err': abs_target_lines,
+                    'v_r': abs_target_lines,
+                    'v_r_err': abs_target_lines,
+                    'center': abs_target_lines,
+                    'center_err': abs_target_lines,
+                    'sigma_vel': abs_target_lines,
+                    'sigma_vel_err': abs_target_lines,
+                    'cont': abs_target_lines}
 
 label_Conver = {'H1_6563A': 'Halpha',
                 'H1_4861A': 'Hbeta',
@@ -80,6 +100,206 @@ grid_HII_CHI_mistry_conversion = {'logOH': '12+log(O/H)',
                                 'S2_6716A_b': 'SII_6725',
                                 'S2_6716A': 'SII_6716',
                                 'S2_6731A': 'SII_6731'}
+
+
+def err_prop_sum(a_err, b_err):
+    return np.sqrt(a_err**2 + b_err**2)
+
+
+def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg):
+
+    # Generate new dataframe from
+    log = emis_log.copy()
+    log.insert(loc=1, column='obsFlux', value=np.nan)
+    log.insert(loc=2, column='obsFluxErr', value=np.nan)
+
+    # Use integrated fluxes unless blended lines
+    idcs_gaussian = (log.blended_label != 'None') & (~log.index.str.contains('_b'))
+    log.loc[~idcs_gaussian, 'obsFlux'] = log.loc[~idcs_gaussian, 'intg_flux']
+    log.loc[~idcs_gaussian, 'obsFluxErr'] = log.loc[~idcs_gaussian, 'intg_err']
+    log.loc[idcs_gaussian, 'obsFlux'] = log.loc[idcs_gaussian, 'gauss_flux']
+    log.loc[idcs_gaussian, 'obsFluxErr'] = log.loc[idcs_gaussian, 'gauss_err']
+
+    # Remove the absorption
+    line_abs = np.array(list(chem_cfg['line_absorptions'].keys()))
+    for line in line_abs:
+        if line in log.index:
+
+            emis_flux, emis_err = log.loc[line, 'obsFlux'], log.loc[line, 'obsFluxErr']
+
+            if line in ['H1_6563A', 'H1_4861A']:
+                emis_cont, abs_cont = log.loc[line, 'cont'], abs_log.loc[line, 'cont']
+                norm = emis_cont / abs_cont
+                abs_flux, abs_err = abs_log.loc[line, 'gauss_flux'] * -norm, abs_log.loc[line, 'gauss_err'] * -norm
+            else:
+                abs_flux, abs_err = chem_cfg['line_absorptions'][line]
+
+            log.loc[line, 'obsFlux'] = emis_flux + abs_flux
+            log.loc[line, 'obsFluxErr'] = err_prop_sum(emis_err, abs_err)
+
+    # Normalized by Hbeta
+    flux_Hbeta = log.loc['H1_4861A', 'obsFlux']
+    log['obsFlux'] = log['obsFlux'] / flux_Hbeta
+    log['obsFluxErr'] = log['obsFluxErr'] / flux_Hbeta
+
+    # N2_6548A missing error
+    if 'N2_6548A' in log.index:
+        if log.loc['N2_6548A', 'obsFluxErr'] == 0.0:
+            log.loc['N2_6548A', 'obsFluxErr'] = log.loc['N2_6584A', 'obsFluxErr']
+
+    # Add up [OII] lines
+    if ('O2_7319A' in log.index) and ('O2_7330A' in log.index):
+        flux_comb = log.loc['O2_7319A', 'obsFlux'] + log.loc['O2_7330A', 'obsFlux']
+        err_comb = np.sqrt(log.loc['O2_7319A', 'obsFluxErr'] ** 2 + log.loc['O2_7330A', 'obsFluxErr'] ** 2)
+        log.loc['O2_7319A_b'] = None
+        log.loc['O2_7319A_b', ['wavelength', 'obsFlux', 'obsFluxErr']] = 7325, flux_comb, err_comb
+        log.loc['O2_7319A_b', 'ion'] = 'O2'
+
+    # Get indeces of good lines
+    idcs_lines = log.index.isin(input_lines) & (log.observations == '')
+    lines_remove = log.loc[~idcs_lines].index.values
+    log.drop(index=lines_remove, inplace=True)
+
+    return log
+
+
+def save_log_maps(log_file_address, param_list, output_folder, mask_file_address=None, ext_mask='all',
+                    ext_log='_INPUTS', default_spaxel_value=np.nan, output_files_prefix=None, page_hdr={}):
+
+    assert Path(log_file_address).is_file(), f'- ERROR: lines log at {log_file_address} not found'
+    assert Path(output_folder).is_dir(), f'- ERROR: Output parameter maps folder {output_folder} not found'
+
+    # Compile the list of voxels to recover the provided masks
+    if mask_file_address is not None:
+
+        assert Path(mask_file_address).is_file(), f'- ERROR: mask file at {mask_file_address} not found'
+
+        with fits.open(mask_file_address) as maskHDUs:
+
+            # Get the list of mask extensions
+            if ext_mask == 'all':
+                if ('PRIMARY' in maskHDUs) and (len(maskHDUs) > 1):
+                    mask_list = []
+                    for i, HDU in enumerate(maskHDUs):
+                        mask_name = HDU.name
+                        if mask_name != 'PRIMARY':
+                            mask_list.append(mask_name)
+                    mask_list = np.array(mask_list)
+                else:
+                    mask_list = np.array(['PRIMARY'])
+            else:
+                mask_list = np.array(ext_mask, ndmin=1)
+
+            # Combine all the mask voxels into one
+            for i, mask_name in enumerate(mask_list):
+                if i == 0:
+                    mask_array = maskHDUs[mask_name].data
+                    image_shape = mask_array.shape
+                else:
+                    assert image_shape == maskHDUs[
+                        mask_name].data.shape, '- ERROR: Input masks do not have the same dimensions'
+                    mask_array += maskHDUs[mask_name].data
+
+            # Convert to boolean
+            mask_array = mask_array.astype(bool)
+
+            # List of spaxels in list [(idx_j, idx_i), ...] format
+            spaxel_list = np.argwhere(mask_array)
+
+    # No mask file is provided and the user just defines an image size tupple (nY, nX)
+    else:
+        exit()
+
+    # Generate containers for the data:
+    images_dict = {}
+    for param in param_list:
+        images_dict[f'{param}'] = np.full(image_shape, default_spaxel_value)
+        images_dict[f'{param}_err'] = np.full(image_shape, default_spaxel_value)
+
+    # Loop through the spaxels and fill the parameter images
+    n_spaxels = spaxel_list.shape[0]
+    spaxel_range = np.arange(n_spaxels)
+
+    with fits.open(log_file_address) as logHDUs:
+
+        for i_spaxel in spaxel_range:
+            idx_j, idx_i = spaxel_list[i_spaxel]
+            spaxel_ref = f'{idx_j}-{idx_i}{ext_log}'
+
+            progress_bar(i_spaxel, n_spaxels, post_text=f'spaxels treated ({n_spaxels})')
+
+            # Confirm log extension exists
+            if spaxel_ref in logHDUs:
+
+                # Recover extension data
+                log_data, log_header = logHDUs[spaxel_ref].data, logHDUs[spaxel_ref].header
+
+                # Loop through the parameters and the lines:
+                for param in param_list:
+                    if param in log_header:
+                        images_dict[f'{param}'][idx_j, idx_i] = log_header[param]
+                        images_dict[f'{param}_err'][idx_j, idx_i] = log_header[f'{param}_err']
+
+    # New line after the rustic progress bar
+    print()
+
+    # Save the parameter maps as individual fits files with one line per page
+    output_files_prefix = '' if output_files_prefix is None else output_files_prefix
+    for param in param_list:
+
+        # Primary header
+        paramHDUs = fits.HDUList()
+        paramHDUs.append(fits.PrimaryHDU())
+
+        # ImageHDU for the parameter maps
+        hdr = fits.Header({'PARAM': param})
+        hdr.update(page_hdr)
+        data = images_dict[f'{param}']
+        paramHDUs.append(fits.ImageHDU(name=param, data=data, header=hdr, ver=1))
+
+        # ImageHDU for the parameter error maps
+        hdr = fits.Header({'PARAMERR': param})
+        hdr.update(page_hdr)
+        data_err = images_dict[f'{param}_err']
+        paramHDUs.append(fits.ImageHDU(name=f'{param}_err', data=data_err, header=hdr, ver=1))
+
+        # Write to new file
+        output_file = Path(output_folder) / f'{output_files_prefix}{param}.fits'
+        paramHDUs.writeto(output_file, overwrite=True, output_verify='fix')
+
+    return
+
+
+def muse_grid_sampling_fluxes(lines_array, log, ext_coef, R_V, red_law):
+
+    log.insert(loc=1, column='obsFlux', value=np.nan)
+    log.insert(loc=2, column='obsFluxErr', value=np.nan)
+    log.insert(loc=3, column='obsInt', value=np.nan)
+    log.insert(loc=4, column='obsIntErr', value=np.nan)
+
+    idcs_gaussian = (log.blended_label != 'None') & (~log.index.str.contains('_m'))
+    log.loc[~idcs_gaussian, 'obsFlux'] = log.loc[~idcs_gaussian, 'intg_flux']
+    log.loc[~idcs_gaussian, 'obsFluxErr'] = log.loc[~idcs_gaussian, 'intg_err']
+    log.loc[idcs_gaussian, 'obsFlux'] = log.loc[idcs_gaussian, 'gauss_flux']
+    log.loc[idcs_gaussian, 'obsFluxErr'] = log.loc[idcs_gaussian, 'gauss_err']
+
+    # Normalize by Hbeta the lines log for the fitting
+    flux_Hbeta = log.loc['H1_4861A', 'obsFlux']
+    log['obsFlux'] = log['obsFlux'] / flux_Hbeta
+    log['obsFluxErr'] = log['obsFluxErr'] / flux_Hbeta
+    ion_array, wave_array, latex_array = lime.label_decomposition(log.index.values)
+
+    # Correct fluxes from extinction
+    redCorr = pn.RedCorr(R_V=R_V, law=red_law, cHbeta=ext_coef)
+    corr = redCorr.getCorrHb(wave_array)
+    log['obsInt'] = log['obsFlux'] * corr
+    log['obsIntErr'] = log['obsFluxErr'] * corr
+
+    # Slice to the target lines
+    idcs_lines = log.index.isin(lines_array)
+    output_log = log.loc[idcs_lines]
+
+    return output_log
 
 
 def voxel_security_check(linesDF):
@@ -134,6 +354,7 @@ def import_fado_cube(file_address, ext=0):
         wave = np.linspace(w_min, w_max, nPixels, endpoint=False)
 
     return wave, data, hdr
+
 
 def read_lines_fits(files_dict, night_list):
 

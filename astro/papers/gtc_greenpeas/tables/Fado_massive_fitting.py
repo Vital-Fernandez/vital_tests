@@ -1,9 +1,6 @@
 import src.specsiser as sr
 from pathlib import Path
-import matplotlib.pyplot as plt
-import numpy as np
-from src.specsiser.data_printing import PdfPrinter
-import pyneb as pn
+from delete.data_printing import PdfPrinter
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)

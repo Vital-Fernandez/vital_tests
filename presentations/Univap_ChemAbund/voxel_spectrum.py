@@ -7,7 +7,7 @@ from astro.data.muse.common_methods import STANDARD_AXES
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
-from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_color
+from delete.data_printing import DARK_PLOT, background_color, foreground_color
 
 conf_file = Path(r'D:\Pycharm Projects\vital_tests\astro\data\muse\muse_greenpeas.ini')
 # conf_file = Path('/home/vital/PycharmProjects/vital_tests/astro/data/muse/muse_greenpeas.ini')

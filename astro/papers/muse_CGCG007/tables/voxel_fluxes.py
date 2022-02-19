@@ -2,7 +2,7 @@ import numpy as np
 import lime
 from pathlib import Path
 from astropy.io import fits
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')

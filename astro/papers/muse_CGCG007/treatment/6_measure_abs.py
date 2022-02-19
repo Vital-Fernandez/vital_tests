@@ -1,0 +1,97 @@
+import numpy as np
+
+import lime
+from pathlib import Path
+from astropy.io import fits
+from matplotlib import pyplot as plt, rcParams, cm, colors
+
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import abs_target_lines
+
+# Declare data and files location
+obsData = lime.load_cfg('../muse_CGCG007.ini')
+objList = obsData['data_location']['object_list']
+fileList = obsData['data_location']['file_list']
+fitsFolder = Path(obsData['data_location']['fits_folder'])
+dataFolder = Path(obsData['data_location']['data_folder'])
+resultsFolder = Path(obsData['data_location']['results_folder'])
+voxel_grid_size = obsData['sample_data']['grid_shape_array']
+coordinates_keys_list = obsData['data_location']['wcs_key_list']
+
+# ------ Emission/absroption distribution
+for i, obj in enumerate(objList):
+
+    # Data location
+    cube_address = fitsFolder/fileList[i]
+    objFolder = resultsFolder/obj
+    db_address = objFolder / f'{obj}_database.fits'
+    maskFits_address = objFolder/f'{obj}_masks.fits'
+
+    emis_fits = objFolder / f'gauss_flux.fits'
+    abs_fits = objFolder/'abs_gauss_flux.fits'
+    Hbeta_emis = fits.getdata(emis_fits, 'H1_4861A')
+    Hbeta_abs = fits.getdata(abs_fits, 'H1_4861A')
+
+    hdr_plot = fits.getheader(abs_fits, 'H1_4861A')
+
+    colorNorm = colors.Normalize(0, 6)
+    cmap = cm.get_cmap(name=None)
+    abs_dict = {}
+
+    for j, line in enumerate(abs_target_lines):
+
+        ion_array, wave_array, latex_array = lime.label_decomposition(line, scalar_output=True)
+
+        array_container = []
+        data_labels = []
+        colors = []
+        for idx_region in [0, 1, 2, 3, 4, 5]:
+
+            # Voxel mask
+            region_label = f'MASK_{idx_region}'
+            region_mask = fits.getdata(maskFits_address, region_label, ver=1)
+            region_mask = region_mask.astype(bool)
+            print(region_label, np.sum(region_mask))
+
+            cont_emis = fits.getdata(objFolder/'cont.fits', line)
+            cont_abs = fits.getdata(objFolder/'abs_cont.fits', line)
+            line_flux_emis = fits.getdata(emis_fits, line)
+            line_flux_abs = fits.getdata(abs_fits, line) * -1
+
+            cont_emis = cont_emis[region_mask]
+            cont_abs = cont_abs[region_mask]
+            line_flux_emis = line_flux_emis[region_mask]
+            line_flux_abs = line_flux_abs[region_mask]
+
+            norm = cont_emis/cont_abs
+            abs_norm = line_flux_abs * norm
+
+            # coeff_im = (line_flux_emis/(abs_norm))
+            coeff_im = abs_norm
+            idcs_non_nan = ~np.isnan(coeff_im) & (coeff_im > 0)
+
+            idcs_neg = coeff_im < 0
+
+            if idcs_neg.size > 0:
+                data_array = coeff_im[idcs_non_nan]
+                # print(f'- {region_label} {np.sum(idcs_neg)} {data_array.shape}')
+                array_container.append(data_array)
+                data_labels.append(f'{region_label} ({len(data_array)})')
+                colors.append(cmap(colorNorm(idx_region)))
+
+        # Computing mean absorptions
+        data_total = np.concatenate(array_container)
+        mean_abs, std_abs = data_total.mean(), data_total.std()
+        abs_dict[f'{line}_abs_array'] = np.array([mean_abs, std_abs])
+
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.hist(array_container, label=data_labels, bins=30, log=True, stacked=True, color=colors)
+        title = f'{latex_array} absorption'
+        ax.axvline(x=mean_abs, color='black', linestyle='--')
+        ax.axvspan(mean_abs - std_abs, mean_abs + std_abs, alpha=0.25, color='grey')
+        ax.update({'title': r'Galaxy {}'.format(obj), 'xlabel': title, 'ylabel': r'Count'})
+        ax.legend()
+        # plt.show()
+        plt.savefig(f'{objFolder}/absorptions/{line}_abs.png')
+
+    lime.io.save_cfg('../muse_CGCG007.ini', abs_dict, f'CGCG007_absorptions', clear_section=True)
+

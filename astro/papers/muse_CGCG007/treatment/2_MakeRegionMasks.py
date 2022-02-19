@@ -6,7 +6,7 @@ from astro.data.muse.common_methods import lineAreas, store_frame_to_fits
 from astropy.io import fits
 from matplotlib import pyplot as plt, cm, colors, patches, rcParams
 from astropy.wcs import WCS
-from src.specsiser.data_printing import DARK_PLOT, background_color, foreground_color
+from delete.data_printing import DARK_PLOT, background_color, foreground_color
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 
 # Declare data and files location

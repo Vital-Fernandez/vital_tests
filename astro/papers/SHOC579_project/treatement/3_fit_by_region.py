@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 from pathlib import Path
 from astropy.io import fits
 
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 from astro.papers.SHOC579_project.SHOC579_methods import open_manga_cubes, DARK_PLOT, line_regions
 
 

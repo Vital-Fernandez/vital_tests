@@ -26,7 +26,7 @@ for i, obj in enumerate(objList):
 
     # Labels for the axes
     wave, cube, header = import_muse_fits(cube_address)
-    flux = cube.data.data
+    flux = cube.data.data * norm_flux
 
     # Establish the line intervals for the cube flux image slices
     line_regions = {'H1_6563A': np.array([6528, 6591]) * (1 + z_objs[i]),
@@ -47,5 +47,5 @@ for i, obj in enumerate(objList):
     # Load data
     ax_conf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'MUSE CGCG007-025'}}
     lime.CubeFitsInspector(wave, flux, Halpha_image, SIII_image, SIII_contourLevels, fits_header=header,
-                           lines_log_address=fitsLog_address, axes_conf=ax_conf, redshift=z_objs[i], norm_flux=norm_flux)
+                           lines_log_address=fitsLog_address, axes_conf=ax_conf, redshift=z_objs[i])
 

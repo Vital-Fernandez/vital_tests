@@ -4,7 +4,7 @@ import src.specsiser as sr
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, gridspec
 import astropy.units as u
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
+from src.specsiser.components.line_tools import STANDARD_PLOT, STANDARD_AXES
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
 COLUMNS_TO_CLEAR = ['ion', 'intg_flux', 'intg_err', 'gauss_flux', 'gauss_err', 'eqw', 'eqw_err', 'm_cont',

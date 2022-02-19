@@ -2,7 +2,7 @@ import numpy as np
 import os
 from pathlib import Path
 import src.specsiser as sr
-from src.specsiser.physical_model.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
+from src.specsiser.components.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 from scipy.interpolate import interp1d
 from astro.papers.gtc_greenpeas.common_methods import double_arm_redCorr
 import pyneb as pn

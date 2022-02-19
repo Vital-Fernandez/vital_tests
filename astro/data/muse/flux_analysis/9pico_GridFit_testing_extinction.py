@@ -2,9 +2,11 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import src.specsiser as sr
-from src.specsiser.inference_model import fits_db
+from src.specsiser.treatment import fits_db
 from astro.data.muse.common_methods import grid_columns
 from timeit import default_timer as timer
+
+
 
 # Declare data and files location
 obsData = sr.loadConfData('../muse_greenpeas.ini', group_variables=False)

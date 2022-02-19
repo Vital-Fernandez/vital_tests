@@ -8,7 +8,7 @@ from astropy.io import fits
 import lineid_plot
 from lime.plots import latex_science_float
 
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 from progressbar import progressbar
 from matplotlib import pyplot as plt, rcParams, ticker

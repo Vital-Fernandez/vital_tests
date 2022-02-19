@@ -1,7 +1,4 @@
-import numpy as np
-from astropy.io import fits
 from pathlib import Path
-from src.specsiser.data_printing import DARK_PLOT
 import src.specsiser as sr
 import pyneb as pn
 obsData = sr.loadConfData('./xshooter_LzLCS.ini')

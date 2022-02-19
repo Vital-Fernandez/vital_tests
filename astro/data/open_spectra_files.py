@@ -5,7 +5,7 @@ from pathlib import Path
 import src.specsiser as ss
 
 
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx')
 linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
 data_folder = Path('D:/Dropbox/Astrophysics/Data/WHT-Ricardo/')
 fileList = ['COMBINED_blue.0001.fits', 'combined_red.0001.fits']

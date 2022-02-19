@@ -1,6 +1,6 @@
 import numpy as np
 import src.specsiser as sr
-from src.specsiser.data_printing import PdfPrinter, latex_labels, numberStringFormat
+from delete.data_printing import PdfPrinter, latex_labels, numberStringFormat
 from pathlib import Path
 
 

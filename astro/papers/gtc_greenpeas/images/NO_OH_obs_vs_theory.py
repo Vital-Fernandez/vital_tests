@@ -6,7 +6,7 @@ from astro.papers.gtc_greenpeas.common_methods import red_corr_HalphaHbeta_ratio
 from astro.data.muse.common_methods import STANDARD_PLOT, DARK_PLOT, background_color
 from uncertainties import ufloat
 from uncertainties import ufloat, unumpy
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
+from src.specsiser.components.line_tools import STANDARD_PLOT, STANDARD_AXES
 from matplotlib import pyplot as plt, rcParams
 
 objList = ['GP030321', 'GP101157', 'GP121903', 'GP004054', 'GP113303', 'GP232539']

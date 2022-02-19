@@ -7,7 +7,7 @@ import sys
 import src.specsiser as sr
 import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt, rcParams
-from src.specsiser.data_printing import label_decomposition, PdfPrinter
+from delete.data_printing import label_decomposition, PdfPrinter
 from lmfit.models import LinearModel
 from lmfit import fit_report
 from uncertainties import umath, unumpy, ufloat

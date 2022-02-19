@@ -1,9 +1,9 @@
 import numpy as np
 import pyneb as pn
 from matplotlib import pyplot as plt, rcParams, cm
-from astro.data.muse.common_methods import STANDARD_PLOT, DARK_PLOT, background_color
+from astro.data.muse.common_methods import DARK_PLOT
 from scipy.optimize import curve_fit
-from src.specsiser.data_printing import label_decomposition
+from delete.data_printing import label_decomposition
 
 defaultConf = DARK_PLOT.copy()
 rcParams.update(defaultConf)

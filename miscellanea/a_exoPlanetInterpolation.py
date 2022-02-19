@@ -4,8 +4,8 @@ import numpy as np
 import pickle
 import src.specsiser as ss
 import theano.tensor as tt
-from inference_model import displaySimulationData
-from physical_model.gasEmission_functions import storeValueInTensor
+from treatment import displaySimulationData
+from components.gasEmission_functions import storeValueInTensor
 
 # Use the default user folder to store the results
 user_folder = os.path.join(os.path.expanduser('~'), '')

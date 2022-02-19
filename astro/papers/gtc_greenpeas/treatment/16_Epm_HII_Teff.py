@@ -5,7 +5,7 @@ import src.specsiser as sr
 from astro.papers.gtc_greenpeas.common_methods import
 
 from timeit import default_timer as timer
-from physical_model.gasEmission_functions import gridInterpolatorFunction
+from components.gasEmission_functions import gridInterpolatorFunction
 
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'
 obsData = sr.loadConfData(conf_file_address, objList_check=True, group_variables=False)

@@ -3,7 +3,7 @@ import pandas as pd
 import src.specsiser as sr
 from pathlib import Path
 from astro.papers.gtc_greenpeas.common_methods import red_corr_HalphaHbeta_ratio
-from src.specsiser.physical_model.line_tools import STANDARD_PLOT, STANDARD_AXES
+from src.specsiser.components.line_tools import STANDARD_PLOT, STANDARD_AXES
 from matplotlib import pyplot as plt, rcParams, gridspec
 
 objList = ['gp030321', 'gp101157', 'gp121903']

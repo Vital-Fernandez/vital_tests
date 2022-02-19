@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
+from src.specsiser.components.gasContinuum_functions import NebularContinua
 import matplotlib.pyplot as plt
 from astro.papers.gtc_greenpeas.common_methods import compute_spectrum_flambda, deredd_fluxes, double_arm_redCorr
 

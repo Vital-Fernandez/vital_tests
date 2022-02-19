@@ -5,7 +5,7 @@ import pandas as pd
 import src.specsiser as sr
 from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
-from src.specsiser.data_printing import PdfPrinter
+from delete.data_printing import PdfPrinter
 from astro.data.SDSS.shared_scripts import list_objName, obsConfaddress, obsFolder
 
 

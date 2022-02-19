@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 import pyneb as pn
 import src.specsiser as sr
-from src.specsiser.physical_model.gasContinuum_functions import NebularContinua
+from src.specsiser.components.gasContinuum_functions import NebularContinua
 import matplotlib.pyplot as plt
 
 objList = ['gp030321', 'gp101157', 'gp121903']

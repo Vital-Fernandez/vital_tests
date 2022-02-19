@@ -1,9 +1,8 @@
-import numpy as np
 import pandas as pd
 import pyneb as pn
 import src.specsiser as sr
 from pathlib import Path
-from src.specsiser.data_printing import PdfPrinter
+from delete.data_printing import PdfPrinter
 
 objList = ['gp030321', 'gp101157', 'gp121903']
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

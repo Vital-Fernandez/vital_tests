@@ -6,9 +6,12 @@ from scipy.interpolate import interp1d
 from pathlib import Path
 from astropy.io import fits
 
-from src.specsiser.physical_model.extinction_model import ExtinctionModel
+from src.specsiser.components.extinction_model import ExtinctionModel
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_fado_cube
 from progressbar import progressbar
+
+import specutils
+specutils.conf.do_continuum_function_check = False
 
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')
@@ -43,8 +46,8 @@ for i, obj in enumerate(objList):
     # Load data
     wave, cube, header = import_fado_cube(cube_address)
 
-    # for idx_region in [0, 1, 2, 3, 4, 5]:
     for idx_region in [0, 1, 2, 3, 4, 5]:
+    # for idx_region in [5]:
 
         # Voxel mask
         region_label = f'mask_{idx_region}'
@@ -62,6 +65,7 @@ for i, obj in enumerate(objList):
         n_lines = 0
         n_voxels = idcs_voxels.shape[0]
 
+        # for idx_voxel in progressbar(np.arange(n_voxels), redirect_stdout=True):
         for idx_voxel in np.arange(n_voxels):
 
             idx_j, idx_i = idcs_voxels[idx_voxel]
@@ -74,7 +78,7 @@ for i, obj in enumerate(objList):
             # Voxel data
             flux_voxel = cube[:, idx_j, idx_i]
             voxel = lime.Spectrum(wave, flux_voxel, norm_flux=norm_flux, crop_waves=(4515, 9500))
-
+            voxel.plot_spectrum()
             # lime.MaskInspector(mask_address, mask_df, wave, flux_voxel, norm_flux=norm_flux)
 
             # Locate the line fluxes
@@ -87,8 +91,7 @@ for i, obj in enumerate(objList):
                                     peaks_table=peaks_table, matched_DF=matched_DF)
 
             # Fit and check the regions
-            idcsObsLines = (matched_DF.observation == 'detected')
-            obsLines = matched_DF.loc[idcsObsLines].index.values
+            obsLines = matched_DF.index.values
             for j, lineLabel in enumerate(obsLines):
                 wave_regions = matched_DF.loc[lineLabel, 'w1':'w6'].values
                 try:

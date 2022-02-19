@@ -2,11 +2,13 @@ import pyneb as pn
 
 He1 = pn.RecAtom('He', 1)
 O3 = pn.Atom('O', 3)
+Ar4 = pn.Atom('Ar', 4)
 
 print(pn.__version__)
 He1.printSources()
 
 print('O3 line ratio', O3.getEmissivity(8000, 1000, wave=5007) / O3.getEmissivity(8000, 1000, wave=4959))
+print('Ar4 line ratio', Ar4.getEmissivity(15000, 100, wave=4740) / Ar4.getEmissivity(15000, 100, wave=4710))
 
 
 # H1 = pn.RecAtom('H', 1)

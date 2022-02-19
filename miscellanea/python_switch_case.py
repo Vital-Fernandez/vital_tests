@@ -144,7 +144,7 @@ print('Loop lambda dict result:', dispatch_op(op_looplambda_dict, 'opD_3', 1, 2,
 #     'mul3': mul3
 #     }
 #
-# paramDict = {
+# prior_vars = {
 #             'sum2': ['x', 'y'],
 #             'sum3': ['x', 'y', 'z'],
 #             'mul2': ['x', 'y'],
@@ -155,7 +155,7 @@ print('Loop lambda dict result:', dispatch_op(op_looplambda_dict, 'opD_3', 1, 2,
 # op_dict_new = {}
 #
 # for label, func in op_dict.items():
-#     func_params = tt.dscalars(paramDict[label])
+#     func_params = tt.dscalars(prior_vars[label])
 #     if '2' in label:
 #         op_dict_new[label] = lambda x=0, y=0, kwargs={}: func(x,y)
 #     if '3' in label:
@@ -165,7 +165,7 @@ print('Loop lambda dict result:', dispatch_op(op_looplambda_dict, 'opD_3', 1, 2,
 # op_dict_tt = {}
 #
 # for label, func in op_dict.items():
-#     func_params = tt.dscalars(paramDict[label])
+#     func_params = tt.dscalars(prior_vars[label])
 #     if '2' in label:
 #         op_dict_tt[label] = lambda x=0, y=0, kwargs={}: func(x, y)
 #     if '3' in label:
@@ -202,7 +202,7 @@ print('Loop lambda dict result:', dispatch_op(op_looplambda_dict, 'opD_3', 1, 2,
 
 
 # import numpy as np
-# from src.specsiser.physical_model.gasEmission_functions import EmissionFluxModel, EmissionTensors
+# from src.specsiser.components.gasEmission_functions import EmissionFluxModel, EmissionTensors
 # from timeit import default_timer as timer
 #
 # lineLabels = np.array(['H1_4341A', 'O3_4363A', 'He1_4471A', 'He2_4686A', 'Ar4_4740A',
@@ -389,7 +389,7 @@ print('Loop lambda dict result:', dispatch_op(op_looplambda_dict, 'opD_3', 1, 2,
 
 
 # import numpy as np
-# from src.specsiser.physical_model.gasEmission_functions import EmissionTensors
+# from src.specsiser.components.gasEmission_functions import EmissionTensors
 #
 # emtt = EmissionTensors()
 

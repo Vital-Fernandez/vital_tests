@@ -1,7 +1,7 @@
 import pathlib
 str_fileAddres = "/Users/pankaj/abc.txt"
 fileAddres = pathlib.Path(str_fileAddres)
-fileAddres2 = pathlib.Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+fileAddres2 = pathlib.Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx')
 print(1, fileAddres.suffix)
 print(2, fileAddres.name)
 print(3, fileAddres.parent)

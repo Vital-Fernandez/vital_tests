@@ -1,11 +1,9 @@
 import os
 import pyneb as pn
-import numpy as np
 import pandas as pd
 import src.specsiser as sr
-from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
-from src.specsiser.data_printing import PdfPrinter
+from delete.data_printing import PdfPrinter
 
 
 def list_files(directory, extension):
@@ -35,7 +33,7 @@ def colorChooser(ObsRatio, TheRatio):
 
 # Import the observation data
 obsData = sr.loadConfData('D:/Pycharm Projects/vital_tests/astro/data/SDSS/flux_comparison.ini', group_variables=False)
-linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/literature_data/lines_data.xlsx')
+linesFile = Path('D:/Pycharm Projects/spectra-synthesizer/src/specsiser/database/lines_data.xlsx')
 linesDb = pd.read_excel(linesFile, sheet_name=0, header=0, index_col=0)
 data_folder = Path(obsData['file_information']['data_folder'])
 fileList = list_files(data_folder, '.fits')

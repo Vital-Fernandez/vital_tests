@@ -106,7 +106,7 @@ def err_prop_sum(a_err, b_err):
     return np.sqrt(a_err**2 + b_err**2)
 
 
-def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg):
+def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg, recomb_all=True):
 
     # Generate new dataframe from
     log = emis_log.copy()
@@ -121,21 +121,41 @@ def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg):
     log.loc[idcs_gaussian, 'obsFluxErr'] = log.loc[idcs_gaussian, 'gauss_err']
 
     # Remove the absorption
-    line_abs = np.array(list(chem_cfg['line_absorptions'].keys()))
+    if recomb_all == True:
+        line_abs = np.array(list(chem_cfg['CGCG007_absorptions'].keys()))
+    else:
+        line_abs = np.array(['H1_4861A', 'H1_6563A', 'H1_8750A', 'H1_8863A', 'H1_9015A', 'H1_9229A'])
+
     for line in line_abs:
         if line in log.index:
 
             emis_flux, emis_err = log.loc[line, 'obsFlux'], log.loc[line, 'obsFluxErr']
 
             if line in ['H1_6563A', 'H1_4861A']:
-                emis_cont, abs_cont = log.loc[line, 'cont'], abs_log.loc[line, 'cont']
-                norm = emis_cont / abs_cont
-                abs_flux, abs_err = abs_log.loc[line, 'gauss_flux'] * -norm, abs_log.loc[line, 'gauss_err'] * -norm
-            else:
-                abs_flux, abs_err = chem_cfg['line_absorptions'][line]
 
-            log.loc[line, 'obsFlux'] = emis_flux + abs_flux
-            log.loc[line, 'obsFluxErr'] = err_prop_sum(emis_err, abs_err)
+                if line in abs_log.index:
+                    emis_cont, abs_cont = log.loc[line, 'cont'], abs_log.loc[line, 'cont']
+                    norm = emis_cont / abs_cont
+                    abs_flux, abs_err = abs_log.loc[line, 'gauss_flux'] * -norm, abs_log.loc[line, 'gauss_err'] * -norm
+
+                else:
+
+                    abs_flux, abs_err = 0.0, 0.0
+
+            else:
+                abs_Hbeta = abs_log.loc['H1_4861A', 'gauss_flux']
+                emis_cont_Hbeta, abs_cont_Hbeta = log.loc['H1_4861A', 'cont'], abs_log.loc['H1_4861A', 'cont']
+                norm = -1 * abs_Hbeta * emis_cont_Hbeta/abs_cont_Hbeta
+                abs_flux, abs_err = chem_cfg['CGCG007_absorptions'][line] * norm
+
+            # print(line, abs_flux, norm)
+
+            corr_flux = emis_flux + abs_flux
+            corr_err = err_prop_sum(emis_err, abs_err)
+
+            if corr_flux > 0:
+                log.loc[line, 'obsFlux'] = corr_flux
+                log.loc[line, 'obsFluxErr'] = corr_err
 
     # Normalized by Hbeta
     flux_Hbeta = log.loc['H1_4861A', 'obsFlux']
@@ -156,7 +176,7 @@ def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg):
         log.loc['O2_7319A_b', 'ion'] = 'O2'
 
     # Get indeces of good lines
-    idcs_lines = log.index.isin(input_lines) & (log.observations == '')
+    idcs_lines = log.index.isin(input_lines) & (log.observations == '') & (log.obsFlux > 0) & (log.obsFluxErr > 0)
     lines_remove = log.loc[~idcs_lines].index.values
     log.drop(index=lines_remove, inplace=True)
 
@@ -306,9 +326,8 @@ def voxel_security_check(linesDF):
 
     check = False
 
-    if 'H1_4861A' in linesDF.index:
-        if 'S3_6312A' in linesDF.index:
-            check = True
+    if 'S3_6312A' in linesDF.index:
+        check = True
 
     return check
 

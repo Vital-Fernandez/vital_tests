@@ -13,6 +13,7 @@ from astro.papers.muse_CGCG007.muse_CGCG007_methods import save_log_maps
 obsData = lime.load_cfg('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
+
 fitsFolder = Path(obsData['data_location']['fits_folder'])
 dataFolder = Path(obsData['data_location']['data_folder'])
 resultsFolder = Path(obsData['data_location']['results_folder'])
@@ -33,8 +34,6 @@ for i, obj in enumerate(objList):
 
     # Data for the astronomical coordinates
     hdr = fits.getheader(maskFits_address, extname='MASK_0')
-
-    # Output files
 
     # # Generate the map files
     # save_log_maps(outputDb, param_list, chemFolder, maskFits_address, mask_list, ext_log='_CHEMISTRY_OUTPUTS',

@@ -41,17 +41,17 @@ for i, obj in enumerate(objList):
 
         1 - (obs_log.loc[line, "gauss_flux"]/(-abs_log.loc[line, "gauss_flux"]*norm)) * 100
 
-    # param = 'gauss_flux'
-    # user_lines = param_images[param]
-    #
-    # fits_file = Path(objFolder) / f'{param}.fits'
-    # with fits.open(fits_file):
-    #     for line in user_lines:
-    #         param_image = fits.getdata(fits_file, line)
-    #         param_hdr = fits.getheader(fits_file, line)
-    #
-    #         fig = plt.figure(figsize=(10, 10))
-    #         ax = fig.add_subplot(projection=WCS(fits.Header(param_hdr)), slices=('x', 'y'))
-    #         im = ax.imshow(param_image)
-    #         ax.update({'title': f'Galaxy {obj}: {param}-{line}', 'xlabel': r'RA', 'ylabel': r'DEC'})
-    #         plt.show()
+    param = 'gauss_flux'
+    user_lines = param_images[param]
+
+    fits_file = Path(objFolder) / f'{param}.fits'
+    with fits.open(fits_file):
+        for line in user_lines:
+            param_image = fits.getdata(fits_file, line)
+            param_hdr = fits.getheader(fits_file, line)
+
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(projection=WCS(fits.Header(param_hdr)), slices=('x', 'y'))
+            im = ax.imshow(param_image)
+            ax.update({'title': f'Galaxy {obj}: {param}-{line}', 'xlabel': r'RA', 'ylabel': r'DEC'})
+            plt.show()

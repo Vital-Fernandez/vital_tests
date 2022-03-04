@@ -40,7 +40,7 @@ for i, obj in enumerate(objList):
     # Loop throught the line regions
     start = time.time()
     # for idx_region in [0, 1, 2, 3]:
-    for idx_region in [1, 2, 3]:
+    for idx_region in [2]:
 
         # Voxel mask
         region_label = f'mask_{idx_region}'
@@ -56,13 +56,14 @@ for i, obj in enumerate(objList):
         chem_conf_file = dataFolder/f'{obj}_chemical_model_region_{idx_region}.txt'
         chem_conf = lime.load_cfg(chem_conf_file)
 
-        # Compute emissivity grids from the candidate lines
+    # Compute emissivity grids from the candidate lines
         input_lines = chem_conf['inference_model_configuration']['input_lines']
         emis_grid_interp = sr.emissivity_grid_calc(lines_array=input_lines, comp_dict=merge_dict)
 
         for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
             idx_j, idx_i = idx_pair
+
             print(f'\nTreating voxel {idx_j}-{idx_i}: ({idx_voxel}/{n_voxels})')
 
             # Data location
@@ -73,16 +74,16 @@ for i, obj in enumerate(objList):
             obs_log = lime.load_lines_log(obsLog_addresss, ext_ref)
             abs_log = lime.load_lines_log(absLog_addresss, ext_ref)
 
-            if voxel_security_check(obs_log):
+            # Establish and normalize the lines we want
+            linesDF = chemical_lines_indexing(input_lines, obs_log, abs_log, obsData)
+            lineLabels = linesDF.index.values
+            lineWaves = linesDF.wavelength.values
+            lineIons = linesDF.ion.values
+            lineFluxes = linesDF.obsFlux.values
+            lineErr = linesDF.obsFluxErr.values
+            lineflambda = sr.flambda_calc(lineWaves, R_V=R_v, red_curve=red_law)
 
-                linesDF = chemical_lines_indexing(input_lines, obs_log, abs_log, chem_conf)
-
-                lineLabels = linesDF.index.values
-                lineWaves = linesDF.wavelength.values
-                lineIons = linesDF.ion.values
-                lineFluxes = linesDF.obsFlux.values
-                lineErr = linesDF.obsFluxErr.values
-                lineflambda = sr.flambda_calc(lineWaves, R_V=R_v, red_curve=red_law)
+            if voxel_security_check(linesDF):
 
                 # Declare object
                 obj1_model = sr.SpectraSynthesizer(emis_grid_interp)
@@ -99,36 +100,36 @@ for i, obj in enumerate(objList):
                 obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi+adapt_diag')
                 obj1_model.save_fit(outputDb, ext_name=chem_ref, output_format='fits')
 
-                # Load the results
-                print(chem_ref)
-                fit_pickle = sr.load_fit_results(outputDb, ext_name=chem_ref, output_format='fits')
-                inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
-                inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
-                inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
-                inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']
-                traces_dict = fit_pickle[f'{chem_ref}_traces'][0]
+            #     # Load the results
+            #     print(chem_ref)
+            #     fit_pickle = sr.load_fit_results(outputDb, ext_name=chem_ref, output_format='fits')
+            #     inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
+            #     inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
+            #     inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
+            #     inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']
+            #     traces_dict = fit_pickle[f'{chem_ref}_traces'][0]
+            #
+            #     # Print the results
+            #     print('-- Model parameters table')
+            #     figure_file = f'{chemFolder}/{chem_ref}_fitted_fluxes'
+            #     sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict, merge_dict)
 
-                # Print the results
-                print('-- Model parameters table')
-                figure_file = f'{chemFolder}/{chem_ref}_fitted_fluxes'
-                sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict, merge_dict)
-
-                # Print the results
-                print('-- Fitted fluxes table')
-                figure_file = f'{chemFolder}/{chem_ref}_MeanOutputs'
-                sr.table_params(figure_file, inParameters, traces_dict)
-
-                print('-- Model parameters posterior diagram')
-                figure_file = f'{chemFolder}/{chem_ref}_traces_plot.png'
-                sr.plot_traces(figure_file, inParameters, traces_dict)
-
-                print('-- Line flux posteriors')
-                figure_file = f'{chemFolder}/{chem_ref}_fluxes_grid.png'
-                sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
-
-                print('-- Model parameters corner diagram')
-                figure_file = f'{chemFolder}/{chem_ref}_corner.png'
-                sr.plot_corner(figure_file, inParameters, traces_dict)
+            # # Print the results
+            # print('-- Fitted fluxes table')
+            # figure_file = f'{chemFolder}/{chem_ref}_MeanOutputs'
+            # sr.table_params(figure_file, inParameters, traces_dict)
+            #
+            # print('-- Model parameters posterior diagram')
+            # figure_file = f'{chemFolder}/{chem_ref}_traces_plot.png'
+            # sr.plot_traces(figure_file, inParameters, traces_dict)
+            #
+            # print('-- Line flux posteriors')
+            # figure_file = f'{chemFolder}/{chem_ref}_fluxes_grid.png'
+            # sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
+            #
+            # print('-- Model parameters corner diagram')
+            # figure_file = f'{chemFolder}/{chem_ref}_corner.png'
+            # sr.plot_corner(figure_file, inParameters, traces_dict)
 
 
     # # Show summary

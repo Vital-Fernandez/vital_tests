@@ -3,7 +3,7 @@ print(f'{a:.2f}')
 print(f'{a:.3e}')
 print(f'{a:.0f}')
 print('{:.8f}'.format(a))
-print('{:.3e}'.format(a))
+print('este', '{:.3e}'.format(a))
 print('{:.4e}'.format(a))
 
 cifras = 4

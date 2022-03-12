@@ -21,17 +21,24 @@ print(fits.info(file1))
 # Checking the format of the file 2
 print(fits.info(file2))
 
-with fits.open(file1) as hdul:
-    data1, header1 = hdul[0].data, hdul[0].header
-    err1 = hdul[1].data
-
+# with fits.open(file1) as hdul:
+#     data1, header1 = hdul[0].data, hdul[0].header
+#     err1 = hdul[1].data
+# #
 with fits.open(file1) as hdul:
     data2, header2 = hdul[1].data, hdul[1].header
 
-wave1 = wavelength_array_calculation(header1)
-spec1 = lime.Spectrum(wave1, data1[0], redshift=0.283241)
-spec1.plot_spectrum(frame='rest')
+# wave1 = wavelength_array_calculation(header1)
+# spec1 = lime.Spectrum(wave1, data1[0], redshift=0.283241)
+# spec1.plot_spectrum(frame='rest')
+#
+# wave2 = wavelength_array_calculation(header2)
+# spec2 = lime.Spectrum(wave2, data2[1], redshift=0.283241)
+# spec2.plot_spectrum(frame='rest')
 
-wave2 = wavelength_array_calculation(header2)
-spec2 = lime.Spectrum(wave2, data2[1], redshift=0.283241, norm_flux=)
-spec2.plot_spectrum(frame='rest')
+with fits.open(file2) as hdul:
+    data2, header2 = hdul[1].data, hdul[1].header
+
+wave = data2['WAVE']*10
+flux = data2['FLUX'][0]
+3

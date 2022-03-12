@@ -43,7 +43,7 @@ for i, obj in enumerate(objList):
     # Establishing the countours by percentiles
     percentil_array = np.array([99, 99.9])
     SIII_contourLevels = np.nanpercentile(SIII_image, percentil_array)
-
+    print(fits.info(fitsLog_address))
     # Load data
     ax_conf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'MUSE CGCG007-025'}}
     lime.CubeFitsInspector(wave, flux, Halpha_image, SIII_image, SIII_contourLevels, fits_header=header,

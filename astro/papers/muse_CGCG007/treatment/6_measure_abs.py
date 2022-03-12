@@ -86,8 +86,8 @@ for i, obj in enumerate(objList):
         ax.axvspan(mean_abs - std_abs, mean_abs + std_abs, alpha=0.25, color='grey')
         ax.update({'title': r'Galaxy {}'.format(obj), 'xlabel': title, 'ylabel': r'Voxel count'})
         ax.legend()
-        # plt.show()
-        plt.savefig(f'{objFolder}/absorptions/{line}_abs.png')
+        plt.show()
+        # plt.savefig(f'{objFolder}/absorptions/{line}_abs.png')
 
     lime.io.save_cfg('../muse_CGCG007.ini', abs_dict, f'CGCG007_absorptions', clear_section=True)
     lime.io.save_cfg('../muse_CGCG007.ini', abs_count, f'CGCG007_abs_count', clear_section=True)

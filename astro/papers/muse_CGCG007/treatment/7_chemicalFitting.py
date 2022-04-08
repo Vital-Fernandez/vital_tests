@@ -40,7 +40,7 @@ for i, obj in enumerate(objList):
     # Loop throught the line regions
     start = time.time()
     # for idx_region in [0, 1, 2, 3]:
-    for idx_region in [2]:
+    for idx_region in [0]:
 
         # Voxel mask
         region_label = f'mask_{idx_region}'
@@ -54,10 +54,11 @@ for i, obj in enumerate(objList):
 
         # Region chemical configuration
         chem_conf_file = dataFolder/f'{obj}_chemical_model_region_{idx_region}.txt'
+        print(chem_conf_file)
         chem_conf = lime.load_cfg(chem_conf_file)
 
-    # Compute emissivity grids from the candidate lines
-        input_lines = chem_conf['inference_model_configuration']['input_lines']
+        # Compute emissivity grids from the candidate lines
+        input_lines = chem_conf['inference_model_configuration']['input_lines_list']
         emis_grid_interp = sr.emissivity_grid_calc(lines_array=input_lines, comp_dict=merge_dict)
 
         for idx_voxel, idx_pair in enumerate(idcs_voxels):
@@ -97,40 +98,40 @@ for i, obj in enumerate(objList):
                 # Theoretical model
                 obj1_model.inference_model()
 
-                obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi+adapt_diag')
+                # obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi+adapt_diag')
+                obj1_model.run_sampler(500, 2000, nchains=10, njobs=10)
                 obj1_model.save_fit(outputDb, ext_name=chem_ref, output_format='fits')
 
-            #     # Load the results
-            #     print(chem_ref)
-            #     fit_pickle = sr.load_fit_results(outputDb, ext_name=chem_ref, output_format='fits')
-            #     inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
-            #     inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
-            #     inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
-            #     inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']
-            #     traces_dict = fit_pickle[f'{chem_ref}_traces'][0]
-            #
-            #     # Print the results
-            #     print('-- Model parameters table')
-            #     figure_file = f'{chemFolder}/{chem_ref}_fitted_fluxes'
-            #     sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict, merge_dict)
+                # Load the results
+                print(chem_ref)
+                fit_pickle = sr.load_fit_results(outputDb, ext_name=chem_ref, output_format='fits')
+                inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
+                inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
+                inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
+                inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']
+                traces_dict = fit_pickle[f'{chem_ref}_traces'][0]
 
-            # # Print the results
-            # print('-- Fitted fluxes table')
-            # figure_file = f'{chemFolder}/{chem_ref}_MeanOutputs'
-            # sr.table_params(figure_file, inParameters, traces_dict)
-            #
-            # print('-- Model parameters posterior diagram')
-            # figure_file = f'{chemFolder}/{chem_ref}_traces_plot.png'
-            # sr.plot_traces(figure_file, inParameters, traces_dict)
-            #
-            # print('-- Line flux posteriors')
-            # figure_file = f'{chemFolder}/{chem_ref}_fluxes_grid.png'
-            # sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
-            #
-            # print('-- Model parameters corner diagram')
-            # figure_file = f'{chemFolder}/{chem_ref}_corner.png'
-            # sr.plot_corner(figure_file, inParameters, traces_dict)
+                # Print the results
+                print('-- Model parameters table')
+                figure_file = f'{chemFolder}/{chem_ref}_fitted_fluxes'
+                sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict, merge_dict)
 
+                # Print the results
+                print('-- Fitted fluxes table')
+                figure_file = f'{chemFolder}/{chem_ref}_MeanOutputs'
+                sr.table_params(figure_file, inParameters, traces_dict)
+
+                print('-- Model parameters posterior diagram')
+                figure_file = f'{chemFolder}/{chem_ref}_traces_plot.png'
+                sr.plot_traces(figure_file, inParameters, traces_dict)
+
+                print('-- Line flux posteriors')
+                figure_file = f'{chemFolder}/{chem_ref}_fluxes_grid.png'
+                sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
+
+                # print('-- Model parameters corner diagram')
+                # figure_file = f'{chemFolder}/{chem_ref}_corner.png'
+                # sr.plot_corner(figure_file, inParameters, traces_dict)
 
     # # Show summary
     # end = time.time()

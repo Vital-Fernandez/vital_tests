@@ -3,6 +3,7 @@ import lime
 from pathlib import Path
 from astropy.io import fits
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits, param_images
+from matplotlib import colors
 
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')
@@ -10,6 +11,7 @@ objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 fitsFolder = Path(obsData['data_location']['fits_folder'])
 resultsFolder = Path(obsData['data_location']['results_folder'])
+pertil_array = obsData['sample_data']['percentil_array']
 
 z_objs = obsData['sample_data']['z_array']
 norm_flux = obsData['sample_data']['norm_flux']
@@ -43,9 +45,12 @@ for i, obj in enumerate(objList):
     # Establishing the countours by percentiles
     percentil_array = np.array([99, 99.9])
     SIII_contourLevels = np.nanpercentile(SIII_image, percentil_array)
-    print(fits.info(fitsLog_address))
+
+    min_background_percentil = np.nanpercentile(Halpha_image, pertil_array)[2]
+    normalization_background = colors.SymLogNorm(linthresh=min_background_percentil, vmin=min_background_percentil, base=10)
+
     # Load data
     ax_conf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'MUSE CGCG007-025'}}
     lime.CubeFitsInspector(wave, flux, Halpha_image, SIII_image, SIII_contourLevels, fits_header=header,
-                           lines_log_address=fitsLog_address, axes_conf=ax_conf, redshift=z_objs[i])
+                           lines_log_address=fitsLog_address, ax_conf=ax_conf, redshift=z_objs[i], color_norm=normalization_background)
 

@@ -6,7 +6,6 @@ from megaradrp import visualization
 from matplotlib import pyplot as plt
 from convert import convert
 from astropy.wcs import WCS
-from megaratools import plot_spectrum
 
 obs_conf = lm.load_cfg(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\obsConf.ini')
 z_obj = obs_conf['sample_data']['z_array'][0]

@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import lime as lm
 from pathlib import Path
+from astro.data.muse.common_methods import lineAreas, store_frame_to_fits
 from astropy.io import fits
 from matplotlib import pyplot as plt, cm, colors, patches, rcParams
 from astropy.wcs import WCS
+from delete.data_printing import DARK_PLOT, background_color, foreground_color
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
-from lime.plots import STANDARD_PLOT
 
 # Declare data and files location
 obsData = lm.load_cfg('../muse_CGCG007.ini')
@@ -88,7 +89,7 @@ for i, obj in enumerate(objList):
         region_dict[f'mask_{idx_contour}'] = maFlux_image
 
     # Plot combined mask
-    defaultConf = STANDARD_PLOT.copy()
+    defaultConf = DARK_PLOT.copy()
     rcParams.update(defaultConf)
 
     fig = plt.figure(figsize=(12, 8))
@@ -98,6 +99,7 @@ for i, obj in enumerate(objList):
                                                                         base=10))
 
     halpha_cmap = cm.gray
+    halpha_cmap.set_under()
 
     cmap = cm.get_cmap('viridis', len(region_dict))
     legend_list = [None] * len(region_dict)
@@ -118,14 +120,7 @@ for i, obj in enumerate(objList):
     ax.update({'title': r'{} masks'.format(obj), 'xlabel': r'RA', 'ylabel': r'DEC'})
     ax.set_xlim(90, 220)
     ax.set_ylim(70, 240)
+    fig.patch.set_facecolor(background_color)
     plt.show()
     # plt.savefig(masks_plot)
 
-    # Store the mask
-    hdul_masks = fits.HDUList()
-    hdul_masks.append(fits.PrimaryHDU())
-    for idx_region, region_items in enumerate(region_dict.items()):
-        region_label, region_mask = region_items
-        mask_hdu = fits.ImageHDU(name=region_label, data=region_mask.mask.astype(int), ver=1)
-        hdul_masks.append(mask_hdu)
-    hdul_masks.writeto(masks_fits, overwrite=True, output_verify='fix')

@@ -7,7 +7,6 @@ import sys
 import src.specsiser as sr
 import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt, rcParams
-from delete.data_printing import label_decomposition, PdfPrinter
 from lmfit.models import LinearModel
 from lmfit import fit_report
 from uncertainties import umath, unumpy, ufloat
@@ -399,34 +398,6 @@ def exitinction_corr_plot_backUp(objName, corr_dict_list, ext_file_list, plot_sa
     return
 
 
-def interpolate(grid, z, zmin, zmax, n, ncol=9):
-
-
-    # ncol = 9 for HII_CHIM_original, ncol=10 for Teff
-
-    vec = []
-    for col in range(ncol):
-      inter = 0
-      no_inter = 0
-      for row in range(0,len(grid)):
-         if grid[row,z] < zmin or grid[row,z] > zmax: continue
-         if z == 2: x = 0; y = 1
-         if z == 1: x = 0; y = 2
-         if z == 0: x = 1; y = 2
-         if row == (len(grid)-1):
-            vec.append(grid[row,col])
-            no_inter = no_inter + 1
-         elif grid[row,x] < grid[row+1, x] or grid[row, y] < grid[row+1, y]:
-            vec.append(grid[row,col])
-            no_inter = no_inter + 1
-         else:
-            inter = inter + 1
-            for index in range(0,n):
-               i = grid[row, col]+(index)*(grid[row+1, col]-grid[row, col])/n
-               vec.append(i)
-    out = np.transpose(np.reshape(vec, (-1, n*inter+no_inter)))
-
-    return out
 
 def epm_HII_CHI_mistry(input00, output_file, n, sed, inter, HCm_folder=None):
 

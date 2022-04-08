@@ -21,6 +21,7 @@ def reconstruct_wavelength(header):
     return np.linspace(w_min, w_max, nPixels, endpoint=False)
 
 
+
 # fits_folder = Path('/home/vital/Astro-data/Observations/MUSE - Amorin/FADO_analysis/Z4SalpP2000/')
 # conf_file_address = '/home/vital/PycharmProjects/vital_tests/astro/papers/muse_CGCG007/muse_CGCG007.ini'
 

@@ -1,22 +1,38 @@
 import numpy as np
 
-A = np.matrix([[1, 2, 3, 33], [4,5,6,66], [7,8,9,99]])
-idcs = np.unravel_index(np.argmax(A, axis=None), A.shape)
+a = np.array([-2, -1, 0, 1, 2])
+b = np.array([10, 20, 30])
 
-print(np.argmax(A, axis=1))
-print(A[idcs])
-print()
-print(np.max(A))
+m1 = np.add(np.c_[a], b)
+m2 = np.add(a, np.c_[b])
 
-np.argmax(A)  # 11, which is the position of 99
 
-np.argmax(A[:,:])  # 11, which is the position of 99
 
-np.argmax(A[:1])  # 3, which is the position of 33
+print(m1)
+print(m1[0, :])
+print(m2)
+print(m2[:, 0])
 
-np.argmax(A[:,2])  # 2, which is the position of 9
+print(m1-b)
 
-np.argmax(A[1:,2])  # 1, which is the position of 9
+
+# A = np.matrix([[1, 2, 3, 33], [4,5,6,66], [7,8,9,99]])
+# idcs = np.unravel_index(np.argmax(A, axis=None), A.shape)
+#
+# print(np.argmax(A, axis=1))
+# print(A[idcs])
+# print()
+# print(np.max(A))
+#
+# np.argmax(A)  # 11, which is the position of 99
+#
+# np.argmax(A[:,:])  # 11, which is the position of 99
+#
+# np.argmax(A[:1])  # 3, which is the position of 33
+#
+# np.argmax(A[:,2])  # 2, which is the position of 9
+#
+# np.argmax(A[1:,2])  # 1, which is the position of 9
 
 # def function_a(a, b, c, d):
 #     return a + b + c + d/100000

@@ -19,7 +19,9 @@ fig, ax = plt.subplots(figsize=(10, 10))
 for i, x in enumerate(x_values):
     data_scatter = ax.scatter(x, y_values[i], label=f'Data set {i+1}')
     labels_group = labels[i]
-    mplcursors.cursor(data_scatter).connect("add", lambda sel, labels_group=labels_group: sel.annotation.set_text(labels_group[sel.target.index]))
+    ax.plot(x, y_values[i], label=f'Line set {i+1}')
+
+    mplcursors.cursor(data_scatter).connect("add", lambda sel, labels_group=labels_group: sel.annotation.set_text(labels_group[sel.index]))
 
 ax.legend()
 plt.show()

@@ -3,7 +3,7 @@ from astropy.io import fits
 from mpdaf.obj import Cube
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec
-from src.specsiser.tools.line_measure import STANDARD_PLOT, STANDARD_AXES
+from lime.plots import STANDARD_PLOT
 import pyneb as pn
 
 lineAreas = {'H1_6563A': (6558.0, 6568.0),

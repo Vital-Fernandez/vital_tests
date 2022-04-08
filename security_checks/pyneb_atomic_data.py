@@ -4,6 +4,8 @@ He1 = pn.RecAtom('He', 1)
 H1 = pn.RecAtom('H', 1)
 O3 = pn.Atom('O', 3)
 Ar4 = pn.Atom('Ar', 4)
+print(He1.printTransition(5876))
+
 S3 = pn.Atom('S', 3)
 H1.getWave(14, 2)
 H1.getWave(13, 2)
@@ -11,7 +13,6 @@ N2 = pn.Atom('N', 2)
 N2.plotGrotrian()
 plt.show()
 print('S3 line ratio', S3.getEmissivity(8000, 1000, wave=9531) / S3.getEmissivity(8000, 1000, wave=9069))
-
 
 #
 # print(pn.__version__)

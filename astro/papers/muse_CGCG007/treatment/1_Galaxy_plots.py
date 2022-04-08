@@ -3,9 +3,10 @@ import lime as lm
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
-from src.specsiser.print.plot import STANDARD_PLOT
 from astro.data.muse.common_methods import lineAreas, import_fits_data
 from astropy.io import fits
+from lime.plots import STANDARD_PLOT
+
 
 # Declare data and files location
 obsData = lm.load_cfg('../muse_CGCG007.ini')

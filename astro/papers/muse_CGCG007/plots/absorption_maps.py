@@ -1,12 +1,13 @@
 import numpy as np
 
 import lime
+from lime.plots import STANDARD_PLOT
 from pathlib import Path
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
 
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import label_Conver, abs_target_lines, param_images_abs, abs_target_lines
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits, abs_target_lines
 
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')
@@ -17,6 +18,7 @@ dataFolder = Path(obsData['data_location']['data_folder'])
 resultsFolder = Path(obsData['data_location']['results_folder'])
 voxel_grid_size = obsData['sample_data']['grid_shape_array']
 coordinates_keys_list = obsData['data_location']['wcs_key_list']
+
 # ------ Emission/absroption
 for i, obj in enumerate(objList):
 
@@ -25,6 +27,8 @@ for i, obj in enumerate(objList):
     objFolder = resultsFolder/obj
     db_address = objFolder / f'{obj}_database.fits'
     maskFits_address = objFolder/f'{obj}_masks.fits'
+
+    wave, cube, header = import_muse_fits(cube_address)
 
     emis_fits = objFolder / f'gauss_flux.fits'
     abs_fits = objFolder/'abs_gauss_flux.fits'
@@ -53,10 +57,10 @@ for i, obj in enumerate(objList):
 
         coeff_im = (line_flux_emis/(line_flux_abs * norm))
 
-        print(np.sum(coeff_im<0))
-
+        print(np.sum(coeff_im < 0))
+        rcParams.update(STANDARD_PLOT)
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y'))
+        ax = fig.add_subplot(projection=WCS(header), slices=('x', 'y', 1))
         im = ax.imshow(coeff_im, norm=colors.LogNorm())
         cbar = fig.colorbar(im, ax=ax)
         title = f'{latex_array} ' + r'$\frac{emission}{absorption}$'

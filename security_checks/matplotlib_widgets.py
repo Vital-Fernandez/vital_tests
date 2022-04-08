@@ -1,28 +1,52 @@
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.widgets  import RectangleSelector
+from matplotlib.backend_bases import NavigationToolbar2, Event
 
-xdata = np.linspace(0,9*np.pi, num=301)
-ydata = np.sin(xdata)
+home = NavigationToolbar2.home
 
-fig, ax = plt.subplots()
-line, = ax.plot(xdata, ydata)
+def new_home(self, *args, **kwargs):
+    s = 'home_event'
+    event = Event(s, self)
+    event.foo = 100
+    self.canvas.callbacks.process(s, event)
+    home(self, *args, **kwargs)
 
+NavigationToolbar2.home = new_home
 
-def line_select_callback(eclick, erelease):
-    x1, y1 = eclick.xdata, eclick.ydata
-    x2, y2 = erelease.xdata, erelease.ydata
+def handle_home(evt):
+    print('new home')
+    print(evt.foo)
 
-    rect = plt.Rectangle( (min(x1,x2),min(y1,y2)), np.abs(x1-x2), np.abs(y1-y2) )
-    ax.add_patch(rect)
-
-
-rs = RectangleSelector(ax, line_select_callback,
-                       drawtype='box', useblit=False, button=[1],
-                       minspanx=5, minspany=5, spancoords='pixels',
-                       interactive=True)
-
+fig = plt.figure()
+fig.canvas.mpl_connect('home_event', handle_home)
+plt.text(0.35, 0.5, 'Hello world!', dict(size=30))
 plt.show()
+
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from matplotlib.widgets  import RectangleSelector
+#
+# xdata = np.linspace(0,9*np.pi, num=301)
+# ydata = np.sin(xdata)
+#
+# fig, ax = plt.subplots()
+# line, = ax.plot(xdata, ydata)
+#
+#
+# def line_select_callback(eclick, erelease):
+#     x1, y1 = eclick.xdata, eclick.ydata
+#     x2, y2 = erelease.xdata, erelease.ydata
+#
+#     rect = plt.Rectangle( (min(x1,x2),min(y1,y2)), np.abs(x1-x2), np.abs(y1-y2) )
+#     ax.add_patch(rect)
+#
+#
+# rs = RectangleSelector(ax, line_select_callback,
+#                        drawtype='box', useblit=False, button=[1],
+#                        minspanx=5, minspany=5, spancoords='pixels',
+#                        interactive=True)
+#
+# plt.show()
 
 # import logging
 # import matplotlib

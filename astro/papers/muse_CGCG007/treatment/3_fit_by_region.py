@@ -6,7 +6,6 @@ from scipy.interpolate import interp1d
 from pathlib import Path
 from astropy.io import fits
 
-from src.specsiser.components.extinction_model import ExtinctionModel
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
 from progressbar import progressbar
 
@@ -27,7 +26,7 @@ thres_array = obsData['sample_data']['detect_lim_array']
 dict_errs = {}
 dict_nan_values = {}
 
-verbose = True
+verbose = False
 
 for i, obj in enumerate(objList):
 
@@ -46,12 +45,12 @@ for i, obj in enumerate(objList):
     wave, cube, header = import_muse_fits(cube_address)
 
     # Loop throught the line regions
-    start = time.time()
 
-    for idx_region in [0, 1, 2, 3, 4, 5]:
-    # for idx_region in [1]:
+    for idx_region in [0]:
 
         # Voxel mask
+        start = time.time()
+        n_lines = 0
         region_label = f'mask_{idx_region}'
         region_mask = fits.getdata(maskFits_address, region_label, ver=1)
         region_mask = region_mask.astype(bool)
@@ -65,19 +64,14 @@ for i, obj in enumerate(objList):
         print(f'\n- Treating {region_label} with {idcs_voxels.shape[0]} pixels')
 
         # Loop through voxels
-        n_lines = 0
         n_voxels = idcs_voxels.shape[0]
 
-        print(n_voxels)
-
-        for idx_voxel in progressbar(np.arange(n_voxels), redirect_stdout=True):
-        # for idx_voxel in np.arange(n_voxels):
+        # for idx_voxel in progressbar(np.arange(n_voxels), redirect_stdout=True):
+        for idx_voxel in np.arange(n_voxels):
 
             idx_j, idx_i = idcs_voxels[idx_voxel]
             voxel_dict = {}
 
-            local_mask = voxelFolder/f'{idx_j}-{idx_i}_mask_{obj}.txt'
-            local_lineslog = voxelFolder/f'{idx_j}-{idx_i}_lineslog_{obj}.txt'
             grid_address_i = voxelFolder/f'{idx_j}-{idx_i}_LineGrid_{obj}.png'
             pdfTableFile = voxelFolder/f'{idx_j}-{idx_i}_linesTable'
             txtTableFile = voxelFolder/f'{idx_j}-{idx_i}_linesTable.txt'
@@ -100,38 +94,40 @@ for i, obj in enumerate(objList):
                 Interpolation = interp1d(voxel.wave[~idcs_nan], voxel.flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
                 voxel.flux = Interpolation(voxel.wave)
                 if verbose:
-                    voxel.plot_spectrum(cont_flux=Interpolation(voxel.wave))
+                    voxel.plot_spectrum(comp_array=Interpolation(voxel.wave))
 
             # Nans in errflux
             idcs_nan = np.isnan(voxel.err_flux)
             if idcs_nan.any():
-                Interpolation = interp1d(voxel.wave[~idcs_nan], voxel.err_flux[~idcs_nan], kind='slinear',
-                                         fill_value="extrapolate")
+                Interpolation = interp1d(voxel.wave[~idcs_nan], voxel.err_flux[~idcs_nan], kind='slinear', fill_value="extrapolate")
                 voxel.err_flux = Interpolation(voxel.wave)
 
-            peaks_table, matched_masks_DF = voxel.match_line_mask(mask_df, noise_region, line_threshold=thres_array[idx_region])
+            peaks_table, matched_masks_DF = voxel.match_line_mask(mask_df, noise_region, detect_threshold=thres_array[idx_region],
+                                                                  width_mode='fixed')
 
             # Index of detected lines
-            idcsObsLines = (matched_masks_DF.observation == 'detected')
+            idcsObsLines = matched_masks_DF.index
 
             if verbose:
-                voxel.plot_spectrum(peaks_table=peaks_table, matched_DF=matched_masks_DF, spec_label=f'{obj} voxel {idx_j}-{idx_i}',
-                                    log_scale=True)
+                voxel.plot_spectrum(peaks_table=peaks_table, match_log=matched_masks_DF,
+                                    spec_label=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
 
             # Fit and check the regions
             obsLines = matched_masks_DF.loc[idcsObsLines].index.values
             for j, lineLabel in enumerate(obsLines):
-                wave_regions = matched_masks_DF.loc[lineLabel, 'w1':'w6'].values
-
-                try:
+                # if lineLabel == 'He1_5876A':
+                    wave_regions = matched_masks_DF.loc[lineLabel, 'w1':'w6'].values
                     voxel.fit_from_wavelengths(lineLabel, wave_regions, user_cfg=user_conf)
-
-                except ValueError as e:
-                    err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
-                    err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'
-                    voxel_dict[err_label] = err_value
-                    dict_errs[f'{idx_j}-{idx_i}_{lineLabel}'] = e
-                    print(f'--- Line measuring failure at {lineLabel} ({err_value}), {idx_j}-{idx_i}')
+                    voxel.display_results()
+                # try:
+                #     voxel.fit_from_wavelengths(lineLabel, wave_regions, user_cfg=user_conf)
+                #
+                # except ValueError as e:
+                #     err_value = 'NAN values' if 'NaN' in str(e) else 'valueError'
+                #     err_label = f'ER_{lineLabel[lineLabel.find("_")+1:]}'
+                #     voxel_dict[err_label] = err_value
+                #     dict_errs[f'{idx_j}-{idx_i}_{lineLabel}'] = e
+                #     print(f'--- Line measuring failure at {lineLabel} ({err_value}), {idx_j}-{idx_i}')
 
             # Spectrum data
             n_lines += len(voxel.log.index)
@@ -139,18 +135,21 @@ for i, obj in enumerate(objList):
             voxel_dict['N_nan'] = idcs_nan.sum()
 
             # Converting linesLog to fits
-            linesHDU = lime.io.lineslog_to_HDU(voxel.log, ext_name=f'{idx_j}-{idx_i}_linelog', header_dict=voxel_dict)
+            linesHDU = lime.io.log_to_HDU(voxel.log, ext_name=f'{idx_j}-{idx_i}_linelog', header_dict=voxel_dict)
 
             # Save spectrum data:
             if linesHDU is not None:
                 hdul_lineslog.append(linesHDU)
 
         # Store the drive
-        hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
+        # hdul_lineslog.writeto(fitsLog_addresss, overwrite=True, output_verify='fix')
         end = time.time()
+        print(f'- Execution time {(end - start):.2f} seconds, {(end - start) / 60:.1f} min, for {n_lines} lines, voxels {n_voxels}')
+        # print(
+        #     f'- Execution time {(end - start):.2f} seconds, {(end - start) / 60:.1f} min, for {n_lines} lines, voxels {n_voxels},'
+        #     f' errors {len(dict_errs.keys())}')
 
 # Show summary
 print('-- Error summary')
 for voxel_fail, error in dict_errs.items():
     print(voxel_fail)
-print(f'- Execution time {(end - start)/60:.3f} min, for {n_lines} lines, errors {len(dict_errs.keys())}')

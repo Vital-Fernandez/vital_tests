@@ -35,9 +35,9 @@ for i, obj in enumerate(objList):
     # Data for the astronomical coordinates
     hdr = fits.getheader(maskFits_address, extname='MASK_0')
 
-    # # Generate the map files
-    # save_log_maps(outputDb, param_list, chemFolder, maskFits_address, mask_list, ext_log='_CHEMISTRY_OUTPUTS',
-    #               page_hdr=hdr)
+    # Generate the map files
+    save_log_maps(outputDb, param_list, chemFolder, maskFits_address, mask_list, ext_log='_CHEMISTRY_OUTPUTS',
+                  page_hdr=hdr)
 
 
     # ----------------------------------------- Generate the image plots ----------------------------------------
@@ -50,6 +50,8 @@ for i, obj in enumerate(objList):
         with fits.open(f'{chemFolder}/{param}.fits') as hdu_list:
 
             image_data, image_header = hdu_list[param].data, hdu_list[param].header
+
+            print(f'{chemFolder}/{param}.fits', param, np.all(np.isnan(image_data)))
 
             defaultConf = STANDARD_PLOT.copy()
             rcParams.update(defaultConf)

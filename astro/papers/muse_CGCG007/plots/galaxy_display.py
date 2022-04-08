@@ -50,8 +50,8 @@ levelContours = np.nanpercentile(flux_image, pertil_array)
 
 # Plot the image:
 fig = plt.figure(figsize=(10, 10), dpi=600)
-# ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
-ax = fig.add_subplot()
+ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
+# ax = fig.add_subplot()
 
 min_background_percentil = levelContours[2]
 normalization_background = colors.SymLogNorm(linthresh=min_background_percentil, vmin=min_background_percentil, base=10)
@@ -73,7 +73,7 @@ ax.xaxis.set_major_locator(plt.NullLocator())
 ax.yaxis.set_major_locator(plt.NullLocator())
 ax.yaxis.set_ticklabels([], minor=True)
 
-plt.savefig(plotsFolder/'CGCG007_halpha_image_noAxis.png', bbox_inches='tight')
-# plt.show()
+# plt.savefig(plotsFolder/'CGCG007_halpha_image_noAxis.png', bbox_inches='tight')
+plt.show()
 
 

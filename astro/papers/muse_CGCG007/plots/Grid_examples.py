@@ -35,9 +35,13 @@ idcs_lines = np.isin(obs_lines, grid_lines)
 input_lines = obs_lines[idcs_lines]
 
 # Grid to perform the fitting
-logOH_range = np.round(np.linspace(7.15, 9.0, 5), 3)
-logU_range = np.round(np.linspace(-3.90, -1.40, 5), 3)
-logNO_range = np.round(np.linspace(-1.90, -0.01, 5), 3)
+logOH_range = np.round(np.linspace(7.15, 9.0, 7), 3)
+logU_range = np.round(np.linspace(-3.90, -1.40, 7), 3)
+logNO_range = np.round(np.linspace(-1.90, -0.01, 7), 3)
+
+logOH_range = np.array([7.15, 7.458, 7.767, 8.075, 8.383, 8.692, 9.])
+logU_range = np.array([-3.9, -3.483, -3.067, -2.65, -2.233, -1.817, -1.4])
+logNO_range = np.array([-1.9, -1.585, -1.27, -0.955, -0.64, -0.325, -0.01])
 
 # Output file for the fitting
 outputFits = resultsFolder/'grid_logOH_logU_logNO_advi.fits'
@@ -49,44 +53,46 @@ for i, logOH in enumerate(logOH_range):
     for j, logU in enumerate(logU_range):
         for k, logNO in enumerate(logNO_range):
 
-            print(f'- Fit {i_step}/{n_steps}: expected time {n_steps*30/3600:0.3f} hours')
+            if i_step > 154:
 
-            # True value coordinate for interpolation
-            coord_true = [[logOH, logU, logNO]]
-            header_params = {'logOH': logOH, 'logU': logU, 'logNO': logNO}
+                print(f'- Fit {i_step}/{n_steps}: expected time {n_steps*30/3600:0.3f} hours')
 
-            # Output files
-            cord_label = f'{logOH*1000:.0f}_{logU*-1000:.0f}_{logNO*-1000:.0f}'
+                # True value coordinate for interpolation
+                coord_true = [[logOH, logU, logNO]]
+                header_params = {'logOH': logOH, 'logU': logU, 'logNO': logNO}
 
-            # Fill the dataframe with integrated flux
-            log = pd.DataFrame(index=input_lines, columns=['wavelength', 'ion',	'intg_flux', 'intg_err'])
-            for line in input_lines:
-                ion, wavelength, latexLabel = lime.label_decomposition(line, scalar_output=True)
-                flux = np.power(10, grid_interpolators[line](coord_true).eval()[0])[0]
-                log.loc[line, :] = wavelength, ion, flux, flux * 0.05
-            lines_flambda = np.zeros(log.index.values.size)
+                # Output files
+                cord_label = f'{logOH*1000:.0f}_{logU*-1000:.0f}_{logNO*-1000:.0f}'
 
-            # Declare sampler
-            obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interpolators)
+                # Fill the dataframe with integrated flux
+                log = pd.DataFrame(index=input_lines, columns=['wavelength', 'ion',	'intg_flux', 'intg_err'])
+                for line in input_lines:
+                    ion, wavelength, latexLabel = lime.label_decomposition(line, scalar_output=True)
+                    flux = np.power(10, grid_interpolators[line](coord_true).eval()[0])[0]
+                    log.loc[line, :] = wavelength, ion, flux, flux * 0.05
+                lines_flambda = np.zeros(log.index.values.size)
 
-            # Declare region physical model
-            obj1_model.define_region(log.index.values, log.intg_flux.values, log.intg_err.values, lineFlambda=lines_flambda)
-            obj1_model.simulation_configuration(prior_conf_dict=conf_fit['priors_configuration'])
-            obj1_model.photoionization_sampling(model_variables)
-            obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
-            obj1_model.save_fit(outputFits, cord_label, output_format='fits', user_header=header_params)
+                # Declare sampler
+                obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interpolators)
 
-            # Load the results
-            fit_results = sr.load_fit_results(outputFits, ext_name=cord_label, output_format='fits')
-            inLines = fit_results[f'{cord_label}_inputs'][0]['line_list']
-            inParameters = fit_results[f'{cord_label}_outputs'][0]['parameters_list']
-            inFlux = fit_results[f'{cord_label}_inputs'][0]['line_fluxes']
-            inErr = fit_results[f'{cord_label}_inputs'][0]['line_err']
-            traces_dict = fit_results[f'{cord_label}_traces'][0]
+                # Declare region physical model
+                obj1_model.define_region(log.index.values, log.intg_flux.values, log.intg_err.values, lineFlambda=lines_flambda)
+                obj1_model.simulation_configuration(prior_conf_dict=conf_fit['priors_configuration'])
+                obj1_model.photoionization_sampling(model_variables)
+                obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
+                obj1_model.save_fit(outputFits, cord_label, output_format='fits', user_header=header_params)
 
-            print('-- Model parameters posterior diagram')
-            figure_file = f'/home/vital/Astro-data/grid_models/{cord_label}_trace_plot.png'
-            sr.plot_traces(figure_file, inParameters, traces_dict, true_values={'logOH': logOH, 'logU': logU, 'logNO': logNO})
+                # # Load the results
+                # fit_results = sr.load_fit_results(outputFits, ext_name=cord_label, output_format='fits')
+                # inLines = fit_results[f'{cord_label}_inputs'][0]['line_list']
+                # inParameters = fit_results[f'{cord_label}_outputs'][0]['parameters_list']
+                # inFlux = fit_results[f'{cord_label}_inputs'][0]['line_fluxes']
+                # inErr = fit_results[f'{cord_label}_inputs'][0]['line_err']
+                # traces_dict = fit_results[f'{cord_label}_traces'][0]
+                #
+                # print('-- Model parameters posterior diagram')
+                # figure_file = f'/home/vital/Astro-data/grid_models/{cord_label}_trace_plot.png'
+                # sr.plot_traces(figure_file, inParameters, traces_dict, true_values={'logOH': logOH, 'logU': logU, 'logNO': logNO})
 
             i_step += 1
 

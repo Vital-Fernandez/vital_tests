@@ -1,0 +1,6 @@
+[one_component_line_fitting]
+
+[two_component_line_fitting]
+O3_4959A_b = O3_4959A-O3_4959A_W1
+O3_4959A_cont_slope = vary:False
+O3_4959A_cont_intercept = vary:False

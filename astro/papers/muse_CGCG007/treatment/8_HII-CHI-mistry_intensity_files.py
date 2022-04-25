@@ -44,8 +44,7 @@ for i, obj in enumerate(objList):
     errcHbeta_map = fits.getdata(extinction_map, extname='cHbeta_err')
 
     # Loop throught the line regions
-    for idx_region in [0]:
-    # for idx_region in [0, 1, 2, 3, 4, 5]:
+    for idx_region in [0, 1, 2, 3]:
 
         # Voxel mask
         region_label = f'mask_{idx_region}'

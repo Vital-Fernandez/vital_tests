@@ -41,8 +41,7 @@ for i, obj in enumerate(objList):
     outputFits = objFolder/f'{obj}_grid_sampling.fits'
 
     # Loop throught the line regions
-    for idx_region in [0]:
-    # for idx_region in [0, 1, 2]:
+    for idx_region in [0, 1, 2, 3]:
 
         # Load fitting configuration
         chem_conf_file = dataFolder / f'grid_sampling_confg_region_{idx_region}.cfg'
@@ -86,31 +85,31 @@ for i, obj in enumerate(objList):
             obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
             obj1_model.save_fit(outputFits, ext_chem, output_format='fits')
 
-            # Load the results
-            fit_results = sr.load_fit_results(outputFits, ext_name=ext_chem, output_format='fits')
-            inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
-            inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
-            inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
-            inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
-            traces_dict = fit_results[f'{ext_chem}_traces'][0]
+            # # Load the results
+            # fit_results = sr.load_fit_results(outputFits, ext_name=ext_chem, output_format='fits')
+            # inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
+            # inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
+            # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
+            # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
+            # traces_dict = fit_results[f'{ext_chem}_traces'][0]
 
-            # Print the results
-            print('-- Model parameters table')
-            figure_file = f'{chemFolder}/{ext_chem}_fitted_fluxes'
-            sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict)
-
-            # Print the results
-            print('-- Fitted fluxes table')
-            figure_file = f'{chemFolder}/{ext_chem}_MeanOutputs'
-            sr.table_params(figure_file, inParameters, traces_dict)
-
-            print('-- Model parameters posterior diagram')
-            figure_file = f'{chemFolder}/{ext_chem}_traces_plot.png'
-            sr.plot_traces(figure_file, inParameters, traces_dict)
-
-            print('-- Line flux posteriors')
-            figure_file = f'{chemFolder}/{ext_chem}_fluxes_grid.png'
-            sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
+            # # Print the results
+            # print('-- Model parameters table')
+            # figure_file = f'{chemFolder}/{ext_chem}_fitted_fluxes'
+            # sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict)
+            #
+            # # Print the results
+            # print('-- Fitted fluxes table')
+            # figure_file = f'{chemFolder}/{ext_chem}_MeanOutputs'
+            # sr.table_params(figure_file, inParameters, traces_dict)
+            #
+            # print('-- Model parameters posterior diagram')
+            # figure_file = f'{chemFolder}/{ext_chem}_traces_plot.png'
+            # sr.plot_traces(figure_file, inParameters, traces_dict)
+            #
+            # print('-- Line flux posteriors')
+            # figure_file = f'{chemFolder}/{ext_chem}_fluxes_grid.png'
+            # sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
 
 
 

@@ -82,5 +82,5 @@ for OB in OB_list:
             # Run the tasks
             for run_id in task_list:
                 print(f'Running: {run_id}')
-                output_run = run_reduce(dm, run_id)
+                # output_run = run_reduce(dm, run_id)
 

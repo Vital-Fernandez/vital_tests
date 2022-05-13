@@ -38,10 +38,12 @@ for i, obj in enumerate(objList):
     chemFolder = objFolder / 'chemistry'
 
     # Output data
-    outputFits = objFolder/f'{obj}_grid_sampling.fits'
+    # outputFits = objFolder/f'{obj}_grid_sampling.fits'
+    outputFits = objFolder/f'{obj}_grid_sampling_maxErr.fits'
 
     # Loop throught the line regions
-    for idx_region in [0, 1, 2, 3]:
+    # for idx_region in [0, 1, 2, 3]:
+    for idx_region in [2]:
 
         # Load fitting configuration
         chem_conf_file = dataFolder / f'grid_sampling_confg_region_{idx_region}.cfg'
@@ -63,27 +65,29 @@ for i, obj in enumerate(objList):
         n_voxels = idcs_voxels.shape[0]
         for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
-            idx_j, idx_i = idx_pair
-            ext_lines = f'{idx_j}-{idx_i}_linelog'
-            ext_chem = f'{idx_j}-{idx_i}_gridSampler'
-            print(f'\nTreating voxel {idx_j}-{idx_i}: ({idx_voxel}/{n_voxels})')
+            if idx_voxel > 276:
 
-            # Load voxel fluxes:
-            int_series = int_DF.loc[ext_lines]
-            err_series = err_DF.loc[ext_lines]
+                idx_j, idx_i = idx_pair
+                ext_lines = f'{idx_j}-{idx_i}_linelog'
+                ext_chem = f'{idx_j}-{idx_i}_gridSampler'
+                print(f'\nTreating voxel {idx_j}-{idx_i}: ({idx_voxel}/{n_voxels})')
 
-            idcs_obs = ~pd.isnull(int_series) & (int_series.index != 'mask') & (int_series.index.isin(region_lines))
-            lineLabels = int_series[idcs_obs].keys().values
-            lineInts = int_series[idcs_obs].values
-            LineErrs = err_series[idcs_obs].values
+                # Load voxel fluxes:
+                int_series = int_DF.loc[ext_lines]
+                err_series = err_DF.loc[ext_lines]
 
-            # Define model sampler
-            obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interp)
-            obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=0.05)
-            obj1_model.simulation_configuration(prior_conf_dict=chem_conf['priors_configuration'])
-            obj1_model.photoionization_sampling(model_variables)
-            obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
-            obj1_model.save_fit(outputFits, ext_chem, output_format='fits')
+                idcs_obs = ~pd.isnull(int_series) & (int_series.index != 'mask') & (int_series.index.isin(region_lines))
+                lineLabels = int_series[idcs_obs].keys().values
+                lineInts = int_series[idcs_obs].values
+                LineErrs = err_series[idcs_obs].values
+
+                # Define model sampler
+                obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interp)
+                obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=np.max(LineErrs/lineInts))
+                obj1_model.simulation_configuration(prior_conf_dict=chem_conf['priors_configuration'])
+                obj1_model.photoionization_sampling(model_variables)
+                obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
+                obj1_model.save_fit(outputFits, ext_chem, output_format='fits')
 
             # # Load the results
             # fit_results = sr.load_fit_results(outputFits, ext_name=ext_chem, output_format='fits')
@@ -111,13 +115,9 @@ for i, obj in enumerate(objList):
             # figure_file = f'{chemFolder}/{ext_chem}_fluxes_grid.png'
             # sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
 
-
-
-
             # print('-- Model parameters posterior diagram')
             # figure_file = f'{chemFolder}/{ext_chem}_trace_plot.png'
             # sr.plot_traces(figure_file, inParameters, traces_dict)
-
 
             # # Load the results
             # ext_chem = f'{idx_j}-{idx_i}_chemistry'
@@ -130,9 +130,6 @@ for i, obj in enumerate(objList):
             # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
             # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
             # traces_dict = fit_results[f'{ext_chem}_traces'][0]
-
-
-
 
     #         # Load voxel lines log
     #         linesLog_BinTable = fits.getdata(fitsLog_address, logLabel, ver=1)

@@ -9,6 +9,7 @@ from numina.user.helpers import create_datamanager, load_observations
 from numina.user.baserun import run_reduce
 from numina.util import context as ctx
 from astropy.io import fits
+from timeit import default_timer as timer
 
 
 def delete_task_temp_folder(ob_id, task_id, root_dir):
@@ -43,10 +44,6 @@ data_folder = reduction_folder/'data'
 rd_df_address = Path(reduction_cfg['rd_df_address'])
 original_yml = Path().resolve()/'shoc579_req.yml'
 
-# Loading project configuration file
-obj_list = reduction_cfg['obj_list']
-std_list = reduction_cfg['std_star_list']
-
 # Dataframe with files list
 files_DF = lm.load_lines_log(f'{rd_df_address}')
 
@@ -54,52 +51,64 @@ files_DF = lm.load_lines_log(f'{rd_df_address}')
 OB_list = files_DF['OB'].unique()
 OB_list.sort()
 idx_start = 0 # Bias
-idx_finish = 5 # Arc
+idx_finish = 4 # Arc
 
 # Run the pipeline one OB and VPH at a time:
 for OB in OB_list:
 
-    # if OB == 'OB0003':
+    if OB == 'OB0005':
 
         idcs_OB = files_DF.OB == OB
+
+        # Exclude the MR-B which are only used in the Bias operation
         VPH_list = files_DF.loc[idcs_OB, 'VPH'].unique()
+        idx_MR_B = np.where(VPH_list == 'MR-B')[0][0]
+        VPH_list = np.delete(VPH_list, idx_MR_B)
+
+        if 'LR-U' in VPH_list:
+            idx_LRU = np.where(VPH_list == 'LR-U')[0][0]
+            VPH_list = np.roll(VPH_list, VPH_list.size - 1 - idx_LRU)
 
         for VPH in VPH_list:
-            if VPH != 'MR-B':
 
-                task_file_address = f'{reduction_folder}/{OB}_{VPH}_task_list.txt'
-                task_DF = pd.read_csv(task_file_address, delim_whitespace=True, header=0, index_col=0)
+            task_file_address = f'{reduction_folder}/{OB}_{VPH}_task_list.txt'
+            task_DF = pd.read_csv(task_file_address, delim_whitespace=True, header=0, index_col=0)
 
-                # Create clean requirements file at each run
-                req_yml = reduction_folder/f'control_{OB}_{VPH}_phase1.yaml'
+            # Create clean requirements file at each run
+            req_yml = reduction_folder/f'control_{OB}_{VPH}_phase1.yaml'
 
-                # Decide tasks to run
-                idcs_tasks = task_DF.index >= idx_start
-                task_list = task_DF.loc[idcs_tasks].task_id.values
-                task_file_list = task_DF.loc[idcs_tasks].file_name.values
-                idcs_tasks = task_DF.loc[idcs_tasks].index.values
+            # Decide tasks to run
+            idcs_tasks = task_DF.index >= idx_start
+            task_list = task_DF.loc[idcs_tasks].task_id.values
+            task_file_list = task_DF.loc[idcs_tasks].file_name.values
+            idcs_tasks = task_DF.loc[idcs_tasks].index.values
 
-                # Delete previous runs for security
-                if idx_start == 0:
-                    shutil.copyfile(original_yml, req_yml)
-                else:
-                    print('- Deleting from previous steps')
-                for i, task in enumerate(task_list):
-                    delete_task_temp_folder(task, idcs_tasks[i], reduction_folder)
+            # Delete previous runs for security
+            if idx_start == 0:
+                shutil.copyfile(original_yml, req_yml)
+            else:
+                print('- Deleting from previous steps')
+            for i, task in enumerate(task_list):
+                delete_task_temp_folder(task, idcs_tasks[i], reduction_folder)
 
-                # Define data manager
-                dm = create_datamanager(req_yml, reduction_folder, data_folder)
+            # Define data manager
+            dm = create_datamanager(req_yml, reduction_folder, data_folder)
 
-                # Load the observation files
-                with ctx.working_directory(reduction_folder):
-                    sessions, loaded_obs = load_observations(task_file_list, is_session=False)
-                    dm.backend.add_obs(loaded_obs)
+            # Load the observation files
+            with ctx.working_directory(reduction_folder):
+                sessions, loaded_obs = load_observations(task_file_list, is_session=False)
+                dm.backend.add_obs(loaded_obs)
 
-                # Run the tasks
-                for i, idx_task in enumerate(idcs_tasks):
-                    if idx_task <= idx_finish:
-                        run_id = task_list[i]
-                        print(f'\n=================================Running: {run_id}================================\n')
-                        warning_messange(run_id, reduction_folder)
-                        run_reduce(dm, run_id)
-                print()
+            start = timer()
+
+            # Run the tasks
+            for i, idx_task in enumerate(idcs_tasks):
+                if idx_task <= idx_finish:
+                    run_id = task_list[i]
+                    print(f'\n=================================Running: {run_id}================================\n')
+                    # warning_messange(run_id, reduction_folder)
+                    # run_reduce(dm, run_id)
+
+            end = timer()
+
+            print(f'Working time in VPH {VPH}:{(end-start)/60:0.1f} mins')

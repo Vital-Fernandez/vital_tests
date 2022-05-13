@@ -49,7 +49,8 @@ levelContours = np.nanpercentile(flux_image, pertil_array)
 
 
 # Plot the image:
-fig = plt.figure(figsize=(10, 10), dpi=600)
+fig = plt.figure(figsize=(10, 10))
+# fig = plt.figure(figsize=(10, 10), dpi=600)
 ax = fig.add_subplot(projection=WCS(cube.data_header), slices=('x', 'y', 1))
 # ax = fig.add_subplot()
 
@@ -57,14 +58,14 @@ min_background_percentil = levelContours[2]
 normalization_background = colors.SymLogNorm(linthresh=min_background_percentil, vmin=min_background_percentil, base=10)
 im = ax.imshow(flux_image, cmap=cm.gray, norm=normalization_background, interpolation='none')
 
-# # Plot contours
-# min_percentil_background = 1
-# contours_levels = levelContours[min_percentil_background:]
-# cntr1 = ax.contour(flux_image, levels=contours_levels, cmap='viridis', norm=colors.LogNorm())
-# for idx, percentile in enumerate(pertil_array[min_percentil_background:]):
-#     label = r'$P_{{{}}}$({})'.format(pertil_array[idx], latexLabel)
-#     cntr1.collections[idx].set_label(label)
-# ax.legend()
+# Plot contours
+min_percentil_background = 1
+contours_levels = levelContours[min_percentil_background:]
+cntr1 = ax.contour(flux_image, levels=contours_levels, cmap='viridis', norm=colors.LogNorm())
+for idx, percentile in enumerate(pertil_array[min_percentil_background:]):
+    label = r'$P_{{{}}}$({})'.format(pertil_array[idx], latexLabel)
+    cntr1.collections[idx].set_label(label)
+ax.legend()
 
 ax.set_xlim(95, 210)
 ax.set_ylim(80, 222)

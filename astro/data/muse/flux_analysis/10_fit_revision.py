@@ -128,7 +128,7 @@ with fits.open(outputFits) as hdul:
                 logU_fit[i_step] = logU
                 logNO_fit[i_step] = logNO
 
-                r_hat_logU[i_step] = hdul[f'{ext_name}_traces'].header['logU_r_hat']
+                r_hat_logU[i_step] = dhul[f'{ext_name}_traces'].header['logU_r_hat']
                 r_hat_logOH[i_step] = hdul[f'{ext_name}_traces'].header['logOH_r_hat']
                 r_hat_logNO[i_step] = hdul[f'{ext_name}_traces'].header['logOH_r_hat']
                 r_hat_mean[i_step] = (r_hat_logU[i_step] + r_hat_logOH[i_step] + r_hat_logNO[i_step]) / 3.0

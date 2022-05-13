@@ -78,7 +78,7 @@ for i, obj in enumerate(objList):
             ax.set_xlim(120, 210)
             ax.set_ylim(110, 220)
             # plt.savefig(objFolder/f'{obj}_{param_label}_map_directMethod')
-            plt.show()
+            # plt.show()
 
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
     store_dict = {}
@@ -119,7 +119,7 @@ for i, obj in enumerate(objList):
             ax.update({'title': r'CGCG007−025, {} histogram, direct method'.format(param_label),
                        'xlabel': param_label})
             # plt.savefig(chemFolder/f'{obj}_{param}_histogram_directMethod')
-            plt.show()
+            # plt.show()
 
 
     # ----------------------------------------- Generate the O/H, log(N/O) histograms ----------------------------------

@@ -2,10 +2,7 @@ import numpy as np
 import lime as lm
 from astropy.io import fits
 from pathlib import Path
-from megaradrp import visualization
-from matplotlib import pyplot as plt
-from convert import convert
-from astropy.wcs import WCS
+from astro.papers.SHOC579_project.MEGARA_reduction.INAOE_tools.convert import convert
 
 obs_conf = lm.load_cfg(r'D:\Pycharm Projects\vital_tests\astro\papers\SHOC579_project\obsConf.ini')
 z_obj = obs_conf['sample_data']['z_array'][0]

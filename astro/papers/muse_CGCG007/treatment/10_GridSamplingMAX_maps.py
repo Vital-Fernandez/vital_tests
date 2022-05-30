@@ -25,7 +25,7 @@ for i, obj in enumerate(objList):
     maskFits_address, mask_list = objFolder/f'{obj}_masks.fits', ['MASK_0', 'MASK_1', 'MASK_2']
     db_address = objFolder/f'{obj}_database.fits'
     chemFolder = objFolder/'chemistry'
-    grid_fits_file = objFolder/f'{obj}_grid_sampling.fits'
+    grid_fits_file = objFolder/f'{obj}_grid_sampling_maxErr.fits'
 
     # Parameters to plot
     param_list = np.array(['logOH', 'logNO', 'logU'])
@@ -44,7 +44,7 @@ for i, obj in enumerate(objList):
     #
     # # Generate the map files
     # save_log_maps(grid_fits_file, param_list, chemFolder, maskFits_address, mask_list, ext_log='_GRIDSAMPLER_OUTPUTS',
-    #               page_hdr=hdr)
+    #               page_hdr=hdr, output_files_prefix='MAX_ERR')
 
     # ----------------------------------------- Generate the parameter maps ----------------------------------------
     flux6563_image = fits.getdata(db_address, f'H1_6563A_flux', ver=1)
@@ -53,7 +53,7 @@ for i, obj in enumerate(objList):
 
     for param in param_list:
 
-        with fits.open(f'{chemFolder}/{param}.fits') as hdu_list:
+        with fits.open(f'{chemFolder}/MAX_ERR{param}.fits') as hdu_list:
 
             image_data, image_header = hdu_list[param].data, hdu_list[param].header
 
@@ -74,17 +74,17 @@ for i, obj in enumerate(objList):
             im2 = ax.imshow(image_data)
             cbar = fig.colorbar(im2, ax=ax)
             param_label = latex_labels[param]
-            ax.update({'title': r'CGCG007−025, {}, grid sampling'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+            ax.update({'title': r'CGCG007−025, {}, grid sampling, Maximum error'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
             ax.set_xlim(120, 210)
             ax.set_ylim(110, 220)
-            plt.savefig(chemFolder/f'{obj}_{param}_map_GridSampling')
+            plt.savefig(chemFolder/f'{obj}_{param}_map_GridSamplingMAXERR')
             # plt.show()
 
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
     store_dict = {}
     for param in param_list:
 
-        with fits.open(f'{chemFolder}/{param}.fits') as hdu_list:
+        with fits.open(f'{chemFolder}/MAX_ERR{param}.fits') as hdu_list:
 
             image_data, image_header = hdu_list[param].data, hdu_list[param].header
             array_data = image_data[total_mask]
@@ -114,9 +114,9 @@ for i, obj in enumerate(objList):
             ax.hist(array_data, bins=15, label=label)
 
             ax.legend()
-            ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling'.format(param_label), 'xlabel': param_label})
-            plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSampling')
-            # plt.show()
+            ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling, Maximum err'.format(param_label), 'xlabel': param_label})
+            # plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSamplingMAXERR')
+            plt.show()
 
     # Save mean values to log
-    save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_GridSampling', clear_section=True)
+    save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_GridSampling_MaxErr', clear_section=True)

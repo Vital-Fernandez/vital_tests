@@ -19,7 +19,7 @@ database:
       id: 3
       content: "lines/ThAr/LR-V/LR-V_ThAr.lis"
       instrument: MEGARA
-      tags: {"vph": "LR-V", "speclamp": "ThNe", insmode: LCB}
+      tags: {"vph": "LR-V", "speclamp": "ThAr", insmode: LCB}
       type: LinesCatalog
       type_fqn: megaradrp.types.LinesCatalog
     4:
@@ -38,9 +38,9 @@ database:
       type_fqn: megaradrp.types.LinesCatalog
     6:
       id: 6
-      content: "lines/ThNe/LR-I/LR-I_ThNe.lis"
+      content: "lines/ThAr/LR-I/LR-I_ThAr.lis"
       instrument: MEGARA
-      tags: { "vph": "LR-I", "speclamp": "ThNe", insmode: LCB }
+      tags: { "vph": "LR-I", "speclamp": "ThAr", insmode: LCB }
       type: LinesCatalog
       type_fqn: megaradrp.types.LinesCatalog
     7:

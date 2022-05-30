@@ -95,13 +95,14 @@ for i, specName in enumerate(specNameList):
     # Loop throught the lines
     obj_cfg = obsCfg[f'{objList[i]}_line_fitting']
     for line in mask.index:
-        mask_waves = mask.loc[line, 'w1':'w6'].values
-        spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method='least_squares')
-        spec.display_results(fit_report=False, log_scale=True, output_address=objFolder/f'{line}_gaussian_components.png')
-        try:
-            spec.plot_line_velocity(output_address=objFolder/f'{line}_velocity_percentiles.png')
-        except:
-            print(f'This line failed {line}')
+        if line == 'O3_5007A_b':
+            mask_waves = mask.loc[line, 'w1':'w6'].values
+            spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method='least_squares')
+            spec.display_results(fit_report=False, log_scale=True)#, output_address=objFolder/f'{line}_gaussian_components.png')
+            try:
+                spec.plot_line_velocity(output_address=objFolder/f'{line}_velocity_percentiles.png')
+            except:
+                print(f'This line failed {line}')
 
     A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
     spec.log['A_factor'] = A_array
@@ -110,6 +111,6 @@ for i, specName in enumerate(specNameList):
     spec.log['v_r_fitelp'] = v_r_fitelp_arr
     spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
 
-    # Save line measurements
-    lime.save_line_log(spec.log, objFolder/f'{objList[i]}_linesLog.txt')
-    lime.save_line_log(spec.log, treatmentFolder/f'ISIS_sample_linesLog.xlsx', ext=objList[i])
+    # # Save line measurements
+    # lime.save_line_log(spec.log, objFolder/f'{objList[i]}_linesLog.txt')
+    # lime.save_line_log(spec.log, treatmentFolder/f'ISIS_sample_linesLog.xlsx', ext=objList[i])

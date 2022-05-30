@@ -41,6 +41,7 @@ def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_task
 
     return
 
+
 # Configuration file
 cfg_file = '../obsConf.ini'
 obs_conf = lm.load_cfg(Path(cfg_file))
@@ -54,7 +55,7 @@ rd_df_address = Path(reduc_cfg['rd_df_address'])
 # Loading project configuration file
 obj_list = reduc_cfg['obj_list']
 std_list = reduc_cfg['std_star_list']
-bad_file_list = reduc_cfg['issue_frames_list']
+bad_file_list = np.loadtxt(reduc_cfg['issue_frames_file'], usecols=0, skiprows=1, dtype=str)
 
 # Dataframe with files list
 files_DF = lm.load_lines_log(f'{rd_df_address}')
@@ -64,7 +65,7 @@ OB_list = files_DF['OB'].unique()
 OB_list.sort()
 
 # List of tasks in the reduction
-task_list = ['bias', 'trace_map', 'model_map', 'arc', 'fiber_flat', 'lcb_std', 'lcb_image']
+task_list = ['bias', 'trace_map', 'model_map', 'arc', 'fiber_flat', 'lcb_acq', 'lcb_std', 'lcb_image']
 
 for OB in OB_list:
 
@@ -85,7 +86,7 @@ for OB in OB_list:
         # Loop throught the tasks
         for task in task_list:
 
-            if task == 'lcb_std':
+            if task in ['lcb_acq', 'lcb_std']:
                 target_list = std_list
             elif task == 'lcb_image':
                 target_list = obj_list
@@ -104,30 +105,34 @@ for OB in OB_list:
                 idcs_fits = indexing_the_frames(files_DF, OB, VPH_in, task_in, target, bad_file_list)
 
                 # Get the task configuration
-                if task == 'arc':  # Arcs conf
+
+                # Arcs conf
+                if task == 'arc':
                     task_conf = {'extraction_offset': reduc_cfg.get(f'{OB}_{VPH}_{task}_extraction_offset', [0.0]),
                                  'store_pdf_with_refined_fits': reduc_cfg.get(f'{OB}_{VPH}_{task}_extraction_offset', 1)}
 
-                if task in ['trace_map', 'model_map', 'fiber_flat']:  # flats conf
+                # Flats conf
+                if task in ['trace_map', 'model_map', 'fiber_flat']:
                     task_conf = {'extraction_offset': reduc_cfg.get(f'{OB}_{VPH}_{task}_extraction_offset', [0.0])}
 
-                if task in ['lcb_std', 'lcb_image']:  # Flux calibration
-
+                # Flux calibration
+                if task in ['lcb_acq', 'lcb_std', 'lcb_image']:
                     extraction_offset = reduc_cfg.get(f'{OB}_{VPH}_{task}_{target}_extraction_offset', [0.0])
                     ref_extincion = 'extinction_LP.txt'
 
                     # Configuration of the task
-                    task_conf = {'extraction_offset': extraction_offset,
-                                 'reference_extinction': ref_extincion}
+                    task_conf = {'extraction_offset': extraction_offset}
 
                     # Standard star
                     if task == 'lcb_std':
                         reference_spectrum = reduc_cfg[f'{target}_{task}_reference_spectrum']
+                        task_conf['reference_extinction'] = ref_extincion
                         task_conf['reference_spectrum'] = reference_spectrum
+                        task_conf['sigma_resolution'] = reduc_cfg.get(f'{OB}_{VPH}_{task}_{target}_extraction_offset', 50)
 
                     # Science target
                     if task == 'lcb_image':
-                        reference_star = reduc_cfg.get(f'{target}_{task}_{VPH}_reference_star', 'HR7596')
+                        task_conf['reference_extinction'] = ref_extincion
 
                 # Store the task configuration into a configuration file if there are files for it in the OB
                 if np.sum(idcs_fits):

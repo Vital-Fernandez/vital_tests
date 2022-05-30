@@ -11,6 +11,9 @@ def open_XSHOOTER_fits(file_address):
     with fits.open(file_address) as hdul:
         data, hdr = hdul[0].data, hdul[0].header
 
+    # for entry, value in hdr.items():
+    #     print(entry, value)
+
     # Reconstruct the wavelength array
     w_min = hdr['CRVAL1']
     dw = hdr['CDELT1']  # dw (Wavelength interval per pixel)

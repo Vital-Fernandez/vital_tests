@@ -84,7 +84,7 @@ for i, obj in enumerate(objList):
 
             ax.legend()
             ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling'.format(param_label), 'xlabel': param_label})
-            # plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSampling')
-            plt.show()
+            plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSampling')
+            # plt.show()
 
 

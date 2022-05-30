@@ -53,10 +53,12 @@ OB_list.sort()
 idx_start = 0 # Bias
 idx_finish = 4 # Arc
 
+print()
+
 # Run the pipeline one OB and VPH at a time:
 for OB in OB_list:
 
-    if OB == 'OB0005':
+    if OB in ['OB0003', 'OB0005']:
 
         idcs_OB = files_DF.OB == OB
 
@@ -65,6 +67,7 @@ for OB in OB_list:
         idx_MR_B = np.where(VPH_list == 'MR-B')[0][0]
         VPH_list = np.delete(VPH_list, idx_MR_B)
 
+        # Move the LR-U to the final place if in OB
         if 'LR-U' in VPH_list:
             idx_LRU = np.where(VPH_list == 'LR-U')[0][0]
             VPH_list = np.roll(VPH_list, VPH_list.size - 1 - idx_LRU)
@@ -94,20 +97,20 @@ for OB in OB_list:
             # Define data manager
             dm = create_datamanager(req_yml, reduction_folder, data_folder)
 
+            start = timer()
+
             # Load the observation files
             with ctx.working_directory(reduction_folder):
                 sessions, loaded_obs = load_observations(task_file_list, is_session=False)
                 dm.backend.add_obs(loaded_obs)
-
-            start = timer()
 
             # Run the tasks
             for i, idx_task in enumerate(idcs_tasks):
                 if idx_task <= idx_finish:
                     run_id = task_list[i]
                     print(f'\n=================================Running: {run_id}================================\n')
-                    # warning_messange(run_id, reduction_folder)
-                    # run_reduce(dm, run_id)
+                    warning_messange(run_id, reduction_folder)
+                    run_reduce(dm, run_id)
 
             end = timer()
 

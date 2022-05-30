@@ -40,7 +40,6 @@ for i, obj in enumerate(objList):
     total_mask = np.array(list(spatial_mask_dict.values()))
     total_mask = total_mask.sum(axis=0).astype(bool)
 
-
     # # Data for the astronomical coordinates
     # hdr = fits.getheader(maskFits_address, extname='MASK_0')
     #
@@ -77,18 +76,22 @@ for i, obj in enumerate(objList):
             ax.update({'title': r'CGCG007−025, {}'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
             ax.set_xlim(120, 210)
             ax.set_ylim(110, 220)
-            # plt.savefig(objFolder/f'{obj}_{param_label}_map_directMethod')
+            plt.savefig(objFolder/f'{obj}_{param_label}_map_directMethod')
             # plt.show()
 
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
-    store_dict = {}
+    store_dict, err_dict = {}, {}
     for param in param_list:
 
         with fits.open(f'{chemFolder}/{param}.fits') as hdu_list:
 
             image_data, image_header = hdu_list[param].data, hdu_list[param].header
+            err_data = hdu_list[f'{param}_err'].data
+
+            print(param)
+
             array_data = image_data[total_mask]
-            print(np.sum(np.isnan(array_data)))
+            array_err = err_data[total_mask]
 
             defaultConf = STANDARD_PLOT.copy()
             defaultConf['legend.fontsize'] = 16
@@ -110,15 +113,20 @@ for i, obj in enumerate(objList):
             lower_limit = np.round(np.nanmedian(array_data) - np.nanpercentile(array_data, 16), signif_figures[param])
             n_voxels = np.sum(total_mask)
             label = r'{} = ${}^{{{}}}_{{{}}}$ ({} voxels)'.format(param_label, median, upper_limit, lower_limit, n_voxels)
-
             store_dict[f'{param}_array'] = np.array([median, upper_limit, lower_limit, n_voxels])
+
+            # Saving pixel error
+            median_err = np.round(np.nanmedian(array_err), signif_figures[param])
+            upper_limit_err = np.round(np.nanpercentile(array_err, 84) - np.nanmedian(array_err), signif_figures[param])
+            lower_limit_err = np.round(np.nanmedian(array_err) - np.nanpercentile(array_err, 16), signif_figures[param])
+            err_dict[f'{param}_array'] = np.array([median_err, upper_limit_err, lower_limit_err, n_voxels])
 
             ax.hist(array_data, bins=15, label=label)
 
             ax.legend()
             ax.update({'title': r'CGCG007−025, {} histogram, direct method'.format(param_label),
                        'xlabel': param_label})
-            # plt.savefig(chemFolder/f'{obj}_{param}_histogram_directMethod')
+            plt.savefig(chemFolder/f'{obj}_{param}_histogram_directMethod')
             # plt.show()
 
 
@@ -171,8 +179,8 @@ for i, obj in enumerate(objList):
         ax.update({'title': r'CGCG007−025, {}, direct method'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
         ax.set_xlim(120, 210)
         ax.set_ylim(110, 220)
-        # plt.savefig(chemFolder/f'{obj}_{param}_map_directMethod')
-        plt.show()
+        plt.savefig(chemFolder/f'{obj}_{param}_map_directMethod')
+        # plt.show()
 
     for i, param in enumerate(['OH', 'NO', 'nSII_cHbeta', 'O2_O3', 'S2_S3']):
 
@@ -199,9 +207,10 @@ for i, obj in enumerate(objList):
         ax.hist(arrays_params[i], bins=15, label=label)
         ax.legend()
         ax.update({'title': r'CGCG007−025, {} histogram, direct method'.format(param_label), 'xlabel': param_label})
-        # plt.savefig(chemFolder/f'{obj}_{param}_histogram_directMethod')
-        plt.show()
+        plt.savefig(chemFolder/f'{obj}_{param}_histogram_directMethod')
+        # plt.show()
 
 
     # Save mean values to log
     save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_direct_method', clear_section=True)
+    save_cfg('../muse_CGCG007.ini', err_dict, section_name='Global_err_direct_method', clear_section=True)

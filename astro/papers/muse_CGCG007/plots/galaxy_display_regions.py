@@ -139,13 +139,13 @@ for i, obj in enumerate(objList):
     ax.annotate('Torus', xy=(0.61, 0.48), xytext=(0.85, 0.30), arrowprops=arrow_style,
                 xycoords='axes fraction', color='yellow', fontsize=14)
 
-    ax.annotate('Central\n cluster', xy=(0.60, 0.58), xytext=(0.85, 0.65), arrowprops=arrow_style,
+    ax.annotate('Central\n clump', xy=(0.60, 0.58), xytext=(0.85, 0.65), arrowprops=arrow_style,
                 xycoords='axes fraction', color='yellow', fontsize=14)
 
-    ax.annotate('North cluster', xy=(0.74, 0.78), xytext=(0.75, 0.92), arrowprops=arrow_style,
+    ax.annotate('North clump', xy=(0.74, 0.78), xytext=(0.75, 0.92), arrowprops=arrow_style,
                 xycoords='axes fraction', color='yellow', fontsize=14)
 
-    ax.annotate('South cluster', xy=(0.48, 0.3), xytext=(0.50, 0.10), arrowprops=arrow_style,
+    ax.annotate('South clump', xy=(0.48, 0.3), xytext=(0.50, 0.10), arrowprops=arrow_style,
                 xycoords='axes fraction', color='yellow', fontsize=14)
 
     # ax.legend(handles=legend_list,  bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)

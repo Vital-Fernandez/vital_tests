@@ -219,7 +219,18 @@ signif_figures = {'n_e': 0,
                   'logOH': 2,
                   'logNO': 2,
                   'O2_O3': 2,
-                  'S2_S3': 2}
+                  'S2_S3': 2,
+                  'eta': 2,
+                  'OH': 2,
+                  'NO': 2,
+                  'NH': 2,
+                  'ArH': 2,
+                  'S4': 2,
+                  'SH': 2,
+                  'ICF_S4': 2,
+                  'SO': 2,
+                  'Y_O': 2,
+                  'Y_S': 2}
 
 param_units = {'n_e': '$cm^{-3}$',
                'T_low': '$K$',
@@ -244,7 +255,6 @@ param_units = {'n_e': '$cm^{-3}$',
 convert_dict = {'logOH': 'OH',
                 'logNO': 'NO',
                 'logU': 'logU'}
-
 
 def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
 
@@ -342,9 +352,9 @@ def chemical_lines_indexing(input_lines, emis_log, abs_log, chem_cfg, recomb_all
 def save_log_maps(log_file_address, param_list, output_folder, mask_file_address=None, ext_mask='all',
                     ext_log='_INPUTS', default_spaxel_value=np.nan, output_files_prefix=None, page_hdr={}):
 
+    #TODO add log warning if extension not found
     assert Path(log_file_address).is_file(), f'- ERROR: lines log at {log_file_address} not found'
     assert Path(output_folder).is_dir(), f'- ERROR: Output parameter maps folder {output_folder} not found'
-
     # Compile the list of voxels to recover the provided masks
     if mask_file_address is not None:
 

@@ -38,3 +38,5 @@ def open_manga_cubes(file_address):
         pixMask = hdul['MASK'].data
 
         return wave, flux, err, hdr
+
+

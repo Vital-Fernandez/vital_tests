@@ -39,16 +39,20 @@ for i, obj in enumerate(objList):
 
     # Output data
     # outputFits = objFolder/f'{obj}_grid_sampling.fits'
-    outputFits = objFolder/f'{obj}_grid_sampling_maxErr.fits'
+    # outputFits = objFolder/f'{obj}_grid_sampling_maxErr.fits'
+    # outputFits = objFolder/f'{obj}_grid_sampling_NoOII.fits'
+    outputFits = objFolder/f'{obj}_grid_sampling_HIICHImistry.fits'
 
     # Loop throught the line regions
-    # for idx_region in [0, 1, 2, 3]:
-    for idx_region in [2]:
+    for idx_region in [0, 1, 2]:
+    # for idx_region in [2]:
 
         # Load fitting configuration
         chem_conf_file = dataFolder / f'grid_sampling_confg_region_{idx_region}.cfg'
         chem_conf = lime.load_cfg(chem_conf_file)
-        region_lines = obsData['grid_sampling'][f'region_{idx_region}_line_list']
+        # region_lines = obsData['grid_sampling'][f'region_{idx_region}_line_list']
+        # region_lines = obsData['grid_sampling'][f'region_{idx_region}_line_NoOII_list']
+        region_lines = obsData['grid_sampling'][f'region_{idx_region}_line_HIICHImistry_list']
 
         # Load voxel list
         region_label = f'mask_{idx_region}'
@@ -65,7 +69,7 @@ for i, obj in enumerate(objList):
         n_voxels = idcs_voxels.shape[0]
         for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
-            if idx_voxel > 276:
+            # if idx_voxel > 276:
 
                 idx_j, idx_i = idx_pair
                 ext_lines = f'{idx_j}-{idx_i}_linelog'
@@ -83,7 +87,8 @@ for i, obj in enumerate(objList):
 
                 # Define model sampler
                 obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interp)
-                obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=np.max(LineErrs/lineInts))
+                # obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=np.max(LineErrs/lineInts))
+                obj1_model.define_region(lineLabels, lineInts, LineErrs)
                 obj1_model.simulation_configuration(prior_conf_dict=chem_conf['priors_configuration'])
                 obj1_model.photoionization_sampling(model_variables)
                 obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')

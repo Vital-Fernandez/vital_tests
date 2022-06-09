@@ -6,7 +6,7 @@ from pathlib import Path
 from astropy.io import fits
 from arviz.stats.diagnostics import rhat
 from lime.plots import STANDARD_PLOT
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt, rcParams, colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Load the fitting configuration
@@ -14,6 +14,7 @@ obsData = lime.load_cfg('../muse_CGCG007.ini')
 dataFolder = Path(obsData['data_location']['data_folder'])
 resultsFolder = Path(obsData['data_location']['results_folder'])
 conf_fit = lime.load_cfg(dataFolder/'HII_CHIM_TRY_grid.cfg')
+plots_folder = Path(obsData['data_location']['plots_folder'])
 
 # Load the photoionization grid
 file_address = f'{dataFolder}/HII-CHI-mistry_1Myr_grid_O.txt'
@@ -49,62 +50,7 @@ logNO_range = np.array([-1.9, -1.585, -1.27, -0.955, -0.64, -0.325, -0.01])
 # Output file for the fitting
 outputFits = resultsFolder/'grid_logOH_logU_logNO_advi.fits'
 
-
-# ----------------------------- Performing the fits ------------------------------------------------------------------
-
-# # Loop throught the grid of synthetic conditions (around 30 seconds per fit)
-# start = timer()
-# i_step, n_steps = 0, logNO_range.size * logOH_range.size * logNO_range.size
-# for i, logOH in enumerate(logOH_range):
-#     for j, logU in enumerate(logU_range):
-#         for k, logNO in enumerate(logNO_range):
-#
-#             print(f'- Fit {i_step}/{n_steps}: expected time {n_steps*30/3600:0.3f} hours')
-#
-#             # True value coordinate for interpolation
-#             coord_true = [[logOH, logU, logNO]]
-#             header_params = {'logOH': logOH, 'logU': logU, 'logNO': logNO}
-#
-#             # Output files
-#             cord_label = f'{logOH*1000:.0f}_{logU*-1000:.0f}_{logNO*-1000:.0f}'
-#
-#             # Fill the dataframe with integrated flux
-#             log = pd.DataFrame(index=input_lines, columns=['wavelength', 'ion',	'intg_flux', 'intg_err'])
-#             for line in input_lines:
-#                 ion, wavelength, latexLabel = lime.label_decomposition(line, scalar_output=True)
-#                 flux = np.power(10, grid_interpolators[line](coord_true).eval()[0])[0]
-#                 log.loc[line, :] = wavelength, ion, flux, flux * 0.05
-#             lines_flambda = np.zeros(log.index.values.size)
-#
-#             # Declare sampler
-#             obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interpolators)
-#
-#             # Declare region physical model
-#             obj1_model.define_region(log.index.values, log.intg_flux.values, log.intg_err.values, lineFlambda=lines_flambda)
-#             obj1_model.simulation_configuration(prior_conf_dict=conf_fit['priors_configuration'])
-#             obj1_model.photoionization_sampling(model_variables)
-#             obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
-#             obj1_model.save_fit(outputFits, cord_label, output_format='fits', user_header=header_params)
-#
-#             # # Load the results
-#             # fit_results = sr.load_fit_results(outputFits, ext_name=cord_label, output_format='fits')
-#             # inLines = fit_results[f'{cord_label}_inputs'][0]['line_list']
-#             # inParameters = fit_results[f'{cord_label}_outputs'][0]['parameters_list']
-#             # inFlux = fit_results[f'{cord_label}_inputs'][0]['line_fluxes']
-#             # inErr = fit_results[f'{cord_label}_inputs'][0]['line_err']
-#             # traces_dict = fit_results[f'{cord_label}_traces'][0]
-#             #
-#             # print('-- Model parameters posterior diagram')
-#             # figure_file = f'/home/vital/Astro-data/grid_models/{cord_label}_trace_plot.png'
-#             # sr.plot_traces(figure_file, inParameters, traces_dict, true_values={'logOH': logOH, 'logU': logU, 'logNO': logNO})
-#
-#             i_step += 1
-#
-#
-# end = timer()
-# print(f'Working time:{(end-start)/n_steps} seconds per fit')
-
-# ----------------------------- Plotting the grid fitting --------------------------------------------------------------
+# ----------------------------- Recovering the grid fits ---------------------------------------------------------------
 
 i_step, n_steps = 0, logNO_range.size * logOH_range.size * logNO_range.size
 
@@ -115,6 +61,7 @@ r_hat_logOH = np.empty(n_steps)
 r_hat_logU = np.empty(n_steps)
 r_hat_logNO = np.empty(n_steps)
 r_hat_mean = np.empty(n_steps)
+diff_mean_percent = np.empty(n_steps)
 
 lines_dict = {}
 plot_lines = ['N2_6584A', 'O3_5007A', 'S2_6731A', 'He1_5876A']
@@ -126,7 +73,6 @@ with fits.open(outputFits) as hdul:
         for j, logU in enumerate(logU_range):
             for k, logNO in enumerate(logNO_range):
 
-                print(i_step)
                 # True value coordinate for interpolation
                 ext_name = f'{logOH * 1000:.0f}_{logU * -1000:.0f}_{logNO * -1000:.0f}'
 
@@ -149,21 +95,28 @@ with fits.open(outputFits) as hdul:
                 r_hat_logOH[i_step] = rhat(logOH_trace.reshape(10, 500))
                 r_hat_logNO[i_step] = rhat(logU_trace.reshape(10, 500))
                 r_hat_mean[i_step] = (r_hat_logU[i_step] + r_hat_logOH[i_step] + r_hat_logNO[i_step])/3
-                # r_hat_mean[i_step] = r_hat_logU[i_step]
 
                 for line in plot_lines:
                     lines_dict[line][i_step] = data[line].mean()/hdr_inputs[line] - 1
 
+                OH_diff = (1 - logOH_trace.mean()/logOH)
+                NO_diff = (1 - logNO_trace.mean()/logNO)
+                logU_diff = (1 - logU_trace.mean()/logU)
+                diff_mean_percent[i_step] = (np.abs(OH_diff) + np.abs(NO_diff) + np.abs(logU_diff))/3 * 100
+
+                print(i_step, diff_mean_percent[i_step])
                 i_step += 1
+
+# ----------------------------- R_hat plot --------------------------------------------------------------------------
 
 
 # Plot combined mask
 defaultConf = STANDARD_PLOT.copy()
 rcParams.update(defaultConf)
 
-fig = plt.figure(figsize=(10, 10))
+fig = plt.figure(figsize=(10, 10), dpi=600)
 ax = fig.add_subplot(projection='3d')
-sc = ax.scatter(logOH_fit, logNO_fit, logU_fit, c=r_hat_logOH)
+sc = ax.scatter(logOH_fit, logNO_fit, logU_fit, c=r_hat_mean)
 # sc = ax.scatter(logOH_fit, logNO_fit, logU_fit, c=lines_dict['N2_6584A'])
 
 cbar = fig.colorbar(sc, fraction=0.025)
@@ -173,12 +126,44 @@ ax.xaxis.set_major_locator(plt.MaxNLocator(4))
 ax.yaxis.set_major_locator(plt.MaxNLocator(3))
 ax.zaxis.set_major_locator(plt.MaxNLocator(4))
 
-ax.set_xlabel('log(O/H)')
-ax.set_ylabel('logU')
-ax.set_zlabel('log(N/O)')
+ax.set_xlabel(r'$log(O/H)$')
+ax.set_ylabel(r'$log(N/O)$')
+ax.set_zlabel(r'$log(U)$')
 ax.xaxis.labelpad=20
 ax.yaxis.labelpad=20
 ax.zaxis.labelpad=20
-ax.elev = 5
-ax.azim = 278
-plt.show()
+ax.elev = 2.5
+ax.azim = 276.5
+# plt.show()
+plt.tight_layout()
+plt.savefig(plots_folder/'r_hat_tests_grid.png', bbox_inches='tight')
+
+# ----------------------------- Parameter deviation --------------------------------------------------------------------------
+
+# Plot combined mask
+defaultConf = STANDARD_PLOT.copy()
+rcParams.update(defaultConf)
+
+fig = plt.figure(figsize=(10, 10), dpi=600)
+ax = fig.add_subplot(projection='3d')
+sc = ax.scatter(logOH_fit, logNO_fit, logU_fit, c=diff_mean_percent, norm=colors.LogNorm())
+
+cbar = fig.colorbar(sc, fraction=0.025)
+cbar.set_label(r'$\%$ mean deviation', labelpad=30)
+
+ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+ax.yaxis.set_major_locator(plt.MaxNLocator(3))
+ax.zaxis.set_major_locator(plt.MaxNLocator(4))
+
+ax.set_xlabel('log(O/H)')
+ax.set_ylabel('log(N/O)')
+ax.set_zlabel('logU')
+ax.xaxis.labelpad=20
+ax.yaxis.labelpad=20
+ax.zaxis.labelpad=20
+ax.elev = 2.5
+ax.azim = 276.5
+# plt.show()
+
+plt.tight_layout()
+plt.savefig(plots_folder/'percentage_discrepancy.png', bbox_inches='tight')

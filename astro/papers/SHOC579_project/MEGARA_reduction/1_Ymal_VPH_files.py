@@ -112,7 +112,7 @@ for OB in OB_list:
                                  'store_pdf_with_refined_fits': reduc_cfg.get(f'{OB}_{VPH}_{task}_extraction_offset', 1)}
 
                 # Flats conf
-                if task in ['trace_map', 'model_map', 'fiber_flat']:
+                if task == 'fiber_flat':
                     task_conf = {'extraction_offset': reduc_cfg.get(f'{OB}_{VPH}_{task}_extraction_offset', [0.0])}
 
                 # Flux calibration

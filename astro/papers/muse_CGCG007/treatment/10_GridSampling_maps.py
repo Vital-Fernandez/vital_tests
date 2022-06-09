@@ -81,13 +81,14 @@ for i, obj in enumerate(objList):
             # plt.show()
 
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
-    store_dict = {}
+    store_dict, err_dict = {}, {}
     for param in param_list:
 
         with fits.open(f'{chemFolder}/{param}.fits') as hdu_list:
 
-            image_data, image_header = hdu_list[param].data, hdu_list[param].header
+            image_data, image_header, image_err = hdu_list[param].data, hdu_list[param].header, hdu_list[f'{param}_err'].data
             array_data = image_data[total_mask]
+            array_err = image_err[total_mask]
 
             defaultConf = STANDARD_PLOT.copy()
             defaultConf['legend.fontsize'] = 16
@@ -98,18 +99,17 @@ for i, obj in enumerate(objList):
 
             param_label = latex_labels[param]
 
-            # label = r'{} = ${}\pm{}$ {} ({} voxels)'.format(param_label,
-            #                                              np.round(np.nanmean(array_data), signif_figures[param]),
-            #                                              np.round(np.nanstd(array_data), signif_figures[param]),
-            #                                              param_units[param],
-            #                                              np.sum(total_mask))
-
             median = np.round(np.nanmedian(array_data), signif_figures[param])
             upper_limit = np.round(np.nanpercentile(array_data, 84) - np.nanmedian(array_data), signif_figures[param])
             lower_limit = np.round(np.nanmedian(array_data) - np.nanpercentile(array_data, 16), signif_figures[param])
             n_voxels = np.sum(total_mask)
             label = r'{} = ${}^{{{}}}_{{{}}}$ ({} voxels)'.format(param_label, median, upper_limit, lower_limit, n_voxels)
             store_dict[f'{convert_dict[param]}_array'] = np.array([median, upper_limit, lower_limit, n_voxels])
+
+            median_err = np.round(np.nanmedian(array_err), signif_figures[param])
+            upper_limit_err = np.round(np.nanpercentile(array_err, 84) - np.nanmedian(array_err), signif_figures[param])
+            lower_limit_err = np.round(np.nanmedian(array_err) - np.nanpercentile(array_err, 16), signif_figures[param])
+            err_dict[f'{convert_dict[param]}_array'] = np.array([median_err, upper_limit_err, lower_limit_err, n_voxels])
 
             ax.hist(array_data, bins=15, label=label)
 
@@ -120,3 +120,4 @@ for i, obj in enumerate(objList):
 
     # Save mean values to log
     save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_GridSampling', clear_section=True)
+    save_cfg('../muse_CGCG007.ini', err_dict, section_name='Global_err_GridSampling', clear_section=True)

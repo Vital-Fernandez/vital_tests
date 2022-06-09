@@ -100,7 +100,7 @@ for i, specName in enumerate(specNameList):
             spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method='least_squares')
             spec.display_results(fit_report=False, log_scale=True)#, output_address=objFolder/f'{line}_gaussian_components.png')
             try:
-                spec.plot_line_velocity(output_address=objFolder/f'{line}_velocity_percentiles.png')
+                spec.plot_line_velocity()#(output_address=objFolder/f'{line}_velocity_percentiles.png')
             except:
                 print(f'This line failed {line}')
 

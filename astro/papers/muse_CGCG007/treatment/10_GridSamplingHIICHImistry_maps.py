@@ -25,7 +25,7 @@ for i, obj in enumerate(objList):
     maskFits_address, mask_list = objFolder/f'{obj}_masks.fits', ['MASK_0', 'MASK_1', 'MASK_2']
     db_address = objFolder/f'{obj}_database.fits'
     chemFolder = objFolder/'chemistry'
-    grid_fits_file = objFolder/f'{obj}_grid_sampling_maxErr.fits'
+    grid_fits_file = objFolder/f'{obj}_grid_sampling_HIICHImistry.fits'
 
     # Parameters to plot
     param_list = np.array(['logOH', 'logNO', 'logU'])
@@ -44,47 +44,47 @@ for i, obj in enumerate(objList):
     #
     # # Generate the map files
     # save_log_maps(grid_fits_file, param_list, chemFolder, maskFits_address, mask_list, ext_log='_GRIDSAMPLER_OUTPUTS',
-    #               page_hdr=hdr, output_files_prefix='MAX_ERR')
+    #               page_hdr=hdr, output_files_prefix='HIICHImistry')
 
-    # ----------------------------------------- Generate the parameter maps ----------------------------------------
-    flux6563_image = fits.getdata(db_address, f'H1_6563A_flux', ver=1)
-    halpha_min_level = fits.getval(db_address, keyword=f'P9050', extname=f'H1_6563A_flux')
-    halpha_thresd_level = fits.getval(db_address, keyword=f'P9250', extname=f'H1_6563A_flux')
-
-    for param in param_list:
-
-        with fits.open(f'{chemFolder}/MAX_ERR{param}.fits') as hdu_list:
-
-            image_data, image_header = hdu_list[param].data, hdu_list[param].header
-
-            idcs_data = ~np.isnan(image_data)
-
-            defaultConf = STANDARD_PLOT.copy()
-            rcParams.update(defaultConf)
-
-            halpha_cmap = cm.gray.copy()
-            halpha_cmap.set_under('black')
-
-            fig = plt.figure(figsize=(10, 10))
-            ax = fig.add_subplot(projection=WCS(image_header), slices=('x', 'y'))
-
-            bg_color = colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10)
-
-            im = ax.imshow(flux6563_image, cmap=halpha_cmap, norm=bg_color)
-            im2 = ax.imshow(image_data)
-            cbar = fig.colorbar(im2, ax=ax)
-            param_label = latex_labels[param]
-            ax.update({'title': r'CGCG007−025, {}, grid sampling, Maximum error'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-            ax.set_xlim(120, 210)
-            ax.set_ylim(110, 220)
-            plt.savefig(chemFolder/f'{obj}_{param}_map_GridSamplingMAXERR')
-            # plt.show()
+    # # ----------------------------------------- Generate the parameter maps ----------------------------------------
+    # flux6563_image = fits.getdata(db_address, f'H1_6563A_flux', ver=1)
+    # halpha_min_level = fits.getval(db_address, keyword=f'P9050', extname=f'H1_6563A_flux')
+    # halpha_thresd_level = fits.getval(db_address, keyword=f'P9250', extname=f'H1_6563A_flux')
+    #
+    # for param in param_list:
+    #
+    #     with fits.open(f'{chemFolder}/HIICHImistry{param}.fits') as hdu_list:
+    #
+    #         image_data, image_header = hdu_list[param].data, hdu_list[param].header
+    #
+    #         idcs_data = ~np.isnan(image_data)
+    #
+    #         defaultConf = STANDARD_PLOT.copy()
+    #         rcParams.update(defaultConf)
+    #
+    #         halpha_cmap = cm.gray.copy()
+    #         halpha_cmap.set_under('black')
+    #
+    #         fig = plt.figure(figsize=(10, 10))
+    #         ax = fig.add_subplot(projection=WCS(image_header), slices=('x', 'y'))
+    #
+    #         bg_color = colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10)
+    #
+    #         im = ax.imshow(flux6563_image, cmap=halpha_cmap, norm=bg_color)
+    #         im2 = ax.imshow(image_data)
+    #         cbar = fig.colorbar(im2, ax=ax)
+    #         param_label = latex_labels[param]
+    #         ax.update({'title': r'CGCG007−025, {}, grid sampling, HIICHImistry lines'.format(param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+    #         ax.set_xlim(120, 210)
+    #         ax.set_ylim(110, 220)
+    #         plt.savefig(chemFolder/f'{obj}_{param}_map_GridSamplingHIICHImistry')
+    #         # plt.show()
 
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
     store_dict, err_dict = {}, {}
     for param in param_list:
 
-        with fits.open(f'{chemFolder}/MAX_ERR{param}.fits') as hdu_list:
+        with fits.open(f'{chemFolder}/HIICHImistry{param}.fits') as hdu_list:
 
             image_data, image_header, image_err = hdu_list[param].data, hdu_list[param].header, hdu_list[f'{param}_err'].data
             array_data = image_data[total_mask]
@@ -118,14 +118,13 @@ for i, obj in enumerate(objList):
             n_voxels = np.sum(total_mask)
             err_dict[f'{convert_dict[param]}_array'] = np.array([median_err, upper_limit_err, lower_limit_err, n_voxels])
 
-
             ax.hist(array_data, bins=15, label=label)
 
             ax.legend()
-            ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling, Maximum err'.format(param_label), 'xlabel': param_label})
-            plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSamplingMAXERR')
+            ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling, HIICHImistry'.format(param_label), 'xlabel': param_label})
+            plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSamplingHIICHImistry')
             # plt.show()
 
     # Save mean values to log
-    save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_GridSampling_MaxErr', clear_section=True)
-    save_cfg('../muse_CGCG007.ini', err_dict, section_name='Global_err_GridSampling_MaxErr', clear_section=True)
+    save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_GridSampling_HIICHImistry', clear_section=True)
+    save_cfg('../muse_CGCG007.ini', err_dict, section_name='Global_err_GridSampling_HIICHImistry', clear_section=True)

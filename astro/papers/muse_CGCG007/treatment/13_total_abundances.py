@@ -117,9 +117,9 @@ for i, obj in enumerate(objList):
                       SO=np.log10(SO),
                       Y_O=Y_O,
                       Y_S=Y_S,
-                      S2_S3=np.log10(S2_S3),
-                      O2_O3=np.log10(O2_O3),
-                      eta=np.log10(eta))
+                      S2_S3=S2_S3,
+                      O2_O3=O2_O3,
+                      eta=eta)
 
     # Save total abundance distributions to the configuration file
     store_dict = {}

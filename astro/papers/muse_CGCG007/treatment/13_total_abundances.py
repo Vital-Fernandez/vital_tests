@@ -9,14 +9,6 @@ from astro.papers.muse_CGCG007.muse_CGCG007_methods import save_log_maps, latex_
 from lime.io import save_cfg
 
 
-def to_natural_abund(abund_array):
-    return np.power(10, abund_array - 12)
-
-
-def to_log_abund(abund_array):
-    return 12 + np.log10(abund_array)
-
-
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']

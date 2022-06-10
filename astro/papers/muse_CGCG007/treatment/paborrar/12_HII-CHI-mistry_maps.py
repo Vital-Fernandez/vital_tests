@@ -4,12 +4,11 @@ from lime.plots import STANDARD_PLOT
 from pathlib import Path
 from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
-from astropy.wcs import WCS
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import latex_labels, signif_figures, save_log_maps, convert_dict
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import latex_labels, signif_figures
 from lime.io import save_cfg
 
 # Declare data and files location
-obsData = lime.load_cfg('../muse_CGCG007.ini')
+obsData = lime.load_cfg('../../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 
@@ -24,10 +23,9 @@ for i, obj in enumerate(objList):
     maskFits_address, mask_list = objFolder/f'{obj}_masks.fits', ['MASK_0', 'MASK_1', 'MASK_2']
     db_address = objFolder/f'{obj}_database.fits'
     chemFolder = objFolder/'chemistry'
-    grid_fits_file = objFolder/f'{obj}_grid_sampling_HIICHImistry.fits'
 
     # Parameters to plot
-    param_list = np.array(['logOH', 'logNO', 'logU'])
+    param_list = np.array(['OH', 'NO', 'logU'])
 
     # Get mask indeces:
     spatial_mask_dict = {}
@@ -38,22 +36,14 @@ for i, obj in enumerate(objList):
     total_mask = np.array(list(spatial_mask_dict.values()))
     total_mask = total_mask.sum(axis=0).astype(bool)
 
-    # # Data for the astronomical coordinates
-    # hdr = fits.getheader(maskFits_address, extname='MASK_0')
-    #
-    # # Generate the map files
-    # save_log_maps(grid_fits_file, param_list, chemFolder, maskFits_address, mask_list, ext_log='_GRIDSAMPLER_OUTPUTS',
-    #               page_hdr=hdr, output_files_prefix='HIICHImistry')
-
     # ----------------------------------------- Generate the parameter histograms ----------------------------------------
 
     for param in param_list:
 
-        with fits.open(f'{chemFolder}/HIICHImistry{param}.fits') as hdu_list:
+        with fits.open(f'{chemFolder}/{param}_HII-CHI-mistry_output.fits') as hdu_list:
 
-            image_data, image_header, image_err = hdu_list[param].data, hdu_list[param].header,  hdu_list[f'{param}_err'].data
-            array_data = image_data[total_mask]
-            array_err = image_err[total_mask]
+            image_data, image_header = hdu_list[f'{param}_err'].data, hdu_list[f'{param}_err'].header
+            # array_data = image_data[total_mask]
 
             defaultConf = STANDARD_PLOT.copy()
             defaultConf['legend.fontsize'] = 16
@@ -78,15 +68,14 @@ for i, obj in enumerate(objList):
                 array_container.append(array_data)
                 data_labels.append(label)
 
-                store_dict = {f'{convert_dict[param]}_array': np.array([median, upper_limit, lower_limit, n_voxels])}
-
-                save_cfg('../muse_CGCG007.ini', store_dict, section_name=f'{mask_name}_GridSampling_HIICHImistry')
+                store_dict = {f'{param}_array': np.array([median, upper_limit, lower_limit, n_voxels])}
+                save_cfg('../../muse_CGCG007.ini', store_dict, section_name=f'{mask_name}_err_HII-CHI-mistry')
 
             ax.hist(array_container, bins=15, label=data_labels, stacked=True)
 
             ax.legend()
-            ax.update({'title': r'CGCG007−025, {} histogram, Grid sampling, HII-CHI-mistry lines'.format(param_label), 'xlabel': param_label})
-            plt.savefig(chemFolder/f'{obj}_{param}_histogram_GridSamplingHIICHImistry')
-            # plt.show()
-
+            ax.update({'title': r'CGCG007−025, {} uncertainty histogram, HII-CHI-mistry'.format(param_label),
+                       'xlabel': param_label})
+            # plt.savefig(chemFolder/f'{obj}_{param}_err_histogram_HII-CHI-mistry')
+            plt.show()
 

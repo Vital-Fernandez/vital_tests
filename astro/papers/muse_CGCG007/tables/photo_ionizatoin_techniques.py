@@ -25,86 +25,63 @@ obsData = lime.load_cfg('../muse_CGCG007.ini')
 tablesFolder = Path(obsData['data_location']['tables_folder'])
 
 # Table structure
-header_list = ['Methodology', 'Parameter', 'All voxels', 'Region 0 (11 voxels)', 'Region 1 (91 voxels)', 'Region 2 (382 voxels)']
 model_fitting_params = ['OH', 'NO', 'logU']
 direct_method_params = ['OH', 'NO', 'NH', 'ArH', 'SH', 'ICF_S4', 'SO']
-methods_list = ['Direct Method', 'HII-CHI-mistry', 'GridSampling', 'GridSampling_MaxErr']
-table_header_format = 'c' * len(header_list)
-entries_list = ['Global', 'MASK_0', 'MASK_1', 'MASK_2']
-convert_grid_names = {'GridSampling': r'\makecell{Neural model fitting \\ (Line error)}',
-                      'GridSampling_MaxErr': r'\makecell{Neural model fitting \\ (Maximum line error)}'}
 
+
+entries_list = ['global', 'MASK_0', 'MASK_1', 'MASK_2']
+
+technique_conf_dict = {'neural_fitting': ['direct_method'],
+                       'HII-CHI-mistry': ['HIICHImistry-PopStar'],
+                        'GridSampling':  ['localErr', 'HIICHImistry', 'noOII', 'maxErr']}
+
+convert_grid_names = {'direct_method':          'Direct method',
+                      'HIICHImistry-PopStar':   NoEscape(r'$\makecell{\textsc{HII-CHI-mistry}}$'),
+                      'localErr':               NoEscape(r'\makecell{Neural model fitting \\ (Line error)}'),
+                      'HIICHImistry':           NoEscape(r'\makecell{Neural model fitting \\ (HII-CHI-mistry lines and error)}'),
+                      'noOII':                  NoEscape(r'\makecell{Neural model fitting \\ (No [OII] lines)}'),
+                      'maxErr':                 NoEscape(r'\makecell{Neural model fitting \\ (Uniform maximum error flux)}')}
 
 # Pylatex object
 pdf = PdfMaker()
-pdf.create_pdfDoc(pdf_type=None)
+header_list = ['Methodology', 'Parameter', 'All voxels',
+               'Region 0 (11 voxels)', 'Region 1 (91 voxels)', 'Region 2 (382 voxels)']
+table_header_format = 'c' * len(header_list)
+pdf.create_pdfDoc(pdf_type='table')
 pdf.pdf_insert_table(header_list, table_format=table_header_format)
-# pdf.addTableRow(subheader_list, last_row=True)
 
-for i, technique in enumerate(methods_list):
+for i, technique in enumerate(technique_conf_dict.items()):
 
-    # Direct method
-    if technique == 'Direct Method':
+    methodology, conf_list = technique
 
-        for j, param in enumerate(direct_method_params):
+    # Loop through the approaches
+    for conf in conf_list:
+        print(methodology, conf)
+
+        table_params = direct_method_params if conf == 'direct_method' else model_fitting_params
+
+        for j, param in enumerate(table_params):
 
             row = ['-'] * len(header_list)
-            row[0] = MultiRow(len(direct_method_params), data=methods_list[i]) if j == 0 else ''
+            row[0] = MultiRow(len(table_params), data=convert_grid_names[conf]) if j == 0 else ''
             row[1] = latex_labels[param]
 
             for z, region in enumerate(entries_list):
-                value = obsData[f'Total_abundances_direct_method'][f'{param}_array']
 
-                entry_vector = [value[0], value[1], value[2]]
+                value_array = obsData[f'{methodology}_{conf}'][f'{param}_{region}']
+
+                # Confirm the technique measures that parameter
+                entry_vector = [value_array[0], value_array[1], value_array[2]]
                 row[z + 2] = to_latex_format(entry_vector)
 
             pdf.addTableRow(row, last_row=False)
 
-        pdf.table.add_hline()
-        pdf.table.add_hline()
-
-    # HII-CHI-mistry results
-    if technique == r'HII-CHI-mistry':
-
-        for j, param in enumerate(model_fitting_params):
-
-            row = ['-'] * len(header_list)
-            row[0] = MultiRow(3, data=NoEscape(r'\textsc{HII-CHI-mistry}')) if j == 0 else ''
-            row[1] = latex_labels[param]
-
-            for z, region in enumerate(entries_list):
-                value = obsData[f'{region}_HII-CHI-mistry'][f'{param}_array']
-                error = obsData[f'{region}_err_HII-CHI-mistry'][f'{param}_array']
-
-                entry_vector = [value[0], value[1], value[2], error[0]]
-                row[z + 2] = to_latex_format_with_uncertainty(entry_vector)
-
-            pdf.addTableRow(row, last_row=False)
-
-        pdf.table.add_hline()
-        pdf.table.add_hline()
-
-    if technique in ['GridSampling', 'GridSampling_MaxErr']:
-
-        for j, param in enumerate(model_fitting_params):
-
-            row = ['-'] * len(header_list)
-            row[0] = MultiRow(3, data=NoEscape(convert_grid_names[technique])) if j == 0 else ''
-            row[1] = latex_labels[param]
-
-            for z, region in enumerate(entries_list):
-                value = obsData[f'{region}_{technique}'][f'{param}_array']
-                error = obsData[f'{region}_err_{technique}'][f'{param}_array']
-
-                entry_vector = [value[0], value[1], value[2], error[0]]
-                row[z + 2] = to_latex_format_with_uncertainty(entry_vector)
-
-            pdf.addTableRow(row, last_row=False)
-
-        if i < len(methods_list) - 1:
+        # Last row
+        if (methodology != 'GridSampling') or (methodology == 'GridSampling' and conf != 'maxErr'):
             pdf.table.add_hline()
             pdf.table.add_hline()
+        else:
+            pdf.table.add_hline()
 
-pdf.table.add_hline()
 pdf.generate_pdf(tablesFolder/'methodology_results')
 

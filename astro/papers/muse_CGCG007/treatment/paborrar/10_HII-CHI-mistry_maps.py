@@ -9,7 +9,7 @@ from astro.papers.muse_CGCG007.muse_CGCG007_methods import latex_labels, signif_
 from lime.io import save_cfg
 
 # Declare data and files location
-obsData = lime.load_cfg('../muse_CGCG007.ini')
+obsData = lime.load_cfg('../../muse_CGCG007.ini')
 objList = obsData['data_location']['object_list']
 fileList = obsData['data_location']['file_list']
 
@@ -121,5 +121,5 @@ for i, obj in enumerate(objList):
             # plt.show()
 
     # Save mean values to log
-    save_cfg('../muse_CGCG007.ini', store_dict, section_name='Global_HII-CHI-mistry', clear_section=True)
-    save_cfg('../muse_CGCG007.ini', err_dict, section_name='Global_err_HII-CHI-mistry', clear_section=True)
+    save_cfg('../../muse_CGCG007.ini', store_dict, section_name='Global_HII-CHI-mistry', clear_section=True)
+    save_cfg('../../muse_CGCG007.ini', err_dict, section_name='Global_err_HII-CHI-mistry', clear_section=True)

@@ -15,6 +15,10 @@ from lime.io import progress_bar
 from lime.plots import format_for_table
 from collections import Sequence
 from uncertainties import umath, unumpy, ufloat
+from lime.plots import STANDARD_PLOT
+from matplotlib import pyplot as plt, cm, colors, rc_context
+from lime.io import save_cfg
+from astropy.wcs import WCS
 
 # State target lines and parameters
 target_lines = ['H1_4861A', 'H1_4861A_w1', 'H1_6563A',  'H1_6563A_w1', 'H1_6563A_w2',
@@ -205,10 +209,14 @@ latex_labels = {'y_plus': r'$y^{+}$',
             'S2_S3': r'$\frac{S^{+}}{S^{2+}}$',
              'log(X_i+)': r'$12+log\left(X^{i+}\right)$',
              'redNoise': r'$\Delta(cH\beta)$',
-             'nSII_cHbeta': r'$\frac{n_{e,\,[SII]}}{c(H\beta)}$'}
+             'nSII_cHbeta': r'$\frac{n_{e,\,[SII]}}{c(H\beta)}$',
+             'Y_O': r'$Y_{\frac{O}{H}}$',
+             'Y_S': r'$Y_{\frac{S}{H}}$',
+             'eta':r'$\eta$'}
 
 signif_figures = {'n_e': 0,
                   'T_low': 0,
+                  'T_high': 0,
                   'cHbeta': 2,
                   'Ar4': 2,
                   'Ar3': 2,
@@ -262,6 +270,164 @@ convert_dict = {'logOH': 'OH',
                 'logNO': 'NO',
                 'logU': 'logU'}
 
+technique_convert_label = {'GridSampling': 'Neural model fitting', 'HII-CHI-mistry': r'HII-CHI-mistry', 'direct_method': 'Direct method',
+                           'neural_fitting': 'Neural networks'}
+
+
+
+def to_natural_abund(abund_array):
+    # return np.power(10, abund_array - 12)
+    return unumpy.pow(10, abund_array - 12)
+
+
+def to_log_abund(abund_array):
+    # return 12 + np.log10(abund_array)
+    return 12 + unumpy.log10(abund_array)
+
+
+def distribution_parametrisation(param_name, param_array):
+
+    median = np.round(np.nanmedian(param_array), signif_figures[param_name])
+    up_lim = np.round(np.nanpercentile(param_array, 84) - np.nanmedian(param_array), signif_figures[param_name])
+    low_lim = np.round(np.nanmedian(param_array) - np.nanpercentile(param_array, 16), signif_figures[param_name])
+    n_voxels = np.sum(~np.isnan(param_array))
+
+    plot_label = r'{} = ${}^{{{}}}_{{{}}}$ ({} voxels)'.format(latex_labels[param_name], median, up_lim, low_lim, n_voxels)
+    log_array = np.array([median, up_lim, low_lim, n_voxels])
+
+    return plot_label, log_array
+
+
+def plot_parameter_image(plot_db_fits, parameter_list, output_folder, conf_label, tech_label):
+
+    # Image background
+    flux6563_image = fits.getdata(plot_db_fits, f'H1_6563A_flux', ver=1)
+    halpha_min_level = fits.getval(plot_db_fits, keyword=f'P9050', extname=f'H1_6563A_flux')
+    halpha_thresd_level = fits.getval(plot_db_fits, keyword=f'P9250', extname=f'H1_6563A_flux')
+    bg_color = colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10)
+
+    # Plot configuration
+    defaultConf = STANDARD_PLOT.copy()
+
+    for parameter in parameter_list:
+
+        with fits.open(f'{output_folder}/{conf_label}_{parameter}.fits') as hdul:
+            param_image, param_hdr = hdul[parameter].data, hdul[parameter].header
+
+            with rc_context(defaultConf):
+
+                halpha_cmap = cm.gray.copy()
+                halpha_cmap.set_under('black')
+
+                fig = plt.figure(figsize=(10, 10))
+                ax = fig.add_subplot(projection=WCS(param_hdr), slices=('x', 'y'))
+
+                im = ax.imshow(flux6563_image, cmap=halpha_cmap, norm=bg_color)
+                im2 = ax.imshow(param_image)
+                cbar = fig.colorbar(im2, ax=ax)
+
+                ax.set_title(f'CGCG007−025, {latex_labels[parameter]} \n {technique_convert_label[tech_label]} - {conf_label}')
+                ax.set_xlabel(r'RA')
+                ax.set_ylabel(r'DEC')
+                ax.set_xlim(120, 210)
+                ax.set_ylim(110, 220)
+                plt.savefig(output_folder/f'{tech_label}_{conf_label}_{parameter}_map')
+                # plt.show()
+                plt.close(fig)
+
+    return
+
+
+def compute_parameter_distributions(parameter_list, output_folder, conf_label, mask_file, mask_list, tech_label,
+                                    param_conv={}):
+
+    # Distributions containers
+    store_dict, err_dict = {}, {}
+
+    # Plot configuration
+    defaultConf = STANDARD_PLOT.copy()
+    defaultConf['legend.fontsize'] = 16
+    defaultConf['figure.figsize'] = (10, 10)
+
+    # Get regions mask:
+    spatial_mask_dict = {}
+    with fits.open(mask_file) as hdu_masks:
+        for mask_name in mask_list:
+            mask_data = hdu_masks[mask_name].data.astype(bool)
+            spatial_mask_dict[mask_name] = mask_data
+
+    # region_labels = mask_list[:]
+    region_idcs_list = list(spatial_mask_dict.values())
+
+    # Loop throught the parameter file images
+    for parameter in parameter_list:
+
+        with fits.open(f'{output_folder}/{conf_label}_{parameter}.fits') as hdu_list:
+
+            # Parameter value and error distribution loop
+            for map_type in ['', '_err']:
+
+                # Conversion for those times saved in a different format
+                fits_hdr_param = param_conv.get(parameter, parameter)
+
+                param_image = hdu_list[f'{fits_hdr_param}{map_type}'].data
+                dist_container = []
+                label_container = []
+
+                # Plot regions distributions
+                with rc_context(defaultConf):
+
+                    for i_mask, mask in enumerate(mask_list):
+
+                        data_dist = param_image[region_idcs_list[i_mask]]
+                        label_dist, array_dist = distribution_parametrisation(parameter, data_dist)
+
+                        label_container.append(label_dist)
+                        dist_container.append(data_dist)
+
+                        # Store the distribution
+                        ref_dist = f'{convert_dict.get(parameter, parameter)}{map_type}_{mask}'
+                        store_dict[ref_dist] = array_dist
+
+                    # Make the plot
+                    fig, ax = plt.subplots()
+                    ax.hist(dist_container, bins=15, label=label_container, stacked=True)
+                    ax.set_title(f'CGCG007−025, {latex_labels[parameter]} \n {technique_convert_label[tech_label]} {conf_label} \n regions histogram')
+                    ax.set_xlabel(latex_labels[parameter])
+                    ax.legend()
+                    plt.savefig(output_folder/f'{tech_label}_{conf_label}_{parameter}_regions_histogram{map_type}')
+                    plt.close(fig)
+                    # plt.show()
+
+                # Plot global distribution
+                total_idcs_mask = np.array(region_idcs_list).sum(axis=0).astype(bool)
+                ref_global = 'global'
+
+                # Plot total distribution
+                with rc_context(defaultConf):
+
+                    data_dist = param_image[total_idcs_mask]
+                    label_dist, array_dist = distribution_parametrisation(parameter, param_image)
+
+                    # Store the distribution
+                    ref_dist = f'{convert_dict.get(parameter, parameter)}{map_type}_{ref_global}'
+                    store_dict[ref_dist] = array_dist
+
+                    # Make the plot
+                    fig, ax = plt.subplots()
+                    ax.hist(data_dist, bins=15, label=label_dist)
+                    ax.set_title(f'CGCG007−025, {latex_labels[parameter]} \n {technique_convert_label[tech_label]} {conf_label} \n all voxels histogram')
+                    ax.set_xlabel(latex_labels[parameter])
+                    ax.legend()
+                    plt.savefig(output_folder / f'{tech_label}_{conf_label}_{parameter}_global_histogram{map_type}')
+                    plt.close(fig)
+
+    # Save to a file
+    save_cfg('../muse_CGCG007.ini', store_dict, section_name=f'{tech_label}_{conf_label}', clear_section=True)
+
+    return
+
+
 def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
 
     # Generate uncertainty variables to propagate the error
@@ -273,6 +439,7 @@ def deredd_fluxes(obs_flux, obs_err, cHbeta_nom, cHbeta_err, lines_flambda):
     obsInt, obsIntErr = unumpy.nominal_values(obsInt_uarray), unumpy.std_devs(obsInt_uarray)
 
     return obsInt, obsIntErr
+
 
 def err_prop_sum(a_err, b_err):
     return np.sqrt(a_err**2 + b_err**2)
@@ -457,6 +624,119 @@ def save_log_maps(log_file_address, param_list, output_folder, mask_file_address
 
         # Write to new file
         output_file = Path(output_folder) / f'{output_files_prefix}{param}.fits'
+        paramHDUs.writeto(output_file, overwrite=True, output_verify='fix')
+
+    return
+
+
+def total_abundances_calculation(param_list, output_folder, mask_file_address, regions_list='all', ref_fits='', image_size=None,
+                                 header={}):
+
+    # Containers for the parameters
+    store_dict, voxels_dict = {}, {}
+
+    # Get regions mask:
+    spatial_mask_dict = {}
+    with fits.open(mask_file_address) as hdu_masks:
+        hdulist = regions_list if regions_list != all else list(hdu_masks.keys())
+        for mask_name in hdulist:
+            mask_data = hdu_masks[mask_name].data.astype(bool)
+            spatial_mask_dict[mask_name] = mask_data
+        if image_size is None:
+            image_size = hdu_masks[regions_list[0]].data.shape
+
+    region_idcs_list = list(spatial_mask_dict.values())
+    total_idcs_mask = np.array(region_idcs_list).sum(axis=0).astype(bool)
+
+    for param in param_list:
+
+        with fits.open(f'{output_folder}/{ref_fits}{param}.fits') as hdu_list:
+
+            image_data, err_data = hdu_list[param].data, hdu_list[f'{param}_err'].data
+
+            array_data = image_data[total_idcs_mask]
+            array_err = err_data[total_idcs_mask]
+
+            voxels_dict[param] = unumpy.uarray(array_data, array_err)
+
+    T_low = voxels_dict['T_low']
+    T_high = 0.8403 * T_low + 2689
+
+    # Oxygen abundance
+    O2, O3 = to_natural_abund(voxels_dict['O2']), to_natural_abund(voxels_dict['O3'])
+    OH = O2 + O3
+
+    # Nirogen abundance
+    N2 = to_natural_abund(voxels_dict['N2'])
+    NO = N2/O2
+    NH = NO * OH
+
+    # Argon abundance
+    Ar3, Ar4 = to_natural_abund(voxels_dict['Ar3']), to_natural_abund(voxels_dict['Ar4'])
+    ArH = Ar3 + Ar4
+
+    # Sulfur abundance
+    S2, S3 = to_natural_abund(voxels_dict['S2']), to_natural_abund(voxels_dict['S3'])
+    # m_conf, n_conf = np.random.normal(1.162, 0.006, Ar3.size), np.random.normal(0.05, 0.01, Ar3.size)
+    m_coef, n_coef = ufloat(1.162, 0.006), ufloat(0.05, 0.01)
+    exp_value = (unumpy.log10(Ar3/Ar4) - n_coef) / m_coef
+    S3S4 = unumpy.pow(10, exp_value)
+    S4 = S3/S3S4
+    SH = S2 + S3 + S4
+    ICF_S4 = SH/(S2 + S3)
+    SO = SH/OH
+
+    #Extra params
+    O2_O3 = O2/O3
+    S2_S3 = S2/S3
+    eta = O2_O3/S2_S3
+
+    # Save mean values to log
+    He1 = voxels_dict['He1']
+    SO_dors = unumpy.pow(10, -1.78), unumpy.pow(10, -0.02)
+    # SO_dist = np.random.normal(SO_dors[0], SO_dors[1], He1.size)
+    SO_coeff = ufloat(SO_dors[0], SO_dors[1])
+    Y_O = (4 * He1 * (1 - 20 * OH)) / (1 + 4*He1)
+    Y_S = (4 * He1 * (1 - 20 * SO_coeff * SH)) / (1 + 4*He1)
+
+    # Store to a dictiory
+    param_chain_dict = dict(T_high=T_high,
+                            OH=to_log_abund(OH),
+                            NO=unumpy.log10(NO),
+                            NH=to_log_abund(NH),
+                            ArH=to_log_abund(ArH),
+                            S4=to_log_abund(S4),
+                            SH=to_log_abund(SH),
+                            ICF_S4=ICF_S4,
+                            SO=unumpy.log10(SO),
+                            Y_O=Y_O,
+                            Y_S=Y_S,
+                            S2_S3=S2_S3,
+                            O2_O3=O2_O3,
+                            eta=eta)
+
+    # Saving the total abundances as dictionaries
+    for param, voxels_array in param_chain_dict.items():
+
+        value_array, error_array = unumpy.nominal_values(voxels_array), unumpy.std_devs(voxels_array)
+
+        param_image = np.full(image_size, np.nan)
+        err_image = np.full(image_size, np.nan)
+        param_image[total_idcs_mask] = value_array
+        err_image[total_idcs_mask] = error_array
+
+        # Primary header
+        paramHDUs = fits.HDUList()
+        paramHDUs.append(fits.PrimaryHDU())
+
+        # ImageHDU for the parameter maps
+        hdr = fits.Header({'PARAM': param})
+        hdr.update(header)
+        paramHDUs.append(fits.ImageHDU(name=param, data=param_image, header=hdr, ver=1))
+        paramHDUs.append(fits.ImageHDU(name=f'{param}_err', data=err_image, header=hdr, ver=1))
+
+        # Write to new file
+        output_file = Path(output_folder)/f'{ref_fits}{param}.fits'
         paramHDUs.writeto(output_file, overwrite=True, output_verify='fix')
 
     return

@@ -1,0 +1,2 @@
+File_name                       notes
+XXXXXXXXX.fits                  archivo_falso_test_pipeline

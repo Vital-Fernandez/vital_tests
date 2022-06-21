@@ -35,29 +35,31 @@ for i, obj in enumerate(objList):
     maskFits_address = objFolder/f'{obj}_masks.fits'
     chemFolder = objFolder / 'chemistry'
 
-    for conf in ref_simulations:
+    for j, conf in enumerate(ref_simulations):
 
-        outputFits = objFolder / f'{obj}_{tech_label}_{conf}.fits'
+        if j > 1:
 
-        # Loop throught the line regions
-        for idx_region in [0, 1, 2]:
+            outputFits = objFolder / f'{obj}_{tech_label}_{conf}.fits'
 
-            # Input lines
-            region_lines = obsData[f'{tech_label}_{conf}_conf'][f'MASK_{idx_region}_line_list']
+            # Loop throught the line regions
+            for idx_region in [0, 1, 2]:
 
-            # Load voxel list
-            region_label = f'mask_{idx_region}'
-            region_mask = fits.getdata(maskFits_address, region_label, ver=1)
-            region_mask = region_mask.astype(bool)
-            idcs_voxels = np.argwhere(region_mask)
-            n_voxels = idcs_voxels.shape[0]
+                # Input lines
+                region_lines = obsData[f'{tech_label}_{conf}_conf'][f'MASK_{idx_region}_line_list']
 
-            # Load region fluxes
-            int_DF = lime.load_lines_log(objFolder/f'region_{idx_region}_gridSampling_intensities.txt')
-            err_DF = lime.load_lines_log(objFolder/f'region_{idx_region}_gridSampling_errors.txt')
+                # Load voxel list
+                region_label = f'mask_{idx_region}'
+                region_mask = fits.getdata(maskFits_address, region_label, ver=1)
+                region_mask = region_mask.astype(bool)
+                idcs_voxels = np.argwhere(region_mask)
+                n_voxels = idcs_voxels.shape[0]
 
-            # Loop through the region voxels
-            for idx_voxel, idx_pair in enumerate(idcs_voxels):
+                # Load region fluxes
+                int_DF = lime.load_lines_log(objFolder/f'region_{idx_region}_gridSampling_intensities.txt')
+                err_DF = lime.load_lines_log(objFolder/f'region_{idx_region}_gridSampling_errors.txt')
+
+                # Loop through the region voxels
+                for idx_voxel, idx_pair in enumerate(idcs_voxels):
 
                     idx_j, idx_i = idx_pair
                     ext_lines = f'{idx_j}-{idx_i}_linelog'

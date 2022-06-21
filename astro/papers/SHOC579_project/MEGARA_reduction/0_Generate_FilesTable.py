@@ -20,6 +20,7 @@ source_folder = Path(reduction_cfg['fits_folder'])
 sample_DF = pd.DataFrame(columns=['OB', 'index_type', 'object', 'type', 'reduc_tag', 'VPH', 'address', 'old_address'])
 rename_dict = {}
 
+files_counter = 0
 for root, dirs, files in os.walk(source_folder):
     for i, old_name in enumerate(files):
         if old_name.endswith('.fits'):
@@ -51,7 +52,8 @@ for root, dirs, files in os.walk(source_folder):
             # Copy the files to another folder with a new name
             old_path = Path(root)/old_name
             new_path = data_folder/new_name
-            print(f'{old_name}', f'->', f'{new_name} {"" if new_path.is_file() else "(False)"}')
+            files_counter += 1
+            print(f'{files_counter}) {old_name}', f'->', f'{new_path} {"" if new_path.is_file() else "(False)"}')
             # shutil.copyfile(f'{old_path}', f'{new_path}')
 
             # Saving the files data to a dataframe
@@ -61,8 +63,9 @@ for root, dirs, files in os.walk(source_folder):
             sample_DF.loc[new_name, 'VPH'] = VPH
             sample_DF.loc[new_name, 'type'] = type_name
             sample_DF.loc[new_name, 'reduc_tag'] = 'raw'
-            sample_DF.loc[new_name, 'address'] = f'{old_path}'
-            sample_DF.loc[new_name, 'old_address'] = f'{new_path}'
+            sample_DF.loc[new_name, 'address'] = f'{new_path}'
+            sample_DF.loc[new_name, 'old_address'] = f'{old_path}'
 
-# sample_DF.sort_values(['OB'], ascending=True, inplace=True)
-# lm.save_line_log(sample_DF, rd_df_address)
+print(rd_df_address)
+sample_DF.sort_values(['OB'], ascending=True, inplace=True)
+lm.save_line_log(sample_DF, rd_df_address)

@@ -57,13 +57,13 @@ database:
       MegaraArcCalibration:
       - {name: nlines, tags: {vph: LR-U, speclamp: ThAr, insmode: LCB}, content: [25,25]}
       - {name: nlines, tags: {vph: LR-B, speclamp: ThAr, insmode: LCB}, content: [10,10,15,5]}
-      - {name: nlines, tags: {vph: LR-V, speclamp: ThNe, insmode: LCB}, content: [15,5,10,7]}
+      - {name: nlines, tags: {vph: LR-V, speclamp: ThAr, insmode: LCB}, content: [15,5,10,7]}
       - {name: nlines, tags: {vph: LR-R, speclamp: ThAr, insmode: LCB}, content: [14,7]}
       - {name: nlines, tags: {vph: LR-I, speclamp: ThAr, insmode: LCB}, content: [14]}
-      - {name: nlines, tags: {vph: LR-Z, speclamp: ThAr, insmode: LCB}, content: [14,9]}
+      - {name: nlines, tags: {vph: LR-Z, speclamp: ThNe, insmode: LCB}, content: [14,9]}
       - {name: polynomial_degree, tags: {vph: LR-U, speclamp: ThAr}, content: [3,5]}
       - {name: polynomial_degree, tags: {vph: LR-B, speclamp: ThAr}, content: [5,5]}
-      - {name: polynomial_degree, tags: {vph: LR-V, speclamp: ThNe}, content: [5,5]}
+      - {name: polynomial_degree, tags: {vph: LR-V, speclamp: ThAr}, content: [5,5]}
       - {name: polynomial_degree, tags: {vph: LR-R, speclamp: ThAr}, content: [3,5]}
       - {name: polynomial_degree, tags: {vph: LR-I, speclamp: ThAr}, content: [3,5]}
       - {name: polynomial_degree, tags: {vph: LR-Z, speclamp: ThNe}, content: [3,5]}

@@ -4,6 +4,7 @@ import lime as lm
 import yaml
 from astro.papers.SHOC579_project.SHOC579_methods import megaradrp_modes
 from pathlib import Path
+from astropy.io import fits
 
 
 def indexing_the_frames(log, OB_task, VPH_task, type_task, obj_task=None, exclude_list=[]):
@@ -16,18 +17,37 @@ def indexing_the_frames(log, OB_task, VPH_task, type_task, obj_task=None, exclud
     return idcs_frames
 
 
-def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_tasks, idx_task, conf_task, idcs_files):
+def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_tasks, idx_task, conf_task, idcs_files,
+               arc_types):
+
+    # Files list
+    type_files = DF_files.loc[idcs_files].index.values
+
+    # Remove non valid arc files
+    if task == 'arc':
+        task_files = []
+        for file in type_files:
+            lamp_type = fits.getval(f'{output_folder}/data/{file}', 'SPECLAMP')
+            if lamp_type == arc_types:
+                task_files.append(file)
+    else:
+        task_files = list(type_files)
 
     # Generate task yml
     yml_dict = {'id': task_ID_ref,
                 'mode': megaradrp_modes[task_name],
                 'instrument': 'MEGARA',
-                'frames': list(DF_files.loc[idcs_files].index.values)}
+                'frames': task_files}
     yml_dict.update(conf_task)
 
     print(f'\n --- {task_ID_ref} ({np.sum(idcs_files)} files)--- ')
-    for file in DF_files.loc[idcs_files].index.values:
-        print(file)
+    for file in task_files:
+        if task == 'arc':
+            lamp_type = fits.getval(f'{output_folder}/data/{file}', 'SPECLAMP')
+            message = f'{file} ({lamp_type})'
+        else:
+            message = f'{file}'
+        print(message)
 
     # Save yml to a text file
     dict_adress = f'{output_folder}/{task_ID_ref}.yml'
@@ -137,7 +157,8 @@ for OB in OB_list:
                 # Store the task configuration into a configuration file if there are files for it in the OB
                 if np.sum(idcs_fits):
                     req_dict = {} if task_conf is None else {'requirements': task_conf}
-                    store_task(task_ID, VPH, reduction_folder, files_DF, task, task_DF, i_task, req_dict, idcs_fits)
+                    store_task(task_ID, VPH, reduction_folder, files_DF, task, task_DF, i_task, req_dict, idcs_fits,
+                               reduc_cfg[f'{VPH}_lamp'])
                     i_task += 1
 
         # Save table with the task list per OB-VPH

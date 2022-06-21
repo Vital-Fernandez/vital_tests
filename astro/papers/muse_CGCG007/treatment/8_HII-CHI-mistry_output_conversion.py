@@ -2,11 +2,8 @@ import numpy as np
 import pandas as pd
 import time
 import lime
-from src.specsiser import flambda_calc
 
 from pathlib import Path
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import HII_chemistry_label_conversion as HII_conv, chemical_lines_indexing
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import deredd_fluxes, HII_chemistry_input_file_columns as input_columns
 from astropy.io import fits
 
 pd.set_option('display.max_columns', None)
@@ -72,7 +69,7 @@ for i, obj in enumerate(objList):
 
     # Loop throught the line regions
     # for idx_region in [0, 1, 2, 3]:
-    for idx_region in [0, 1, 2, 3]:
+    for idx_region in [0, 1, 2]:
 
         fit_output_file = HII_chim_folder/f'region_{idx_region}_intensities_hcm-output.dat'
 

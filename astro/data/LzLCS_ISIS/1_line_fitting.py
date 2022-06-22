@@ -95,7 +95,7 @@ for i, specName in enumerate(specNameList):
     # Loop throught the lines
     obj_cfg = obsCfg[f'{objList[i]}_line_fitting']
     for line in mask.index:
-        if line == 'O3_5007A_b':
+        if line in  ['O3_5007A_b']:
             mask_waves = mask.loc[line, 'w1':'w6'].values
             spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method='least_squares')
             spec.display_results(fit_report=False, log_scale=True)#, output_address=objFolder/f'{line}_gaussian_components.png')

@@ -98,12 +98,18 @@ line_labels = {'O3_5007A': r'Flux $[OIII]5007\AA$',
                'logNO': 'log(N/O)',
                'logU': 'log(U)'}
 
-grid_files_dict = {'grid_Jorge': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
-                   'grid_Epm': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_C17_Popstar_1Myr.dat'),
-                   'HIIchimistry_v2': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
-                   'HIIchimistry_v3': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
-                   'HIIchimistry_v4': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
-                   'HIIchimistry_v5': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
+grid_files_dict = {'grid_Jorge': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
+                   'grid_Epm': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
+                   'HIIchimistry_v2': Path('D:/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
+                   'HIIchimistry_v3': Path('D:/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
+                   'HIIchimistry_v4': Path('D:/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
+                   'HIIchimistry_v5': Path('D:/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
+# grid_files_dict = {'grid_Jorge': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
+#                    'grid_Epm': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
+#                    'HIIchimistry_v2': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
+#                    'HIIchimistry_v3': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
+#                    'HIIchimistry_v4': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
+#                    'HIIchimistry_v5': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
 
 grid_column_dict = {'grid_Jorge': grid_columns_large,
                     'grid_Epm': {},
@@ -112,6 +118,7 @@ grid_column_dict = {'grid_Jorge': grid_columns_large,
                     'HIIchimistry_v4': grid_columns_HIICHI_mistry,
                     'HIIchimistry_v5': grid_columns_HIICHI_mistry}
 
+
 # Load the data
 grid_jorge = pd.read_csv(grid_files_dict['grid_Jorge'], skiprows=1, names=grid_columns_large.values())
 grid_jorge.iloc[:, 4:] = np.power(10, grid_jorge.iloc[:, 4:])
@@ -119,15 +126,7 @@ grid_jorge['O2_3726A_b'] = grid_jorge['O2_3726A'] + grid_jorge['O2_3729A']
 grid_jorge['O2_7319A_b'] = grid_jorge['O2_7319A'] + grid_jorge['O2_7330A']
 
 grid_epm = pd.read_csv(grid_files_dict['grid_Epm'], delim_whitespace=True)
-grid_epm.iloc[:, 4:] = np.log10(grid_epm.iloc[:, 4:])
-grid_epm.replace(-np.inf, -5.0000, inplace=True)
-
-# Convert to string format and save to text file
-string_frame = grid_epm.to_string()
-with open(Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'), 'wb') as outputScript:
-    outputScript.write(string_frame.encode('UTF-8'))
-
-
+grid_epm.iloc[:, 3:] = np.power(10, grid_epm.iloc[:, 3:])
 grid_epm['O2_3726A_b'] = grid_epm['O2_3726A'] + grid_epm['O2_3729A']
 grid_epm['O2_7319A_b'] = grid_epm['O2_7319A'] + grid_epm['O2_7330A']
 

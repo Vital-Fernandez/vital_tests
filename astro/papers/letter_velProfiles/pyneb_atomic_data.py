@@ -42,9 +42,6 @@ neSII_M = S2.getTemDen(RSII_M, tem=TSIII[0], to_eval='L(6716)/L(6731)')
 neSII_G_epm = epm_nSII_formula(RSII_G, TSIII[0])
 neSII_M_epm = epm_nSII_formula(RSII_M, TSIII[0])
 
-print(neSII_G_epm)
-print()
-
 print('Values from the Guseva et al 2021:')
 print(f'- Guseva paper neSII: {225}+/-{76} cm^-3')
 

@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import truncnorm, norm
 import pyneb as pn
 
-pn.atomicData.includeFitsPath()
-pn.atomicData.setDataFileDict("IRAF_09")
-
+# pn.atomicData.includeFitsPath()
+# pn.atomicData.setDataFileDict("IRAF_09")
+#
 
 # Scipy formula for truncation coefficient
 def truncation_limits(mu, sigma, lower_limit, upper_limit):

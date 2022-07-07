@@ -38,6 +38,7 @@ def A_and_K_calculation(log):
 
     v_5 = log['v_5'].values
     v_10 = log['v_10'].values
+    v_50 = log['v_50'].values
     v_90 = log['v_90'].values
     v_95 = log['v_95'].values
     v_med = log['v_med'].values
@@ -45,7 +46,7 @@ def A_and_K_calculation(log):
 
     W_80 = v_90 - v_10
     W_90 = v_95 - v_5
-    A_factor = ((v_90 - v_med) - (v_med - v_10)) / W_80
+    A_factor = ((v_90 - v_50) - (v_50 - v_10)) / W_80
     K_factor = W_90 / (1.397 * FWHM_intg)
 
     peak_waves = log.peak_wave.values

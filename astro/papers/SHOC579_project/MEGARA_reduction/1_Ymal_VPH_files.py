@@ -40,6 +40,11 @@ def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_task
                 'frames': task_files}
     yml_dict.update(conf_task)
 
+    # Save yml to a text file
+    dict_adress = f'{output_folder}/{task_ID_ref}.yml'
+    with open(dict_adress, 'w') as f:
+        yaml.dump(yml_dict, f, sort_keys=False)
+
     print(f'\n --- {task_ID_ref} ({np.sum(idcs_files)} files)--- ')
     for file in task_files:
         if task == 'arc':
@@ -48,11 +53,6 @@ def store_task(task_ID_ref, VPH_ref, output_folder, DF_files, task_name, DF_task
         else:
             message = f'{file}'
         print(message)
-
-    # Save yml to a text file
-    dict_adress = f'{output_folder}/{task_ID_ref}.yml'
-    with open(dict_adress, 'w') as f:
-        yaml.dump(yml_dict, f, sort_keys=False)
 
     # Store DataFrame data
     DF_tasks.loc[idx_task, 'task_id'] = task_ID_ref

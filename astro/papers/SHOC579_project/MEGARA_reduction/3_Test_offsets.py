@@ -1,10 +1,15 @@
 import numpy as np
 import lime as lm
 import pandas as pd
+import shutil
+import os
+
 from megaradrp.tools.overplot_traces import main as megaradrp_traces_plot
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 from pathlib import Path
 
+
+rcParams.update({'figure.figsize': (14, 7)})
 
 def indexing_the_frames(log, OB_task, VPH_task, type_task, exclude_list=[]):
 
@@ -29,6 +34,7 @@ OB_list = files_DF['OB'].unique()
 OB_list.sort()
 
 # Run the pipeline one OB and VPH at a time:
+counter = 0
 for OB in OB_list:
 
     #Get list of VPH in OB
@@ -45,17 +51,20 @@ for OB in OB_list:
         task_file_address = f'{reduction_folder}/{OB}_{VPH}_task_list.txt'
         task_DF = pd.read_csv(task_file_address, delim_whitespace=True, header=0, index_col=0)
         master_traces_file = Path(f'{reduction_folder}/obsid{OB}_{VPH}_trace_map_2_result/master_traces.json')
+        master_traces_ds9_file = Path(f'{reduction_folder}/obsid{OB}_{VPH}_model_map_3_work/ds9_raw.reg')
 
         # Loop through the files types witht the extraction offset task parameter
         if master_traces_file.is_file():
 
-            print(f'\n- File found for {OB}, {VPH}', master_traces_file)
+            # print(f'\n- File found for {OB}, {VPH}', master_traces_file)
 
-            for file_type in ['arc']: #['arc', 'flat', 'object', 'stds']:
+            for file_type in ['flat', 'arc', 'object', 'stds']:
+
+                print(f'\n-------------------------------- ({counter}) Treating {OB}-{VPH}: {file_type} --------------------------\n')
 
                 # Find the files
                 idcs_files = indexing_the_frames(files_DF, OB, VPH, file_type, bad_file_list)
-                list_addresses = files_DF.loc[idcs_files].old_address.values # TODO old address in table is actually the new one
+                list_addresses = files_DF.loc[idcs_files].address.values # TODO old address in table is actually the new one
 
                 # Start plotting the traces over the instrument frames if available
                 if len(list_addresses) > 0:
@@ -66,11 +75,40 @@ for OB in OB_list:
                         fits_address = Path(fits_address)
                         if fits_address.is_file():
 
+                            # Check if there is an offset for this file
+                            stored_offset = obs_conf['Megara_reduction'].get(f'{OB}_{VPH}_{file_type}', None)
+
                             # Run the megardrp function
-                            print(f'Treating {OB}-{VPH}: {file_type} ({fits_address.name})')
-                            function_argument_list = [fits_address.as_posix(), master_traces_file.as_posix(), '--fibids']
-                            function_argument_list += ['--bbox', '1900,2300,150,200']
+                            # print(f'-------------------------------- ({counter}) Treating {OB}-{VPH}: {file_type} --------------------------')
+                            # print(f'{counter} {fits_address} ({i+1}/{len(list_addresses)})')
+                            # print(f'{OB}_{VPH}_{file_type}_offset={stored_offset}\n')
+
+                            # # Copy previous yml so the original is not rewritten in current phase
+                            # copy_fits = reduction_folder/'test_extensions'/f'{file_type}'/fits_address.name
+                            # copy_master = reduction_folder/'test_extensions'/f'{file_type}'/f'{OB}_{VPH}.reg'
+                            #
+
+                            # # shutil.copyfile(fits_address, copy_fits)
+                            # # shutil.copyfile(master_traces_file, copy_master)
+                            # os.system(ds9_command)
+
+                            # '/mnt/AstroData/Observations/SHOC579/MEGARA/test_extensions'
+                            #
+                            # shutil.copyfile(input_yml, req_yml)
+
+                            function_argument_list = [fits_address.as_posix(), master_traces_file.as_posix(), '--fibids', '--rawimage']
+                            # function_argument_list += ['--bbox', '1850,2350,125,225']
                             megaradrp_traces_plot(function_argument_list)
+
+                            ds9_command = f'ds9 -tile {fits_address} -cmap Heat -zscale -regions {master_traces_ds9_file}'
+                            print(ds9_command)
+                            os.system(ds9_command)
+
+                            #
+                            # function_argument_list += ['--bbox', '1900,2200,3850,4000']
+                            # megaradrp_traces_plot(function_argument_list)
+                            #
+                            # counter += 1
 
 
 # Reading apertures from trace file

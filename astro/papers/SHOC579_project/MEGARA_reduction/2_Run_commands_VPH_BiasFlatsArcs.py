@@ -83,14 +83,6 @@ for OB in OB_list:
         task_file_list = task_DF.loc[idcs_tasks].file_name.values
         idcs_tasks = task_DF.loc[idcs_tasks].index.values
 
-        # Delete previous runs for security
-        if idx_start == 0:
-            shutil.copyfile(original_yml, req_yml)
-        else:
-            print('- Deleting from previous steps')
-        for i, task in enumerate(task_list):
-            delete_task_temp_folder(task, idcs_tasks[i], reduction_folder)
-
         # Define data manager
         dm = create_datamanager(req_yml, reduction_folder, data_folder)
 
@@ -101,14 +93,14 @@ for OB in OB_list:
             sessions, loaded_obs = load_observations(task_file_list, is_session=False)
             dm.backend.add_obs(loaded_obs)
 
-        # Run the tasks
-        for i, idx_task in enumerate(idcs_tasks):
-            if idx_task <= idx_finish:
-                run_id = task_list[i]
-                print(f'\n=================================Running: {run_id}================================\n')
-                warning_messange(run_id, reduction_folder)
-                run_reduce(dm, run_id)
-
-        end = timer()
-
-        print(f'Working time in VPH {VPH}:{(end-start)/60:0.1f} mins')
+        # # Run the tasks
+        # for i, idx_task in enumerate(idcs_tasks):
+        #     if idx_task <= idx_finish:
+        #         run_id = task_list[i]
+        #         print(f'\n=================================Running: {run_id}================================\n')
+        #         warning_messange(run_id, reduction_folder)
+        #         run_reduce(dm, run_id)
+        #
+        # end = timer()
+        #
+        # print(f'Working time in VPH {VPH}:{(end-start)/60:0.1f} mins')

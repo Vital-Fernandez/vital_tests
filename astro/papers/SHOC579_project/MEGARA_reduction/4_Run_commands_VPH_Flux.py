@@ -69,14 +69,22 @@ for OB in OB_list:
                 task_file_list = task_DF.loc[idcs_tasks].file_name.values
                 idcs_tasks = task_DF.loc[idcs_tasks].index.values
 
+
+                with open(req_yml) as f:
+                    dataMap = yaml.safe_load(f)
+
+                # Adjust manually the offsets
+                for i, task_name in enumerate(task_list):
+                    dataMap['database']['oblocks'][f'{task_list[i]}']['requirements']['extraction_offset'] = [1.5]
+                with open(req_yml, 'w') as f:
+                    yaml.dump(dataMap, f, sort_keys=False)
+
                 # Define data manager
                 dm = create_datamanager(req_yml, reduction_folder, data_folder)
 
-                with open(req_yml) as f:
-                    # use safe_load instead load
-                    dataMap = yaml.safe_load(f)
 
-                req_yml = yaml.safe_load(str(req_yml))
+
+                # req_yml = yaml.safe_load(str(req_yml))
 
                 # Load the observation files
                 with ctx.working_directory(reduction_folder):

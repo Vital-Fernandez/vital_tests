@@ -1,6 +1,4 @@
 import numpy as np
-import src.specsiser as sr
-import time
 import lime
 
 from pathlib import Path
@@ -10,6 +8,7 @@ from astropy.table import Table
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
 from src.specsiser.plots import latex_labels
+
 
 # Declare data and files location
 obsData = lime.load_cfg('../muse_CGCG007.ini')
@@ -92,7 +91,7 @@ for i, obj in enumerate(objList):
     rcParams.update(defaultConf)
 
     halpha_cmap = cm.gray
-    halpha_cmap.set_under('black')
+    # halpha_cmap.set_under('black')
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection=WCS(image_header), slices=('x', 'y'))
@@ -103,7 +102,7 @@ for i, obj in enumerate(objList):
     param_min, param_max = np.nanmin(image_data), np.nanmax(image_data)
     divnorm = colors.TwoSlopeNorm(vcenter=0.0, vmin=-0.05, vmax=0.5, )
 
-    # im2 = ax.imshow(image_data, norm=colors.LogNorm())
+    # im2 = ax.imshow(image_data, norm=colors.LogNorm(vmin=0.01, vmax=0.8))
     image_data[~mask_sum] = np.nan
     im2 = ax.imshow(image_data, norm=divnorm)
 

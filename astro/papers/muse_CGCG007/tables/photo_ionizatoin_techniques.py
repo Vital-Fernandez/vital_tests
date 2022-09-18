@@ -31,15 +31,18 @@ direct_method_params = ['OH', 'NO', 'NH', 'ArH', 'SH', 'ICF_S4', 'SO']
 
 entries_list = ['global', 'MASK_0', 'MASK_1', 'MASK_2']
 
+
+
 technique_conf_dict = {'neural_fitting': ['direct_method'],
                        'HII-CHI-mistry': ['HIICHImistry-PopStar'],
-                        'GridSampling':  ['localErr', 'HIICHImistry', 'noOII', 'maxErr']}
+                        'GridSampling':  ['localErr', 'HIICHImistry', 'maxErr',  'minOneErr']}
 
 convert_grid_names = {'direct_method':          'Direct method',
                       'HIICHImistry-PopStar':   NoEscape(r'$\makecell{\textsc{HII-CHI-mistry}}$'),
                       'localErr':               NoEscape(r'\makecell{Neural model fitting \\ (Line error)}'),
                       'HIICHImistry':           NoEscape(r'\makecell{Neural model fitting \\ (HII-CHI-mistry lines and error)}'),
                       'noOII':                  NoEscape(r'\makecell{Neural model fitting \\ (No [OII] lines)}'),
+                      'minOneErr':              NoEscape(r'\makecell{Neural model fitting \\ (One order difference)}'),
                       'maxErr':                 NoEscape(r'\makecell{Neural model fitting \\ (Uniform maximum error flux)}')}
 
 # Pylatex object
@@ -47,7 +50,7 @@ pdf = PdfMaker()
 header_list = ['Methodology', 'Parameter', 'All voxels',
                'Region 0 (11 voxels)', 'Region 1 (91 voxels)', 'Region 2 (382 voxels)']
 table_header_format = 'c' * len(header_list)
-pdf.create_pdfDoc(pdf_type='table')
+pdf.create_pdfDoc(pdf_type=None)
 pdf.pdf_insert_table(header_list, table_format=table_header_format)
 
 for i, technique in enumerate(technique_conf_dict.items()):
@@ -76,12 +79,13 @@ for i, technique in enumerate(technique_conf_dict.items()):
 
             pdf.addTableRow(row, last_row=False)
 
-        # Last row
-        if (methodology != 'GridSampling') or (methodology == 'GridSampling' and conf != 'maxErr'):
-            pdf.table.add_hline()
-            pdf.table.add_hline()
-        else:
-            pdf.table.add_hline()
+        # # Last row
+        # if (methodology != 'GridSampling') or (methodology == 'GridSampling' and conf != 'maxErr'):
+        #     pdf.table.add_hline()
+        #     pdf.table.add_hline()
+        # else:
+        #     pdf.table.add_hline()
+        pdf.table.add_hline()
 
 pdf.generate_pdf(tablesFolder/'methodology_results')
 

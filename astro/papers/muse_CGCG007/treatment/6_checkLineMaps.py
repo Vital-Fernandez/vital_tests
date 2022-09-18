@@ -51,6 +51,7 @@ for i, obj in enumerate(objList):
 
     # Load data
     ax_conf = {'image': {'xlabel': r'RA', 'ylabel': r'DEC', 'title': f'MUSE CGCG007-025'}}
-    lime.CubeFitsInspector(wave, flux, Halpha_image, SIII_image, SIII_contourLevels, fits_header=header,
-                           lines_log_address=fitsLog_address, ax_conf=ax_conf, redshift=z_objs[i], color_norm=normalization_background)
+    lime.CubeInspector(wave, flux, Halpha_image, SIII_image, SIII_contourLevels, fits_header=header,
+                           lines_log_address=fitsLog_address, ax_cfg=ax_conf, redshift=z_objs[i], color_norm=normalization_background,
+                           ext_suffix='_LINELOG')
 

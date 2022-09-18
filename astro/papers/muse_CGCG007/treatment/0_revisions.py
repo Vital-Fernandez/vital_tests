@@ -98,18 +98,18 @@ line_labels = {'O3_5007A': r'Flux $[OIII]5007\AA$',
                'logNO': 'log(N/O)',
                'logU': 'log(U)'}
 
-grid_files_dict = {'grid_Jorge': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
-                   'grid_Epm': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
-                   'HIIchimistry_v2': Path('D:/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
-                   'HIIchimistry_v3': Path('D:/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
-                   'HIIchimistry_v4': Path('D:/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
-                   'HIIchimistry_v5': Path('D:/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
-# grid_files_dict = {'grid_Jorge': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
-#                    'grid_Epm': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
-#                    'HIIchimistry_v2': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
-#                    'HIIchimistry_v3': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
-#                    'HIIchimistry_v4': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
-#                    'HIIchimistry_v5': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
+# grid_files_dict = {'grid_Jorge': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
+#                    'grid_Epm': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
+#                    'HIIchimistry_v2': Path('D:/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
+#                    'HIIchimistry_v3': Path('D:/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
+#                    'HIIchimistry_v4': Path('D:/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
+#                    'HIIchimistry_v5': Path('D:/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
+grid_files_dict = {'grid_Jorge': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
+                   'grid_Epm': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
+                   'HIIchimistry_v2': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
+                   'HIIchimistry_v3': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
+                   'HIIchimistry_v4': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
+                   'HIIchimistry_v5': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
 
 grid_column_dict = {'grid_Jorge': grid_columns_large,
                     'grid_Epm': {},
@@ -160,31 +160,61 @@ logOH_ref, logU_ref, logNO_ref = 7.8, -2.5, -1.5
 param_list = ['logOH', 'logNO', 'logU', 'logNO', 'logU']
 line_list = ['O3_5007A', 'N2_6584A', 'N2_6584A', 'O2_3726A_b', 'O2_3726A_b']
 
-# Plot the intervals
-for param, line in zip(param_list, line_list):
+# # Plot the intervals
+# for param, line in zip(param_list, line_list):
+#
+#     fig, ax = plt.subplots()
+#     x_jorge_O, y_jorge_O = slice_grid(param, line, grid_jorge, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='O')
+#     x_jorge_N, y_jorge_N = slice_grid(param, line, grid_jorge, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='N')
+#     x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+#
+#     x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+#     x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+#     x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+#     x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+#
+#     ax.scatter(x_jorge_O, y_jorge_O, label='Jorge Grid carbon = O', marker='*')
+#     ax.scatter(x_jorge_N, y_jorge_N, label='Jorge Grid carbon = N', marker='s')
+#     ax.scatter(x_epm, y_epm, label='Enrique Grid', marker='^')
+#
+#     ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
+#     # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
+#     # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
+#     ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label='HII-CHI-mistry v5.22 grid', alpha=0.5)
+#
+#     ax.legend()
+#     ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
+#     plt.show()
 
-    fig, ax = plt.subplots()
-    x_jorge_O, y_jorge_O = slice_grid(param, line, grid_jorge, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='O')
-    x_jorge_N, y_jorge_N = slice_grid(param, line, grid_jorge, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='N')
-    x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-
-    x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-
-    ax.scatter(x_jorge_O, y_jorge_O, label='Jorge Grid carbon = O', marker='*')
-    ax.scatter(x_jorge_N, y_jorge_N, label='Jorge Grid carbon = N', marker='s')
-    ax.scatter(x_epm, y_epm, label='Enrique Grid', marker='^')
-
-    ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
-    # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
-    # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
-    ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label='HII-CHI-mistry v5.22 grid', alpha=0.5)
-
-    ax.legend()
-    ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
-    plt.show()
+# # NII fluxes versus N/O for various O
+# param_list = ['logNO', 'logNO']
+# line_list = ['N2_6584A', 'O2_3726A_b']
+#
+# for param, line in zip(param_list, line_list):
+#
+#     fig, ax = plt.subplots()
+#
+#     for OH in [7.6, 7.8, 8.0]:
+#         x_jorge_O, y_jorge_O = slice_grid(param, line, grid_jorge, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='O')
+#         x_jorge_N, y_jorge_N = slice_grid(param, line, grid_jorge, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='N')
+#         x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#
+#         x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#
+#         # ax.scatter(x_csv, y_csv, label='CSV grid Carbon = O', marker='*')
+#         # ax.scatter(x_csv_N, y_csv_N, label='CSV grid Carbon = N', marker='*')
+#         # ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
+#         # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
+#         # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
+#         ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label=f'12 + log(O/H) = {OH} (jorge)', alpha=0.5)
+#         ax.scatter(x_epm, y_epm, label=f'12 + log(O/H) = {OH} (epm)', alpha=0.5,  marker='*')
+#
+#     ax.legend()
+#     ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
+#     plt.show()
 
 # NII fluxes versus N/O for various O
 param_list = ['logNO', 'logNO']
@@ -195,21 +225,15 @@ for param, line in zip(param_list, line_list):
     fig, ax = plt.subplots()
 
     for OH in [7.6, 7.8, 8.0]:
-        x_jorge_O, y_jorge_O = slice_grid(param, line, grid_jorge, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='O')
-        x_jorge_N, y_jorge_N = slice_grid(param, line, grid_jorge, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='N')
+
+
         x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
 
-        x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-        x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-        x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+        idcs_below = x_epm <= -1.25
+        print(f'Flux deviation at O/H = {OH} is {y_epm[idcs_below].std()}')
+        print(len(y_epm[idcs_below]), np.sum(idcs_below))
+        print()
         x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-
-        # ax.scatter(x_csv, y_csv, label='CSV grid Carbon = O', marker='*')
-        # ax.scatter(x_csv_N, y_csv_N, label='CSV grid Carbon = N', marker='*')
-        # ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
-        # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
-        # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
-        ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label=f'12 + log(O/H) = {OH} (jorge)', alpha=0.5)
         ax.scatter(x_epm, y_epm, label=f'12 + log(O/H) = {OH} (epm)', alpha=0.5,  marker='*')
 
     ax.legend()

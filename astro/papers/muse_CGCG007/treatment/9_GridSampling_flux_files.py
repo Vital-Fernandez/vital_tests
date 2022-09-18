@@ -40,7 +40,6 @@ for i, obj in enumerate(objList):
 
     # Loop throught the line regions
     for idx_region in [0, 1, 2, 3]:
-    # for idx_region in [0, 1, 2, 3, 4, 5]:
 
         # Voxel mask
         region_label = f'mask_{idx_region}'
@@ -57,7 +56,7 @@ for i, obj in enumerate(objList):
         output_err_files = objFolder / f'region_{idx_region}_gridSampling_errors.txt'
 
         # Container for the line intensities
-        region_lines = obsData['grid_sampling'][f'region_{idx_region}_line_list']
+        region_lines = obsData['GridSampling_conf'][f'observed_line_list']
         intenDF = pd.DataFrame(columns=['mask'] + region_lines)
         errDF = pd.DataFrame(columns=['mask'] + region_lines)
 
@@ -81,7 +80,7 @@ for i, obj in enumerate(objList):
                 linesDF['obsInt'], linesDF['obsIntErr'] = np.nan, np.nan
 
                 # Input lines
-                ion_array, wave_array, latex_array = lime.label_decomposition(linesDF.index.values)
+                wave_array = linesDF.wavelength.values
 
                 # Extinction curve
                 cHbeta, cHbeta_err = cHbeta_map[idx_j, idx_i], errcHbeta_map[idx_j, idx_i]

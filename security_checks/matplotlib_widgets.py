@@ -1,25 +1,124 @@
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import NavigationToolbar2, Event
+plt.rcParams['toolbar'] = 'toolmanager'
+from matplotlib.backend_tools import ToolBase, ToolToggleBase
 
-home = NavigationToolbar2.home
 
-def new_home(self, *args, **kwargs):
-    s = 'home_event'
-    event = Event(s, self)
-    event.foo = 100
-    self.canvas.callbacks.process(s, event)
-    home(self, *args, **kwargs)
+class ListTools(ToolBase):
+    """List all the tools controlled by the `ToolManager`."""
+    # keyboard shortcut
+    default_keymap = 'm'
+    description = 'List Tools'
 
-NavigationToolbar2.home = new_home
+    def trigger(self, *args, **kwargs):
+        print('hola')
+        print('_' * 80)
+        print("bicho{0:12} {1:45} {2}".format(
+            'Name (id)', 'Tool description', 'Keymap'))
+        print('-' * 80)
+        tools = self.toolmanager.tools
+        for name in sorted(tools):
+            if not tools[name].description:
+                continue
+            keys = ', '.join(sorted(self.toolmanager.get_tool_keymap(name)))
+            print("bicho{0:12} {1:45} {2}".format(
+                name, tools[name].description, keys))
+        print('_' * 80)
+        print("Active Toggle tools")
+        print("{0:12} {1:45}".format("Group", "Active"))
+        print('-' * 80)
+        for group, active in self.toolmanager.active_toggle.items():
+            print("{0:12} {1:45}".format(str(group), str(active)))
 
-def handle_home(evt):
-    print('new home')
-    print(evt.foo)
+        for i in range(10):
+            print(i)
+
+
+class GroupHideTool(ToolToggleBase):
+    """Show lines with a given gid."""
+    default_keymap = 'S'
+    description = 'Show by gid'
+    default_toggled = True
+
+    def __init__(self, *args, gid, **kwargs):
+        self.gid = gid
+        super().__init__(*args, **kwargs)
+
+    def enable(self, *args):
+        self.set_lines_visibility(True)
+
+    def disable(self, *args):
+        self.set_lines_visibility(False)
+
+    def set_lines_visibility(self, state):
+        for ax in self.figure.get_axes():
+            for line in ax.get_lines():
+                if line.get_gid() == self.gid:
+                    line.set_visible(state)
+        self.figure.canvas.draw()
+
 
 fig = plt.figure()
-fig.canvas.mpl_connect('home_event', handle_home)
-plt.text(0.35, 0.5, 'Hello world!', dict(size=30))
+plt.plot([1, 2, 3], gid='mygroup')
+plt.plot([2, 3, 4], gid='unknown')
+plt.plot([3, 2, 1], gid='mygroup')
+
+# Add the custom tools that we created
+fig.canvas.manager.toolmanager.add_tool('List', ListTools)
+fig.canvas.manager.toolmanager.add_tool('Show', GroupHideTool, gid='mygroup')
+
+fig.canvas.manager.toolbar.add_tool('Show', 'navigation', 1)
+
 plt.show()
+
+# import matplotlib.pyplot as plt
+# from matplotlib.backend_tools import Cursors
+#
+#
+# fig, axs = plt.subplots(len(Cursors), figsize=(6, len(Cursors) + 0.5),
+#                         gridspec_kw={'hspace': 0})
+# fig.suptitle('Hover over an Axes to see alternate Cursors')
+#
+# for cursor, ax in zip(Cursors, axs):
+#     ax.cursor_to_use = cursor
+#     ax.text(0.5, 0.5, cursor.name,
+#             horizontalalignment='center', verticalalignment='center')
+#     ax.set(xticks=[], yticks=[])
+#
+#
+# def hover(event):
+#     if fig.canvas.widgetlock.locked():
+#         # Don't do anything if the zoom/pan tools have been enabled.
+#         return
+#
+#     fig.canvas.set_cursor(
+#         event.inaxes.cursor_to_use if event.inaxes else Cursors.POINTER)
+#
+#
+# fig.canvas.mpl_connect('motion_notify_event', hover)
+#
+# plt.show()
+# import matplotlib.pyplot as plt
+# from matplotlib.backend_bases import NavigationToolbar2, Event
+#
+# home = NavigationToolbar2.home
+#
+# def new_home(self, *args, **kwargs):
+#     s = 'home_event'
+#     event = Event(s, self)
+#     event.foo = 100
+#     self.canvas.callbacks.process(s, event)
+#     home(self, *args, **kwargs)
+#
+# NavigationToolbar2.home = new_home
+#
+# def handle_home(evt):
+#     print('new home')
+#     print(evt.foo)
+#
+# fig = plt.figure()
+# fig.canvas.mpl_connect('home_event', handle_home)
+# plt.text(0.35, 0.5, 'Hello world!', dict(size=30))
+# plt.show()
 
 
 # import matplotlib.pyplot as plt

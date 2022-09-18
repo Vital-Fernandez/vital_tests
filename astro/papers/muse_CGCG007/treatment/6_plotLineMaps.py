@@ -22,57 +22,15 @@ coordinates_keys_list = obsData['data_location']['wcs_key_list']
 
 # ------ Extinction coefficients
 
-# # Store emissivity ratios at standard conditions
-# H1 = pn.RecAtom('H', 1)
-# temp, den = 10000.0, 100.0
-# theoEmis_dict = {}
-# for chemLabel, plotLabel in label_Conver.items():
-#     ion, wave, latexLabel = lm.label_decomposition(chemLabel, scalar_output=True)
-#     dict_label = f'{chemLabel}/H1_4861A'
-#     theoRatio = H1.getEmissivity(temp, den, wave=wave) / H1.getEmissivity(temp, den, wave=4861)
-#     theoEmis_dict[dict_label] = theoRatio
-#
-# for i, obj in enumerate(objList):
-#
-#     # Data location
-#     cube_address = fitsFolder/fileList[i]
-#     objFolder = resultsFolder/obj
-#     db_address = objFolder / f'{obj}_database.fits'
-#     maskFits_address = objFolder/f'{obj}_masks.fits'
-#
-#     parameter_fits = objFolder/'gauss_flux.fits'
-#     Hbeta_flux = fits.getdata(parameter_fits, 'H1_4861A')
-#     hdr_plot = fits.getheader(parameter_fits, 'H1_4861A')
-#
-#     max_values = [5.0, 5.0, 0.05, 0.05, 0.06, 0.06]
-#
-#     # Loop through the HI lines
-#     HI_lines = list(label_Conver.keys())
-#     for j, chemLabel in enumerate(HI_lines):
-#
-#         line_flux = fits.getdata(parameter_fits, chemLabel)
-#
-#         ratio_key = f'{chemLabel}/H1_4861A'
-#         coeff_im = line_flux/Hbeta_flux
-#
-#
-#         divnorm = colors.TwoSlopeNorm(vmin=0.0,
-#                                       vcenter=theoEmis_dict[ratio_key],
-#                                       vmax=max_values[j])
-#
-#         fig = plt.figure(figsize=(10, 10))
-#         ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y'))
-#         im = ax.imshow(coeff_im, cmap='RdBu', norm=divnorm)
-#         cbar = fig.colorbar(im, ax=ax)
-#         cbar.set_label(f'Line ratio, white theoretical value ({theoEmis_dict[ratio_key]:.3f})', rotation=270, labelpad=50, fontsize=15)
-#         ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_Conver[chemLabel], latex_Conver['H1_4861A'])
-#         ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-#         ax.set_xlim(95, 205)
-#         ax.set_ylim(75, 225)
-#         # plt.show()
-#         plt.savefig(objFolder/'extinction'/f'map_{obj}_{chemLabel}_Vabs.png')
-
-# ------ [OIII] line ratios
+# Store emissivity ratios at standard conditions
+H1 = pn.RecAtom('H', 1)
+temp, den = 10000.0, 100.0
+theoEmis_dict = {}
+for chemLabel, plotLabel in label_Conver.items():
+    ion, wave, latexLabel = lm.label_decomposition(chemLabel, scalar_output=True)
+    dict_label = f'{chemLabel}/H1_4861A'
+    theoRatio = H1.getEmissivity(temp, den, wave=wave) / H1.getEmissivity(temp, den, wave=4861)
+    theoEmis_dict[dict_label] = theoRatio
 
 for i, obj in enumerate(objList):
 
@@ -82,39 +40,81 @@ for i, obj in enumerate(objList):
     db_address = objFolder / f'{obj}_database.fits'
     maskFits_address = objFolder/f'{obj}_masks.fits'
 
-    parameter_fits = objFolder/'intg_flux.fits'
-    O3_4959A = fits.getdata(parameter_fits, 'O3_4959A')
-    O3_5007A = fits.getdata(parameter_fits, 'O3_5007A')
-    hdr_plot = fits.getheader(parameter_fits, 'O3_5007A')
+    parameter_fits = objFolder/'gauss_flux.fits'
+    Hbeta_flux = fits.getdata(parameter_fits, 'H1_4861A')
+    hdr_plot = fits.getheader(parameter_fits, 'H1_4861A')
 
-    ion_array, wave_array, latex_array = lime.label_decomposition(['O3_4959A', 'O3_5007A'])
+    max_values = [5.0, 5.0, 0.05, 0.05, 0.06, 0.06]
 
-    # coeff_im = O3_5007A/O3_4959A
-    #
-    # divnorm = colors.TwoSlopeNorm(vmin=2.0,
-    #                               vcenter=2.984,
-    #                               vmax=4.0)
-    # cbar_label = f'Line ratio, theoretical value ({2.984}) white'
+    # Loop through the HI lines
+    HI_lines = list(label_Conver.keys())
+    for j, chemLabel in enumerate(HI_lines):
 
-    coeff_im = (O3_5007A/O3_4959A - 2.984) * 100
+        line_flux = fits.getdata(parameter_fits, chemLabel)
 
-    divnorm = colors.TwoSlopeNorm(vmin=-75.0,
-                                  vcenter=0,
-                                  vmax=75.0)
+        ratio_key = f'{chemLabel}/H1_4861A'
+        coeff_im = line_flux/Hbeta_flux
 
-    cbar_label = f'Line ratio discrepancy %'
 
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y'))
-    im = ax.imshow(coeff_im, cmap='RdBu', norm=divnorm)
-    cbar = fig.colorbar(im, ax=ax)
-    cbar.set_label(cbar_label, rotation=270, labelpad=50, fontsize=15)
-    ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_array[1].replace('$', ''), latex_array[0].replace('$', ''))
-    ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-    ax.set_xlim(95, 205)
-    ax.set_ylim(75, 225)
-    # plt.show()
-    plt.savefig(objFolder/'line_ratios'/f'map_{obj}_OIII_ratio.png')
+        divnorm = colors.TwoSlopeNorm(vmin=0.0,
+                                      vcenter=theoEmis_dict[ratio_key],
+                                      vmax=max_values[j])
+
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y'))
+        im = ax.imshow(coeff_im, cmap='RdBu', norm=divnorm)
+        cbar = fig.colorbar(im, ax=ax)
+        cbar.set_label(f'Line ratio, white theoretical value ({theoEmis_dict[ratio_key]:.3f})', rotation=270, labelpad=50, fontsize=15)
+        ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_Conver[chemLabel], latex_Conver['H1_4861A'])
+        ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+        ax.set_xlim(95, 205)
+        ax.set_ylim(75, 225)
+        plt.show()
+        # plt.savefig(objFolder/'extinction'/f'map_{obj}_{chemLabel}_Vabs.png')
+
+# # ------ [OIII] line ratios
+#
+# for i, obj in enumerate(objList):
+#
+#     # Data location
+#     cube_address = fitsFolder/fileList[i]
+#     objFolder = resultsFolder/obj
+#     db_address = objFolder / f'{obj}_database.fits'
+#     maskFits_address = objFolder/f'{obj}_masks.fits'
+#
+#     parameter_fits = objFolder/'intg_flux.fits'
+#     O3_4959A = fits.getdata(parameter_fits, 'O3_4959A')
+#     O3_5007A = fits.getdata(parameter_fits, 'O3_5007A')
+#     hdr_plot = fits.getheader(parameter_fits, 'O3_5007A')
+#
+#     ion_array, wave_array, latex_array = lime.label_decomposition(['O3_4959A', 'O3_5007A'])
+#
+#     # coeff_im = O3_5007A/O3_4959A
+#     #
+#     # divnorm = colors.TwoSlopeNorm(vmin=2.0,
+#     #                               vcenter=2.984,
+#     #                               vmax=4.0)
+#     # cbar_label = f'Line ratio, theoretical value ({2.984}) white'
+#
+#     coeff_im = (O3_5007A/O3_4959A - 2.984) * 100
+#
+#     divnorm = colors.TwoSlopeNorm(vmin=-75.0,
+#                                   vcenter=0,
+#                                   vmax=75.0)
+#
+#     cbar_label = f'Line ratio discrepancy %'
+#
+#     fig = plt.figure(figsize=(10, 10))
+#     ax = fig.add_subplot(projection=WCS(hdr_plot), slices=('x', 'y'))
+#     im = ax.imshow(coeff_im, cmap='RdBu', norm=divnorm)
+#     cbar = fig.colorbar(im, ax=ax)
+#     cbar.set_label(cbar_label, rotation=270, labelpad=50, fontsize=15)
+#     ratio_label = r'$\frac{{{}}}{{{}}}$'.format(latex_array[1].replace('$', ''), latex_array[0].replace('$', ''))
+#     ax.update({'title': r'Galaxy {}: {}'.format(obj, ratio_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+#     ax.set_xlim(95, 205)
+#     ax.set_ylim(75, 225)
+#     # plt.show()
+#     plt.savefig(objFolder/'line_ratios'/f'map_{obj}_OIII_ratio.png')
 
 
 

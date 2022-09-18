@@ -12,7 +12,6 @@ from astropy.table import Table
 from lime.tools import label_decomposition
 from lmfit.models import LinearModel
 from lime.io import progress_bar
-from lime.plots import format_for_table
 from collections import Sequence
 from uncertainties import umath, unumpy, ufloat
 from lime.plots import STANDARD_PLOT

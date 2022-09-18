@@ -19,7 +19,7 @@ regions_list = ['MASK_0', 'MASK_1', 'MASK_2']
 param_list = np.array(['logOH', 'logNO', 'logU'])
 
 # Measurement files and reference files
-ref_simulations = ['localErr', 'HIICHImistry', 'noOII', 'maxErr']
+ref_simulations = ['localErr', 'HIICHImistry', 'minOneErr', 'maxErr']
 tech_label = 'GridSampling'
 
 for i, obj in enumerate(objList):
@@ -36,13 +36,13 @@ for i, obj in enumerate(objList):
     # Loop through the measurement fits
     for j, ref_fit in enumerate(ref_simulations):
 
-        # # Generate the parameter maps
-        # grid_fits_file = objFolder/f'{obj}_grid_sampling_{ref_fit}.fits'
-        # save_log_maps(grid_fits_file, param_list, chemFolder, maskFits_address, regions_list,
-        #               output_files_prefix=f'{ref_fit}_', ext_log='_GRIDSAMPLER_OUTPUTS', page_hdr=hdr)
+        # Generate the parameter maps
+        grid_fits_file = objFolder/f'NewGrid_{obj}_GridSampling_{ref_fit}.fits'
+        save_log_maps(grid_fits_file, param_list, chemFolder, maskFits_address, regions_list,
+                      output_files_prefix=f'{ref_fit}_', ext_log='_GRIDSAMPLER_OUTPUTS', page_hdr=hdr)
 
         # Plot the parameter value against the image background
-        # plot_parameter_image(db_address, param_list, chemFolder, ref_fit, tech_label)
+        plot_parameter_image(db_address, param_list, chemFolder, ref_fit, tech_label)
 
         # Generate the parameter maps and store the distributions
         compute_parameter_distributions(param_list, chemFolder, ref_fit, maskFits_address, regions_list, tech_label)

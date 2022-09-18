@@ -7,6 +7,63 @@ from pathlib import Path
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import chemical_lines_indexing
 from astropy.io import fits
 
+import numpy as np
+import pyneb as pn
+
+S2 = pn.Atom('S', 2)
+
+
+# def density_calc(S2, S2_err, S2_atom, temp=15000):
+#
+#     ratio_array = np.random.normal(S2, S2_err, 1000)
+#     ne_array = S2_atom.getTemDen(ratio_array, tem=temp, to_eval='L(6717)/L(6731)')
+#     print(f'n_e = {np.nanmean(ne_array):.2f}+/-{np.nanstd(ne_array):.2f}')
+#
+#     return
+#
+# density_calc(1.40, 0.1, S2)
+#
+# density_calc(1.40, 0.1, S2)
+# density_calc(1.31, 0.09, S2)
+# density_calc(1.34, 0.1, S2)
+#0.134  0.003 0.200  0.006
+#0.696  0.026 0.538  0.052
+rc = pn.RedCorr(R_V=3.1, E_BV=0.15, law='G03 LMC')
+
+S2_array = np.random.normal(0.200, 0.006, 1000) * 1e-6
+S3_array = np.random.normal(0.538, 0.052, 1000) * 1e-6
+O_log = 12 + np.log10(S2_array+S3_array)
+print(f'S/H = {O_log.mean():0.2f} +/- {O_log.std():0.2f}')
+
+def Ebv_from_cHbeta(self, cHbeta, reddening_curve, R_v):
+    if cHbeta == None:
+        exit('Warning: no cHbeta or E(B-V) provided to reddening curve, code aborted')
+    else:
+        if cHbeta != None:
+            E_BV = cHbeta * 2.5 / self.reddening_Xx(array([self.Hbeta_wavelength]), reddening_curve, R_v)[0]
+            return E_BV
+
+
+def flambda_from_Xx(self, Xx, reddening_curve, R_v):
+    X_Hbeta = self.reddening_Xx(array([self.Hbeta_wavelength]), reddening_curve, R_v)[0]
+
+    f_lines = Xx / X_Hbeta - 1
+
+    return f_lines
+
+
+def add_abundances(O2, O2_err, O3, O3_err, size=1000):
+
+    O2_array = np.random.normal(loc=O2, scale=O2_err, size=size)
+    O3_array = np.random.normal(loc=O3, scale=O3_err, size=size)
+
+    O_array_nat = np.power(10, O2_array-12) + np.power(10, O3_array-12)
+    O_array = 12 + np.log10(O_array_nat)
+
+    print(f'12 + log(O/H) = {O_array.mean():.2f} +/- {O_array.std():.2f}')
+
+    return
+
 
 def plotting_the_traces(db_address, fits_ext, output_folder, model_ext=''):
 
@@ -57,7 +114,7 @@ R_v = obsData['Extinction']['R_v']
 red_law = obsData['Extinction']['red_law']
 
 # Grid sampling params
-ref_simulations = ['localErr', 'HIICHImistry', 'maxErr',  'noOII']
+ref_simulations = ['localErr', 'HIICHImistry', 'maxErr',  'minOneErr']
 tech_label = 'GridSampling'
 
 # Load the photoionization grid
@@ -71,7 +128,9 @@ grid_interp = gw.generate_xo_interpolators(grid_dict, model_variables, axes_cord
 
 # Pixel to analyse
 target_region = [2]
-target_voxel = (171, 173)
+target_voxel = (147, 162)
+
+order_array = np.array([0.1, 1, 10, 100, 1000]) / 100
 
 for i, obj in enumerate(objList):
 
@@ -109,41 +168,41 @@ for i, obj in enumerate(objList):
             if idx_j == target_voxel[0] and idx_i == target_voxel[1]:
                 print(f'\nTreating voxel {idx_j}-{idx_i}: ({idx_voxel}/{n_voxels})')
 
-                # -------------------------------------  Direct method -------------------------------------------------
-                # Output file
-                output_direct_method_Db = objFolder / f'tests' / f'{obj}_direct_method_voxel.fits'
-                chem_ref = f'{idx_j}-{idx_i}_direct_method'
-
-                # Load voxel data:
-                ext_ref = f'{idx_j}-{idx_i}_linelog'
-                obs_log = lime.load_lines_log(obsLog_addresss, ext_ref)
-                abs_log = lime.load_lines_log(absLog_addresss, ext_ref)
-
-                # Establish and normalize the lines we want
-                linesDF = chemical_lines_indexing(input_lines, obs_log, abs_log, obsData)
-                lineLabels = linesDF.index.values
-                lineWaves = linesDF.wavelength.values
-                lineIons = linesDF.ion.values
-                lineFluxes = linesDF.obsFlux.values
-                lineErr = linesDF.obsFluxErr.values
-                lineflambda = sr.flambda_calc(lineWaves, R_V=R_v, red_curve=red_law)
-
-                # Declare object
-                obj1_model = sr.SpectraSynthesizer(emis_grid_interp)
-
-                # Declare simulation physical properties
-                obj1_model.define_region(lineLabels, lineFluxes, lineErr, lineflambda)
-
-                # Sampling configuration
-                obj1_model.simulation_configuration(prior_conf_dict=chem_conf['priors_configuration'],
-                                                    highTempIons=chem_conf['simulation_properties']['high_temp_ions_list'])
-                # Theoretical model
-                obj1_model.inference_model()
-                obj1_model.run_sampler(500, 2000, nchains=10, njobs=10)
-                obj1_model.save_fit(output_direct_method_Db, ext_name=chem_ref, output_format='fits')
-
-                # Plot the trace
-                plotting_the_traces(output_direct_method_Db, chem_ref, objFolder/f'tests', model_ext='direct')
+                # # -------------------------------------  Direct method -------------------------------------------------
+                # # Output file
+                # output_direct_method_Db = objFolder / f'tests' / f'{obj}_direct_method_voxel.fits'
+                # chem_ref = f'{idx_j}-{idx_i}_direct_method'
+                #
+                # # Load voxel data:
+                # ext_ref = f'{idx_j}-{idx_i}_linelog'
+                # obs_log = lime.load_lines_log(obsLog_addresss, ext_ref)
+                # abs_log = lime.load_lines_log(absLog_addresss, ext_ref)
+                #
+                # # Establish and normalize the lines we want
+                # linesDF = chemical_lines_indexing(input_lines, obs_log, abs_log, obsData)
+                # lineLabels = linesDF.index.values
+                # lineWaves = linesDF.wavelength.values
+                # lineIons = linesDF.ion.values
+                # lineFluxes = linesDF.obsFlux.values
+                # lineErr = linesDF.obsFluxErr.values
+                # lineflambda = sr.flambda_calc(lineWaves, R_V=R_v, red_curve=red_law)
+                #
+                # # Declare object
+                # obj1_model = sr.SpectraSynthesizer(emis_grid_interp)
+                #
+                # # Declare simulation physical properties
+                # obj1_model.define_region(lineLabels, lineFluxes, lineErr, lineflambda)
+                #
+                # # Sampling configuration
+                # obj1_model.simulation_configuration(prior_conf_dict=chem_conf['priors_configuration'],
+                #                                     highTempIons=chem_conf['simulation_properties']['high_temp_ions_list'])
+                # # Theoretical model
+                # obj1_model.inference_model()
+                # obj1_model.run_sampler(500, 2000, nchains=10, njobs=10)
+                # obj1_model.save_fit(output_direct_method_Db, ext_name=chem_ref, output_format='fits')
+                #
+                # # Plot the trace
+                # plotting_the_traces(output_direct_method_Db, chem_ref, objFolder/f'tests', model_ext='direct')
 
                 # # -------------------------------------  Grid sampling -------------------------------------------------
                 for j, conf in enumerate(ref_simulations):
@@ -166,11 +225,27 @@ for i, obj in enumerate(objList):
                     LineErrs = err_series[idcs_obs].values
 
                     # Error definition according to the model
-                    minErr_model = 0.02 if conf != 'maxErr' else np.max(LineErrs / lineInts)
+                    # minErr_model = 0.02 if conf not in ['maxErr', 'joinOIIMax'] else np.max(LineErrs / lineInts)
+
+                    if conf == 'maxErr':
+                        minErr_in = np.max(LineErrs / lineInts)
+                    elif conf == 'minOneErr':
+                        max_err = np.max(LineErrs / lineInts)
+                        order_array = np.array([0.002, 0.02, 0.2, 2, 10, 100, 1000, 10000]) / 100
+                        idx_order = np.argmin(np.abs(order_array - max_err))
+                        min_err = order_array[idx_order - 1]
+                        minErr_model = LineErrs / lineInts
+
+                        idcs_smaller_err = minErr_model < min_err
+                        minErr_model[idcs_smaller_err] = min_err
+                        LineErrs = minErr_model * lineInts
+                        minErr_in = None
+                    else:
+                        minErr_in = 0.02
 
                     # Define model sampler
                     obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interp)
-                    obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=minErr_model)
+                    obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=minErr_in)
                     obj1_model.simulation_configuration(prior_conf_dict=obsData['GridSampling_priors'])
                     obj1_model.photoionization_sampling(model_variables)
                     obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')

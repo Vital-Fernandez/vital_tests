@@ -15,17 +15,14 @@ dataFolder = Path(obsData['data_location']['data_folder'])
 resultsFolder = Path(obsData['data_location']['results_folder'])
 
 # Measurement files and reference files
-ref_simulations = ['localErr', 'HIICHImistry', 'maxErr',  'noOII']
+# ref_simulations = ['localErr', 'HIICHImistry', 'maxErr',  'minOneErr']
+ref_simulations = ['HIICHImistry', 'maxErr']
+i_start = {'minOneErr': 264}
+
 tech_label = 'GridSampling'
 
 # Load the photoionization grid
 model_variables = ['logOH', 'logU', 'logNO']
-
-file_address = f'{dataFolder}/HII-CHI-mistry_1Myr_grid_O.txt'
-grid_3D = pd.read_csv(file_address, delim_whitespace=True, header=0)
-# gw = sr.GridWrapper()
-# grid_dict, axes_cords_a = gw.ndarray_from_DF(grid_3D, axes_columns=model_variables)
-# grid_interp = gw.generate_xo_interpolators(grid_dict, model_variables, axes_cords_a, interp_type='point')
 
 file_address_epm = f'{dataFolder}/formated_log_C17_Popstar_1Myr.dat'
 grid_epm = pd.read_csv(file_address_epm, delim_whitespace=True, header=0)
@@ -47,7 +44,8 @@ for i, obj in enumerate(objList):
         outputFits = objFolder / f'NewGrid_{obj}_{tech_label}_{conf}.fits'
 
         # Loop throught the line regions
-        for idx_region in [0, 1, 2]:
+        # for idx_region in [0, 1, 2]:
+        for idx_region in [0, 1]:
 
             # Input lines
             region_lines = obsData[f'{tech_label}_{conf}_conf'][f'MASK_{idx_region}_line_list']
@@ -81,55 +79,26 @@ for i, obj in enumerate(objList):
                 lineInts = int_series[idcs_obs].values
                 LineErrs = err_series[idcs_obs].values
 
-                # Error definition according to the model
-                minErr_model = 0.02 if conf != 'maxErr' else np.max(LineErrs/lineInts)
+                if conf == 'maxErr':
+                    minErr_in = np.max(LineErrs / lineInts)
+                elif conf == 'minOneErr':
+                    max_err = np.max(LineErrs / lineInts)
+                    order_array = np.array([0.002, 0.02, 0.2, 2, 10, 100, 1000, 10000]) / 100
+                    idx_order = np.argmin(np.abs(order_array - max_err))
+                    min_err = order_array[idx_order - 1]
+                    minErr_model = LineErrs / lineInts
+
+                    idcs_smaller_err = minErr_model < min_err
+                    minErr_model[idcs_smaller_err] = min_err
+                    LineErrs = minErr_model * lineInts
+                    minErr_in = None
+                else:
+                    minErr_in = 0.02
 
                 # Define model sampler
                 obj1_model = sr.SpectraSynthesizer(grid_sampling=True, grid_interp=grid_interp)
-                obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=minErr_model)
+                obj1_model.define_region(lineLabels, lineInts, LineErrs, minErr=minErr_in)
                 obj1_model.simulation_configuration(prior_conf_dict=obsData['GridSampling_priors'])
                 obj1_model.photoionization_sampling(model_variables)
                 obj1_model.run_sampler(500, 2000, nchains=10, njobs=10, init='advi')
                 obj1_model.save_fit(outputFits, ext_chem, output_format='fits')
-
-            # # Load the results
-            # fit_results = sr.load_fit_results(outputFits, ext_name=ext_chem, output_format='fits')
-            # inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
-            # inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
-            # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
-            # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
-            # traces_dict = fit_results[f'{ext_chem}_traces'][0]
-
-            # # Print the results
-            # print('-- Model parameters table')
-            # figure_file = f'{chemFolder}/{ext_chem}_fitted_fluxes'
-            # sr.table_fluxes(figure_file, inLines, inFlux, inErr, traces_dict)
-            #
-            # # Print the results
-            # print('-- Fitted fluxes table')
-            # figure_file = f'{chemFolder}/{ext_chem}_MeanOutputs'
-            # sr.table_params(figure_file, inParameters, traces_dict)
-            #
-            # print('-- Model parameters posterior diagram')
-            # figure_file = f'{chemFolder}/{ext_chem}_traces_plot.png'
-            # sr.plot_traces(figure_file, inParameters, traces_dict)
-            #
-            # print('-- Line flux posteriors')
-            # figure_file = f'{chemFolder}/{ext_chem}_fluxes_grid.png'
-            # sr.plot_flux_grid(figure_file, inLines, inFlux, inErr, traces_dict)
-
-            # print('-- Model parameters posterior diagram')
-            # figure_file = f'{chemFolder}/{ext_chem}_trace_plot.png'
-            # sr.plot_traces(figure_file, inParameters, traces_dict)
-
-            # # Load the results
-            # ext_chem = f'{idx_j}-{idx_i}_chemistry'
-            # fit_results = sr.load_fit_results(outputDb, ext_name=ext_chem, output_format='fits')
-            # cHBeta = fit_results[f'{ext_chem}_outputs'][1]['cHbeta']
-            # print(f'- cHBeta: {cHBeta}')
-
-            # inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
-            # inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
-            # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
-            # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
-            # traces_dict = fit_results[f'{ext_chem}_traces'][0]

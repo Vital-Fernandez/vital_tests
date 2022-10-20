@@ -56,31 +56,53 @@ direct_method_fits = '/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/treat
 methodology = 'neural_fitting'
 conf_list = ['direct_method', 'minOneErr', 'HIICHImistry-PopStar']
 chemistryFolder = objFolder/'chemistry'
-files_conv = {'OH': 'logOH', 'NO': 'logNO', 'logU': 'logU', 'eta': 'eta', 'S2_S3': 'S2_S3'}
+
+files_conv = {'OH': 'logOH', 'NO': 'logNO', 'logU': 'logU', 'eta': 'eta', 'S2_S3': 'S2_S3', 'S3_S2': 'S3_S2'}
+
 method_conf = {'direct_method': 'neural_fitting_direct_method',
                'minOneErr': 'GridSampling_minOneErr',
                'HIICHImistry-PopStar': 'HII-CHI-mistry_HIICHImistry-PopStar'}
+
 ext_conf = {'OH': 'logOH', 'NO': 'logNO', 'logU': 'logU', 'eta': 'eta', 'S2_S3': 'S2_S3'}
+
 title_conv = {'direct_method':          'Direct Method',
               'minOneErr':              'Neural sampler,\nOne order uncertainty',
               'HIICHImistry-PopStar':   r'HII-CHI-mistry'}
+
 idx_ax = 0
 for param_in in params_list:
 
     for i, conf in enumerate(conf_list):
         if conf == 'direct_method' and param_in == 'logU':
-            param = 'S2_S3'
+            param = 'S3_S2'
         else:
             param = param_in
-        print(conf, param)
-
 
         methodology = method_conf[conf]
 
         # Color normalization based on measurement distribution
-        param_distr = np.array(obsData[methodology][f'{param}_global'])
-        median = param_distr[0]
-        Per84th, Per16th = param_distr[1], param_distr[2]
+        if param_in == 'OH':
+            param_distr = np.array(obsData[methodology][f'{param}_global'])
+            median, Per84th, Per16th = 7.90, 0.05, 0.05
+
+        elif param_in == 'NO':
+            param_distr = np.array(obsData[methodology][f'{param}_global'])
+            median, Per84th, Per16th = -1.60, 0.20, 0.20
+
+        elif param_in == 'logU' and conf != 'direct_method':
+            param_distr = np.array(obsData[methodology][f'{param}_global'])
+            median, Per84th, Per16th = -2.45, 0.25, 0.25
+
+        elif param_in == 'logU' and conf == 'direct_method':
+            param_distr = np.array(obsData[methodology][f'{param}_global'])
+            median, Per84th, Per16th = 4.50, 1.25, 1.25
+
+        else:
+            param_distr = np.array(obsData[methodology][f'{param}_global'])
+            median, Per84th, Per16th = param_distr[0], param_distr[1], param_distr[2]
+            vmin, vmax = median - Per16th * 3, median + Per84th * 3
+
+
         vmin, vmax = median - Per16th * 3, median + Per84th * 3
         divnorm = colors.TwoSlopeNorm(vmin=vmin, vcenter=median, vmax=vmax)
 

@@ -22,7 +22,7 @@ resultsFolder = Path(obsData['data_location']['results_folder'])
 # Extensions for fitting files
 regions_list = ['MASK_0', 'MASK_1', 'MASK_2']
 ionic_param_list = np.array(['n_e', 'T_low', 'cHbeta', 'Ar4', 'Ar3', 'O2', 'O3', 'N2', 'He1', 'S2', 'S3'])
-total_abund_list = np.array(['T_high', 'OH', 'NO', 'NH', 'SH', 'ArH', 'S4', 'ICF_S4', 'SO', 'Y_O', 'Y_S', 'S2_S3', 'O2_O3', 'eta'])
+total_abund_list = np.array(['T_high', 'OH', 'NO', 'NH', 'SH', 'ArH', 'S4', 'ICF_S4', 'SO', 'Y_O', 'Y_S', 'S2_S3', 'O2_O3', 'S3_S2',  'eta'])
 total_param_list = np.concatenate((ionic_param_list, total_abund_list), axis=0)
 
 # Measurement files and reference files

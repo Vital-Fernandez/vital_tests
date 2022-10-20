@@ -53,7 +53,7 @@ for i, obj in enumerate(objList):
     mask_address = dataFolder/f'{obj}_mask.txt'
 
     # Output data:
-    masks_plot = plotsFolder/f'{obj}_regions.png'
+    masks_plot = plotsFolder/'CGCG007_halpha_image_noAxis.png'
 
     # Load data
     wave, cube, header = import_muse_fits(cube_address)
@@ -125,35 +125,33 @@ for i, obj in enumerate(objList):
     legend_list = [None] * len(region_dict)
     alpha_levels = np.linspace(0.1, 0.5, len(region_dict))[::-1]
 
-    for idx_region, region_items in enumerate(region_dict.items()):
-
-        region_label, region_mask = region_items
-        inv_mask_array = np.ma.masked_array(region_mask.data, ~region_mask.mask)
-        print(region_label, np.sum(region_mask.mask))
-
-        cm_i = colors.ListedColormap(['black', cmap(idx_region)])
-        legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask {idx_region} ({region_mask.mask.sum()} voxels)')
-
-        ax.imshow(inv_mask_array, cmap=cm_i, vmin=0, vmax=1, alpha=alpha_levels[idx_region])
-
-    # Add text
-    ax.annotate('Arc', xy=(0.61, 0.48), xytext=(0.85, 0.30), arrowprops=arrow_style,
-                xycoords='axes fraction', color='yellow', fontsize=14)
-
-    ax.annotate('Central\n clump', xy=(0.60, 0.58), xytext=(0.85, 0.65), arrowprops=arrow_style,
-                xycoords='axes fraction', color='yellow', fontsize=14)
-
-    ax.annotate('North clump', xy=(0.74, 0.78), xytext=(0.75, 0.92), arrowprops=arrow_style,
-                xycoords='axes fraction', color='yellow', fontsize=14)
-
-    ax.annotate('South clump', xy=(0.48, 0.3), xytext=(0.50, 0.10), arrowprops=arrow_style,
-                xycoords='axes fraction', color='yellow', fontsize=14)
+    # for idx_region, region_items in enumerate(region_dict.items()):
+    #
+    #     region_label, region_mask = region_items
+    #     inv_mask_array = np.ma.masked_array(region_mask.data, ~region_mask.mask)
+    #     print(region_label, np.sum(region_mask.mask))
+    #
+    #     cm_i = colors.ListedColormap(['black', cmap(idx_region)])
+    #     legend_list[idx_region] = patches.Patch(color=cmap(idx_region), label=f'Mask {idx_region} ({region_mask.mask.sum()} voxels)')
+    #
+    #     ax.imshow(inv_mask_array, cmap=cm_i, vmin=0, vmax=1, alpha=alpha_levels[idx_region])
+    #
+    # # Add text
+    # ax.annotate('Arc', xy=(0.61, 0.48), xytext=(0.85, 0.30), arrowprops=arrow_style,
+    #             xycoords='axes fraction', color='yellow', fontsize=14)
+    #
+    # ax.annotate('Central\n clump', xy=(0.60, 0.58), xytext=(0.85, 0.65), arrowprops=arrow_style,
+    #             xycoords='axes fraction', color='yellow', fontsize=14)
+    #
+    # ax.annotate('North clump', xy=(0.74, 0.78), xytext=(0.75, 0.92), arrowprops=arrow_style,
+    #             xycoords='axes fraction', color='yellow', fontsize=14)
+    #
+    # ax.annotate('South clump', xy=(0.48, 0.3), xytext=(0.50, 0.10), arrowprops=arrow_style,
+    #             xycoords='axes fraction', color='yellow', fontsize=14)
 
     # ax.legend(handles=legend_list,  bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    ax.legend(handles=legend_list,  loc='upper left')
     ax.update({'xlabel': r'RA', 'ylabel': r'DEC'})
     ax.set_xlim(90, 220)
     ax.set_ylim(70, 240)
     # plt.show()
     plt.savefig(masks_plot, bbox_inches='tight')
-

@@ -2,15 +2,12 @@ import numpy as np
 import pandas as pd
 import time
 import lime
-from scipy.interpolate import interp1d
 from pathlib import Path
-from astropy.io import fits
 import lineid_plot
 from lime.plots import latex_science_float
 
-from src.specsiser.components.extinction_model import ExtinctionModel
+
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import import_muse_fits
-from progressbar import progressbar
 from matplotlib import pyplot as plt, rcParams, ticker
 from matplotlib.cbook import get_sample_data
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
@@ -84,7 +81,7 @@ STANDARD_PLOT = {'figure.figsize': (16, 5),
                  'ytick.labelsize': 6}
 rcParams.update(STANDARD_PLOT)
 
-fig = plt.figure(dpi=300)
+fig = plt.figure(dpi=600)
 gs = fig.add_gridspec(nrows=1, ncols=1)
 gs_obj = gs[i].subgridspec(2, 1, height_ratios=[5.5, 1], hspace=0.0, wspace=0.0)
 ax_big = fig.add_subplot(gs_obj[0, :])
@@ -128,13 +125,15 @@ format_image['AnnotationBbox'] = {'xy': (0.66, 0.54),
                                   'xybox': (0., 0.),
                                   'xycoords': 'axes fraction',
                                   'boxcoords': "offset points", "pad": 0.01}
+# bboxprops=dict(edgecolor='red')
+
 
 image_obj = plotsFolder/'CGCG007_halpha_image_noAxis.png'
 fn = get_sample_data(image_obj, asfileobj=False)
 arr_img = plt.imread(fn, format='png')
 imagebox = OffsetImage(arr_img, **format_image['OffsetImage'])
 imagebox.image.axes = ax_big
-ab = AnnotationBbox(imagebox, **format_image['AnnotationBbox'])
+ab = AnnotationBbox(imagebox, bboxprops=dict(edgecolor='black', lw=0.25), **format_image['AnnotationBbox'])
 ax_big.add_artist(ab)
 
 # plt.tight_layout()

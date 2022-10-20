@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
-import inspect
+import lime as lm
 from pathlib import Path
 from matplotlib import pyplot as plt, rcParams
 from lime.plots import STANDARD_PLOT
 
 rcParams.update(STANDARD_PLOT)
 
+obsData = lm.load_cfg('../muse_CGCG007.ini')
+
+plotsFolder = Path(obsData['data_location']['plots_folder'])
 
 def get_values(df, idcs, column):
     return df.loc[idcs, column].values
@@ -89,11 +92,11 @@ grid_columns_HIICHI_mistry = {'12+log(O/H)':'logOH',
                              'NII_6584':'N2_6584A',
                              'SII_6717,31':'S2_6716A_b'}
 
-line_labels = {'O3_5007A': r'Flux $[OIII]5007\AA$',
-               'N2_6584A': r'Flux $[NII]6584\AA$',
-               'O2_7319A': r'Flux $[OII]7319\AA$',
-               'O2_7319A_b': r'Flux $[OII]7319,7330\AA$',
-               'O2_3726A_b': r'Flux $[OII]3726,3729\AA$',
+line_labels = {'O3_5007A': r'$[OIII]5007\AA/H\beta$',
+               'N2_6584A': r'$[NII]6584\AA/H\beta$',
+               'O2_7319A': r'$[OII]7319\AA/H\beta$',
+               'O2_7319A_b': r'$[OII]7319,7330\AA/H\beta$',
+               'O2_3726A_b': r'$[OII]3726,3729\AA/H\beta$',
                'logOH': '12+log(O/H)',
                'logNO': 'log(N/O)',
                'logU': 'log(U)'}
@@ -104,12 +107,6 @@ grid_files_dict = {'grid_Ruben': Path('D:/Dropbox/Astrophysics/Papers/muse_CGCG0
                    'HIIchimistry_v3': Path('D:/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
                    'HIIchimistry_v4': Path('D:/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
                    'HIIchimistry_v5': Path('D:/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
-# grid_files_dict = {'grid_Ruben': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/HII-CHI-mistry_1Myr_grid.csv'),
-#                    'grid_Epm': Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data/formated_log_C17_Popstar_1Myr.dat'),
-#                    'HIIchimistry_v2': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v2.0/C13_cha_1Myr_v2.0.dat'),
-#                    'HIIchimistry_v3': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v3.0/C17_cha_1Myr_v3.1.dat'),
-#                    'HIIchimistry_v4': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v4.2/C17_cha_1Myr_v4.0.dat'),
-#                    'HIIchimistry_v5': Path('/home/vital/Dropbox/Astrophysics/Tools/HCm_v5.22/Libraries_opt/C17_POPSTAR_1myr.dat')}
 
 grid_column_dict = {'grid_Ruben': grid_columns_large,
                     'grid_Epm': {},
@@ -154,65 +151,99 @@ grid_dict = dict(grid_Ruben=grid_Ruben,
                  HIIchimistry_v5=HIIchimistry_v5,)
 
 # Testing points
-logOH_ref, logU_ref, logNO_ref = 7.8, -2.5, -1.5
+logOH_ref, logU_ref, logNO_ref = 7.8, -2.5, -1.75
 
 # OIII fluxes
 param_list = ['logOH', 'logNO', 'logU', 'logNO', 'logU']
 line_list = ['O3_5007A', 'N2_6584A', 'N2_6584A', 'O2_3726A_b', 'O2_3726A_b']
 
-# Plot the intervals
-for param, line in zip(param_list, line_list):
+param_list = ['logNO', 'logNO', 'logU', 'logU']
+line_list = ['N2_6584A', 'O2_3726A_b', 'O2_3726A_b', 'O3_5007A']
 
-    fig, ax = plt.subplots()
-    x_Ruben_O, y_Ruben_O = slice_grid(param, line, grid_Ruben, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='O')
-    x_Ruben_N, y_Ruben_N = slice_grid(param, line, grid_Ruben, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref, carbon='N')
-    x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+# for param, line in zip(param_list, line_list):
+#
+#     fig, ax = plt.subplots()
+#
+#     for OH in [7.6, 7.8, 8.0]:
+#         x_Ruben_O, y_Ruben_O = slice_grid(param, line, grid_Ruben, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='O')
+#         x_Ruben_N, y_Ruben_N = slice_grid(param, line, grid_Ruben, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='N')
+#         x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#
+#         x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#         x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#
+#         ax.plot(x_epm, y_epm, label=f'12 + log(O/H) = {OH}')
+#
+#     ax.legend()
+#     # ax.set_yscale('log')
+#     ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
+#     plt.show()
 
-    x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
-    x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=logOH_ref, logU=logU_ref, logNO=logNO_ref)
+# color_list = ['tab:blue', 'tab:green', 'tab:orange']
+#
+# param, line = 'logNO', 'N2_6584A'
+# fig, ax = plt.subplots()
+# for i, OH in enumerate(([7.6, 7.8, 8.0])):
+#     x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#     ax.plot(x_epm, y_epm, label=f'12 + log(O/H) = {OH}', color=color_list[i])
+#
+#     x_epmOII, y_epmOII = slice_grid('logNO', 'O2_3726A_b', grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#     ax.plot(x_epmOII, y_epmOII, label=f'12 + log(O/H) = {OH}', linestyle=':', color=color_list[i])
+#
+# ax.legend()
+# ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': r'$F(\lambda)/F(H\beta)$'})
+# plt.tight_layout()
+# plt.show()
 
-    ax.scatter(x_Ruben_O, y_Ruben_O, label='Ruben Grid carbon = O', marker='*')
-    ax.scatter(x_Ruben_N, y_Ruben_N, label='Ruben Grid carbon = N', marker='s')
-    ax.scatter(x_epm, y_epm, label='Enrique Grid', marker='^')
 
-    ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
-    # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
-    # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
-    ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label='HII-CHI-mistry v5.22 grid', alpha=0.5)
+color_list = ['tab:blue', 'tab:red', 'tab:green']
+label_list = [r'$[OII]3726,3729\AA$', r'$[NII]6584\AA$                 '
+                                      r'$\left(12 + log\left(\frac{O}{H}\right)=7.80,\,\,\,\,log(U)=-2.25\right)$']
 
-    ax.legend()
-    ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
-    plt.show()
+param = 'logNO'
+fig, ax = plt.subplots(figsize=(12, 6), dpi=400)
+for i, line in enumerate((['O2_3726A_b', 'N2_6584A'])):
+    limits_dict = {}
+    for j, OH in enumerate((7.6, 8.0)):
+        limits_dict[j] = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
 
-# NII fluxes versus N/O for various O
-param_list = ['logNO', 'logNO']
-line_list = ['N2_6584A', 'O2_3726A_b']
+    ax.fill_between(limits_dict[0][0], limits_dict[0][1], limits_dict[1][1], alpha=0.5, color=color_list[i])
 
-for param, line in zip(param_list, line_list):
+    x_epmOII, y_epmOII = slice_grid('logNO', line, grid_epm, logOH=7.8, logU=logU_ref, logNO=logNO_ref)
+    ax.plot(x_epmOII, y_epmOII, label=label_list[i], linestyle=':', color=color_list[i])
 
-    fig, ax = plt.subplots()
+ax.grid(True, linewidth=0.5)
+ax.legend(ncol=2, loc ='upper center')
+ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': r'$F(\lambda)/F(H\beta)$'})
+plt.tight_layout()
+plt.savefig(plotsFolder/'NII-OII_fluxesWithlogNO.png', bbox_inches='tight')
+# plt.show()
 
-    for OH in [7.6, 7.8, 8.0]:
-        x_Ruben_O, y_Ruben_O = slice_grid(param, line, grid_Ruben, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='O')
-        x_Ruben_N, y_Ruben_N = slice_grid(param, line, grid_Ruben, logOH=OH, logU=logU_ref, logNO=logNO_ref, carbon='N')
-        x_epm, y_epm = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+#
+color_list = ['tab:blue', 'tab:green', 'tab:red', 'tab:orange']
+label_list = [r'$[OII]3726,3729\AA$', r'$[OIII]5007\AA$', r'$[NII]6584\AA$                 '
+                                      r'$\left(12 + log\left(\frac{O}{H}\right)=7.80,\,\,\,\,log\left(\frac{N}{O}\right)=-1.75\right)$']
 
-        x_HIIchim_v2, y_HIIchim_v2 = slice_grid(param, line, HIIchimistry_v2, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-        x_HIIchim_v3, y_HIIchim_v3 = slice_grid(param, line, HIIchimistry_v3, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-        x_HIIchim_v4, y_HIIchim_v4 = slice_grid(param, line, HIIchimistry_v4, logOH=OH, logU=logU_ref, logNO=logNO_ref)
-        x_HIIchim_v5, y_HIIchim_v5 = slice_grid(param, line, HIIchimistry_v5, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+param = 'logU'
 
-        # ax.scatter(x_csv, y_csv, label='CSV grid Carbon = O', marker='*')
-        # ax.scatter(x_csv_N, y_csv_N, label='CSV grid Carbon = N', marker='*')
-        # ax.scatter(x_HIIchim_v2, y_HIIchim_v2, label='HII-CHI-mistry v2.00 grid', alpha=0.5)
-        # ax.scatter(x_HIIchim_v3, y_HIIchim_v3, label='HII-CHI-mistry v3.00 grid', alpha=0.5)
-        # ax.scatter(x_HIIchim_v4, y_HIIchim_v4, label='HII-CHI-mistry v4.20 grid', alpha=0.5)
-        ax.scatter(x_HIIchim_v5, y_HIIchim_v5, label=f'12 + log(O/H) = {OH} (Ruben)', alpha=0.5)
-        ax.scatter(x_epm, y_epm, label=f'12 + log(O/H) = {OH} (epm)', alpha=0.5,  marker='*')
+fig, ax = plt.subplots(figsize=(12, 6), dpi=400)
+for i, line in enumerate((['O2_3726A_b', 'O3_5007A', 'N2_6584A'])):
 
-    ax.legend()
-    ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': line_labels[line]})
-    plt.show()
+    limits_dict = {}
+    for j, OH in enumerate((7.6, 8.0)):
+        limits_dict[j] = slice_grid(param, line, grid_epm, logOH=OH, logU=logU_ref, logNO=logNO_ref)
+
+    ax.fill_between(limits_dict[0][0], limits_dict[0][1], limits_dict[1][1], alpha=0.5, color=color_list[i])
+
+    x_epmOII, y_epmOII = slice_grid('logU', line, grid_epm, logOH=7.8, logU=logU_ref, logNO=logNO_ref)
+    ax.plot(x_epmOII, y_epmOII, label=label_list[i], linestyle=':', color=color_list[i])
+
+ax.grid(True, linewidth=0.5)
+ax.legend(ncol=3, loc ='upper center')
+ax.update({'xlabel': f'{line_labels[param]}', 'ylabel': r'$F(\lambda)/F(H\beta)$'})
+plt.tight_layout()
+plt.savefig(plotsFolder/'NII-OII-OIII_fluxesWithlogU.png', bbox_inches='tight')
+# plt.show()
 

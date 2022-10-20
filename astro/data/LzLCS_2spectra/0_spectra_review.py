@@ -45,8 +45,7 @@ norm_flux = obsCfg['sample_data']['norm_flux']
 parent_mask = f'{lime._dir_path}/resources/parent_mask.txt'
 parent_df = lime.load_lines_log(parent_mask)
 
-# /home/vital/Dropbox/Astrophysics/Data/LzLCS_2spectra/data/spectra/J123519/1dspectrum_j123519_UVB.fits
-# /home/vital/Dropbox/Astrophysics/Data/LzLCS_2spectra/data/J123519/1dspectrum_j123519_UVB.fits
+
 for i, obj in enumerate(specNameList):
 
     if i == 1:
@@ -76,7 +75,7 @@ for i, obj in enumerate(specNameList):
         obj_mask = obj_folder / f'{obj}_mask.txt'
 
         spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
-        # spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
+        spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
 
         # Initial mask
         initial_mask = lime.spectral_mask_generator((spec.wave_rest[0], spec.wave_rest[-1]))

@@ -1,15 +1,14 @@
 import lime
 import numpy as np
 from astropy.io import fits
-from matplotlib import pyplot as plt, cm, colors, patches
-from astropy.wcs import WCS
+from matplotlib import colors
 from mpdaf.obj import Cube
 
 
 # Data location
 cube_address = f'/mnt/AstroData/Observations/Ana_cube/uboala.fits'
 cfg_file = '/home/vital/PycharmProjects/vital_tests/astro/data/Ana_Cube/config_musep.cfg'
-mask_file = '/home/vital/PycharmProjects/vital_tests/astro/data/Ana_Cube/mascara_musep.txt'
+mask_file = '/home/vital/PycharmProjects/vital_tests/astro/data/Ana_Cube/MUSE_spectral_mask.txt'
 spatial_mask_file = f'/home/vital/PycharmProjects/vital_tests/astro/data/Ana_Cube/mascara_musep.fits'
 log_address = f'/home/vital/PycharmProjects/vital_tests/astro/data/Ana_Cube/line_measurements.fits'
 
@@ -68,67 +67,66 @@ for key in lime.COORD_ENTRIES:
 lime.CubeInspector(wave, spec_zone, Halpha_image, OIII_image, OIII_contourLevels, color_norm=log_norm_bg,
                    fits_header=header, ax_cfg=ax_conf)
 
-
 # Generate the mask file
 lime.spatial_mask_generator('SN_line', wave, spec_zone, percentile_array, signal_band=OIII_band,
                              cont_band=OIII_cont, mask_ref='O3_5007A', output_address=spatial_mask_file,
                              fits_header=hdr_coords, show_plot=True)
 
+# Plot of the Central voxel at 34 - 26, Interactive plotter for IFU data cubes
 core_voxel_coord = (34, 26)
-spec = lime.Spectrum(wave, spec_zone[:, core_voxel_coord[0], core_voxel_coord[1]], redshift=z_SHOC148,
-                     norm_flux=norm_flux)
+spec = lime.Spectrum(wave, spec_zone[:, core_voxel_coord[0], core_voxel_coord[1]], redshift=z_SHOC148, norm_flux=norm_flux)
 spec.plot_spectrum()
-#
-# # Loop throught the masks and analyse the data
-# hdul_log = fits.HDUList([fits.PrimaryHDU()])
-# for idx_mask in [0, 1, 2]:
-#
-#     mask_name = f'O3_5007A_MASK_{idx_mask}'
-#
-#     # Load the region spatial mask:
-#     region_label = f'O3_5007A_MASK_{idx_mask}'
-#     region_mask = fits.getdata(spatial_mask_file, region_label, ver=1)
-#     region_mask = region_mask.astype(bool)
-#
-#     # Convert the mask into an array of spaxel coordinates (idxY, idxX)
-#     idcs_spaxels = np.argwhere(region_mask)
-#
-#     # Load the region fitting configuration
-#     region_fit_cfg = obs_cfg['line_fitting']
-#
-#     # Loop through the spaxels
-#     print(f'- Treating region {idx_mask} with {np.sum(region_mask)} voxels')
-#     for idx_spaxel, coords_spaxel in enumerate(idcs_spaxels):
-#
-#         # Define a spectrum object for the current spaxel
-#         idxY, idxX = coords_spaxel
-#         flux = spec_zone[:, idxY, idxX]
-#         pixel_mask = np.isnan(flux)
-#         spaxel_spec = lime.Spectrum(wave, spec_zone[:, idxY, idxX], redshift=z_SHOC148, norm_flux=norm_flux,
-#                                     pixel_mask=pixel_mask)
-#
-#         # Limit the line fittings to those detected
-#         matched_mask_log = spaxel_spec.line_detection(lines_log=mask_log)
-#
-#         # Loop through the detected lines
-#         print(f'-- Treating spaxel {idx_spaxel}')
-#         for idx_line, line in enumerate(matched_mask_log.index):
-#
-#             wave_regions = matched_mask_log.loc[line, 'w1':'w6'].values
-#             try:
-#                 spaxel_spec.fit_from_wavelengths(line, wave_regions, fit_method='least_squares', user_cfg=region_fit_cfg)
-#
-#             except ValueError as e:
-#                 print(f'--- Line measuring failure at {line} in spaxel {idxY}-{idxX}:\n{e}')
-#
-#         spaxel_spec.plot_spectrum(include_fits=True)
-#
-#         # Convert the measurements log into a HDU and append it to the HDU list unless it is empty
-#         linesHDU = lime.log_to_HDU(spaxel_spec.log, ext_name=f'{idxY}-{idxX}_LINESLOG', header_dict=hdr_coords)
-#
-#         # Check the HDU is not empty (no lines measured)
-#         if linesHDU is not None:
-#             hdul_log.append(linesHDU)
-#
-#     # After the regions spaxels have been analysed save all the measurements to a .fits file
-#     hdul_log.writeto(log_address, overwrite=True, output_verify='fix')
+
+# Loop throught the masks and fit the lines
+hdul_log = fits.HDUList([fits.PrimaryHDU()])
+for idx_mask, perc_mask in enumerate(percentile_array):
+
+    mask_name = f'O3_5007A_MASK_{idx_mask}'
+
+    # Load the region spatial mask:
+    region_label = f'O3_5007A_MASK_{idx_mask}'
+    region_mask = fits.getdata(spatial_mask_file, region_label, ver=1)
+    region_mask = region_mask.astype(bool)
+
+    # Convert the mask into an array of spaxel coordinates (idxY, idxX)
+    idcs_spaxels = np.argwhere(region_mask)
+
+    # Load the region fitting configuration
+    region_fit_cfg = obs_cfg['line_fitting']
+
+    # Loop through the spaxels
+    print(f'- Treating region {idx_mask} with {np.sum(region_mask)} voxels')
+    for idx_spaxel, coords_spaxel in enumerate(idcs_spaxels):
+
+        # Define a spectrum object for the current spaxel
+        idxY, idxX = coords_spaxel
+        flux = spec_zone[:, idxY, idxX]
+        pixel_mask = np.isnan(flux)
+        spaxel_spec = lime.Spectrum(wave, spec_zone[:, idxY, idxX], redshift=z_SHOC148, norm_flux=norm_flux,
+                                    pixel_mask=pixel_mask)
+
+        # Limit the line fittings to those detected
+        matched_mask_log = spaxel_spec.line_detection(lines_log=mask_log)
+
+        # Loop through the detected lines
+        print(f'-- Treating spaxel {idx_spaxel}')
+        for idx_line, line in enumerate(matched_mask_log.index):
+
+            wave_regions = matched_mask_log.loc[line, 'w1':'w6'].values
+            try:
+                spaxel_spec.fit_from_wavelengths(line, wave_regions, fit_method='least_squares', user_cfg=region_fit_cfg)
+
+            except ValueError as e:
+                print(f'--- Line measuring failure at {line} in spaxel {idxY}-{idxX}:\n{e}')
+
+        spaxel_spec.plot_spectrum(include_fits=True)
+
+        # Convert the measurements log into a HDU and append it to the HDU list unless it is empty
+        linesHDU = lime.log_to_HDU(spaxel_spec.log, ext_name=f'{idxY}-{idxX}_LINESLOG', header_dict=hdr_coords)
+
+        # Check the HDU is not empty (no lines measured)
+        if linesHDU is not None:
+            hdul_log.append(linesHDU)
+
+    # After the regions spaxels have been analysed save all the measurements to a .fits file
+    hdul_log.writeto(log_address, overwrite=True, output_verify='fix')

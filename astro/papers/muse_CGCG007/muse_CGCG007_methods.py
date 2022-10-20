@@ -4,6 +4,7 @@ import pandas as pd
 import configparser
 import pyneb as pn
 import sys
+import copy
 
 from pathlib import Path
 from astropy.io import fits
@@ -203,9 +204,9 @@ latex_labels = {'y_plus': r'$y^{+}$',
              'SH': r'$\frac{S}{H}$',
              'ICF_S4': r'$ICF(S^{3+})$',
              'SO': r'$\frac{S}{O}$',
-
-            'O2_O3': r'$\frac{O^{+}}{O^{2+}}$',
-            'S2_S3': r'$\frac{S^{+}}{S^{2+}}$',
+             'O2_O3': r'$\frac{O^{+}}{O^{2+}}$',
+             'S2_S3': r'$\frac{S^{+}}{S^{2+}}$',
+             'S3_S2': r'$\frac{S^{2+}}{S^{+}}$',
              'log(X_i+)': r'$12+log\left(X^{i+}\right)$',
              'redNoise': r'$\Delta(cH\beta)$',
              'nSII_cHbeta': r'$\frac{n_{e,\,[SII]}}{c(H\beta)}$',
@@ -233,6 +234,7 @@ signif_figures = {'n_e': 0,
                   'logNO': 2,
                   'O2_O3': 2,
                   'S2_S3': 2,
+                  'S3_S2': 2,
                   'eta': 2,
                   'OH': 2,
                   'NO': 2,
@@ -315,7 +317,7 @@ def plot_parameter_image(plot_db_fits, parameter_list, output_folder, conf_label
 
             with rc_context(defaultConf):
 
-                halpha_cmap = cm.gray.copy()
+                halpha_cmap = copy.copy(cm.get_cmap("gray"))
                 halpha_cmap.set_under('black')
 
                 fig = plt.figure(figsize=(10, 10))
@@ -361,6 +363,7 @@ def compute_parameter_distributions(parameter_list, output_folder, conf_label, m
     # Loop throught the parameter file images
     for parameter in parameter_list:
 
+        # with fits.open(f'{output_folder}/{conf_label}_{parameter}.fits') as hdu_list:
         with fits.open(f'{output_folder}/{conf_label}_{parameter}.fits') as hdu_list:
 
             # Parameter value and error distribution loop
@@ -394,7 +397,9 @@ def compute_parameter_distributions(parameter_list, output_folder, conf_label, m
                     ax.set_title(f'CGCG007−025, {latex_labels[parameter]} \n {technique_convert_label[tech_label]} {conf_label} \n regions histogram')
                     ax.set_xlabel(latex_labels[parameter])
                     ax.legend()
-                    plt.savefig(output_folder/f'{tech_label}_{conf_label}_{parameter}_regions_histogram{map_type}')
+                    output_histogram = output_folder/f'{tech_label}_{conf_label}_{parameter}_regions_histogram{map_type}'
+                    print(f'Saving histogram {output_histogram}')
+                    plt.savefig(output_histogram)
                     plt.close(fig)
                     # plt.show()
 
@@ -688,6 +693,7 @@ def total_abundances_calculation(param_list, output_folder, mask_file_address, r
     #Extra params
     O2_O3 = O2/O3
     S2_S3 = S2/S3
+    S3_S2 = S3/S2
     eta = O2_O3/S2_S3
 
     # Save mean values to log
@@ -712,6 +718,7 @@ def total_abundances_calculation(param_list, output_folder, mask_file_address, r
                             Y_S=Y_S,
                             S2_S3=S2_S3,
                             O2_O3=O2_O3,
+                            S3_S2=S3_S2,
                             eta=eta)
 
     # Saving the total abundances as dictionaries
@@ -1242,6 +1249,7 @@ def interpolate_orig(grid, z, zmin, zmax, n, ncol=9):
     out = np.transpose(np.reshape(vec, (-1, n*inter+no_inter)))
 
     return out
+
 
 def epm_HII_CHI_mistry_orig(input00, output_file, n, sed, inter, const=1, HCm_folder=None):
 
@@ -1915,6 +1923,7 @@ def epm_HII_CHI_mistry_orig(input00, output_file, n, sed, inter, const=1, HCm_fo
     return output
 
     return
+
 
 def epm_HII_CHI_mistry_orig(input00, output_file, n, sed, inter, HCm_folder=None):
 

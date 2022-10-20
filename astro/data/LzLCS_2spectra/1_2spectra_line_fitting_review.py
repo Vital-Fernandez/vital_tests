@@ -74,8 +74,8 @@ specNameList = obsCfg['sample_data']['specName_list']
 zList = obsCfg['sample_data']['redshift_array']
 norm_flux = obsCfg['sample_data']['norm_flux']
 
-target_lines = ['H1_4861A_b', 'O3_5007A_b', 'O3_4959A_b', 'H1_6563A_b', 'N2_6583.3513A_b', 'S2_6716.3386A_b']
-# target_lines = ['H1_6563A_b', 'S2_6716.3386A_b']
+# target_lines = ['H1_4861.2582A_b', 'O3_4958.8348A_b', 'O3_5006.7664A_b', 'N2_6583.3513A_b', 'S2_6716.3386A_b']
+target_lines = ['H1_4861.2582A_b', 'O3_4958.8348A_b', 'O3_5006.7664A_b', 'N2_6583.3513A_b', 'S2_6716.3386A_b']
 
 for i, obj in enumerate(specNameList):
 
@@ -83,7 +83,7 @@ for i, obj in enumerate(specNameList):
 
         order_list = obsCfg['sample_data'][f'order_list']
         obj_folder = results_fonder / obj
-        mask_file = dataFolder / f'{obj}_mask.txt'
+        mask_file = dataFolder / f'{obj}_review_mask.txt'
 
         # Loop through the orders
         wave_joined, flux_joined, err_joined = np.array([]), np.array([]), np.array([])
@@ -105,27 +105,28 @@ for i, obj in enumerate(specNameList):
 
         # Adjust mask to object
         print(f'\n Fitting {obj}\n')
-        spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
+        spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux,)
         # spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
 
         # Adjust mask to object
         mask = lime.load_lines_log(mask_file)
-        obj_cfg = obsCfg[f'{obj}_line_fitting']
+        obj_cfg = obsCfg[f'{obj}_review_line_fitting']
+        print(obj_cfg)
         for line in target_lines:
             if line in mask.index:
                 mask_waves = mask.loc[line, 'w1':'w6'].values
-                spec.fit_from_wavelengths(line, mask_waves, obj_cfg)
-                # spec.display_results(output_address=obj_folder/f'{line}_gaussian_components.png')
-                # if line == 'N2_6583.3513A_b':
-                spec.display_results()
+                spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method="least_squares")
+                spec.display_results(output_address=obj_folder/f'{line}_gaussian_components.png')
+                spec.plot_line_velocity(output_address=obj_folder/f'{line}_kinematics.png')
+                # spec.display_results(log_scale=True, fit_report=True)
 
-        # A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
-        # spec.log['A_factor'] = A_array
-        # spec.log['K_array'] = K_array
-        # spec.log['w_80'] = w_80_array
-        # spec.log['v_r_fitelp'] = v_r_fitelp_arr
-        # spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
-        #
-        # # Save line measurements
-        # lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
-        # lime.save_line_log(spec.log, results_fonder/f'2spectra.xlsx', ext=obj)
+        A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
+        spec.log['A_factor'] = A_array
+        spec.log['K_array'] = K_array
+        spec.log['w_80'] = w_80_array
+        spec.log['v_r_fitelp'] = v_r_fitelp_arr
+        spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
+
+        # Save line measurements
+        lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
+        lime.save_line_log(spec.log, results_fonder/f'2spectra.xlsx', ext=obj)

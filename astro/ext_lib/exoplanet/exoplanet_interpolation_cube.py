@@ -1,7 +1,7 @@
 import numpy as np
 import pyneb as pn
 import scipy as spy
-import exoplanet as xo
+# import exoplanet as xo
 import pandas as pd
 
 # Declare ions
@@ -22,24 +22,25 @@ emisCube = np.ones((Te_range.size, ne_range.size, abund_range.size))
 for i, abund_value in enumerate(abund_range):
     emisCube[:, :, i] = emisValues * abund_value
 
-# # Scipy interpolation interp2d
+# Scipy interpolation interp2d
+# print(emisValues.shape)
 # spy_interp2d = spy.interpolate.interp2d(ne_range, Te_range, emisValues)
-# print('2 Scipy interp2d', spy_interp2d(ne_true, Te_true))
+# print('2 Scipy interp2d', spy_interp2d(ne_range[:], Te_true).reshape(emisValues.shape))
 
 # Scipy interpolation RegularGridInterpolator
 spy_RGridInterp = spy.interpolate.RegularGridInterpolator((Te_range, ne_range, abund_range), emisCube)
-print('3 Scipy RegularGridInterpolator', spy_RGridInterp([[Te_true, ne_true, abund_true]]))
+print('3 Scipy RegularGridInterpolator', spy_RGridInterp([[Te_range, ne_range, abund_true]]))
 
-# Exoplanet interpolation
-exop_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range, abund_range], emisCube, nout=1)
-coordB = np.stack(([Te_true], [ne_true], [abund_true]), axis=-1)
-print('4 Exoplanet interpolation', exop_interp.evaluate(coordB).eval())
-
-# --------------------------- Saving to a text file and loading grid ---------------------------------------------------
-output_DF = pd.Dataframe(columns=['Abund', 'Te', 'ne', 'O3_4363A'])
-output_file = 'D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/treatment/grid_file.txt'
-
-# output_DF['Abund'] =
-# output_DF['Te'] =
+# # Exoplanet interpolation
+# exop_interp = xo.interp.RegularGridInterpolator([Te_range, ne_range, abund_range], emisCube, nout=1)
+# coordB = np.stack(([Te_true], [ne_true], [abund_true]), axis=-1)
+# print('4 Exoplanet interpolation', exop_interp.evaluate(coordB).eval())
+#
+# # --------------------------- Saving to a text file and loading grid ---------------------------------------------------
+# output_DF = pd.Dataframe(columns=['Abund', 'Te', 'ne', 'O3_4363A'])
+# output_file = 'D:/Dropbox/Astrophysics/Papers/gtc_greenpeas/treatment/grid_file.txt'
+#
+# # output_DF['Abund'] =
+# # output_DF['Te'] =
 # output_DF['ne'] =
 # output_DF['O3_4363A'] =

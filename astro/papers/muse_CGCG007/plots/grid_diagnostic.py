@@ -5,6 +5,11 @@ from pathlib import Path
 from matplotlib import pyplot as plt, rcParams
 from lime.plots import STANDARD_PLOT
 
+STANDARD_PLOT['axes.labelsize'] = 32
+STANDARD_PLOT['legend.fontsize'] = 14
+STANDARD_PLOT['ytick.labelsize'] = 30
+STANDARD_PLOT['xtick.labelsize'] = 30
+
 rcParams.update(STANDARD_PLOT)
 
 obsData = lm.load_cfg('../muse_CGCG007.ini')
@@ -203,7 +208,7 @@ label_list = [r'$[OII]3726,3729\AA$', r'$[NII]6584\AA$                 '
                                       r'$\left(12 + log\left(\frac{O}{H}\right)=7.80,\,\,\,\,log(U)=-2.25\right)$']
 
 param = 'logNO'
-fig, ax = plt.subplots(figsize=(12, 6), dpi=400)
+fig, ax = plt.subplots(figsize=(12, 6), dpi=600)
 for i, line in enumerate((['O2_3726A_b', 'N2_6584A'])):
     limits_dict = {}
     for j, OH in enumerate((7.6, 8.0)):
@@ -228,7 +233,7 @@ label_list = [r'$[OII]3726,3729\AA$', r'$[OIII]5007\AA$', r'$[NII]6584\AA$      
 
 param = 'logU'
 
-fig, ax = plt.subplots(figsize=(12, 6), dpi=400)
+fig, ax = plt.subplots(figsize=(12, 6), dpi=600)
 for i, line in enumerate((['O2_3726A_b', 'O3_5007A', 'N2_6584A'])):
 
     limits_dict = {}

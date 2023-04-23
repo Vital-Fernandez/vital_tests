@@ -121,7 +121,7 @@ for param_in in params_list:
         ticks_values = np.array([median - Per16th*2, median - Per16th, median, median + Per84th, median + Per84th*2])
         cbar = fig.colorbar(im2, ax=ax, shrink=0.9995, pad=0, orientation='vertical', ticks=ticks_values)
         cbar.ax.yaxis.set_ticks_position('left')
-        cbar.ax.tick_params(axis="y", direction="in", colors='white', labelsize=7)
+        cbar.ax.tick_params(axis="y", direction="in", colors='white', labelsize=10)
 
         if idx_ax < 3:
             ax.set_title(title_conv[conf])

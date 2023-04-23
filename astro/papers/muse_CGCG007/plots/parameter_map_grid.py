@@ -89,7 +89,7 @@ for i, param in enumerate(params_list):
     # cbar = fig.colorbar(im2, ax=ax, shrink=0.75, aspect=25*0.75, pad=0, orientation='vertical')
     cbar = fig.colorbar(im2, ax=ax, shrink=0.976, pad=0, orientation='vertical', ticks=ticks_values)
     cbar.ax.yaxis.set_ticks_position('left')
-    cbar.ax.tick_params(axis="y", direction="in", colors='white', labelsize=7)
+    cbar.ax.tick_params(axis="y", direction="in", colors='white', labelsize=10)
 
     # Text with the line name
     trans = ax.get_xaxis_transform()

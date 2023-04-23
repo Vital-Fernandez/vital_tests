@@ -118,15 +118,15 @@ for i, obj in enumerate(specNameList):
                 spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method="least_squares")
                 spec.display_results(output_address=obj_folder/f'{line}_gaussian_components.png')
                 spec.plot_line_velocity(output_address=obj_folder/f'{line}_kinematics.png')
-                # spec.display_results(log_scale=True, fit_report=True)
+                spec.display_results(log_scale=True, fit_report=True)
 
-        A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
-        spec.log['A_factor'] = A_array
-        spec.log['K_array'] = K_array
-        spec.log['w_80'] = w_80_array
-        spec.log['v_r_fitelp'] = v_r_fitelp_arr
-        spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
-
-        # Save line measurements
-        lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
-        lime.save_line_log(spec.log, results_fonder/f'2spectra.xlsx', ext=obj)
+        # A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
+        # spec.log['A_factor'] = A_array
+        # spec.log['K_array'] = K_array
+        # spec.log['w_80'] = w_80_array
+        # spec.log['v_r_fitelp'] = v_r_fitelp_arr
+        # spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
+        #
+        # # Save line measurements
+        # lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
+        # lime.save_line_log(spec.log, results_fonder/f'2spectra.xlsx', ext=obj)

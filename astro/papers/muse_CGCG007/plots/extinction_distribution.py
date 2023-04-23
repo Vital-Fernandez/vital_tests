@@ -5,7 +5,7 @@ from pathlib import Path
 from astro.papers.muse_CGCG007.muse_CGCG007_methods import chemical_lines_indexing, import_muse_fits
 from astropy.io import fits
 from astropy.table import Table
-from matplotlib import pyplot as plt, rcParams, cm, colors
+from matplotlib import pyplot as plt, rcParams, cm, colors, rc_context
 from astropy.wcs import WCS
 from src.specsiser.plots import latex_labels
 
@@ -40,11 +40,11 @@ lines_mask_dict = {'MASK_0': ['H1_4861A', 'H1_9229A', 'H1_9015A', 'H1_8863A', 'H
 
 
 STANDARD_PLOT = {'figure.figsize': (12, 12),
-                 'axes.titlesize': 12,
-                 'axes.labelsize': 16,
-                 'legend.fontsize': 14,
-                 'xtick.labelsize': 14,
-                 'ytick.labelsize': 14}
+                 'axes.titlesize': 18,
+                 'axes.labelsize': 30,
+                 'legend.fontsize': 18,
+                 'xtick.labelsize': 25,
+                 'ytick.labelsize': 25}
 
 for i, obj in enumerate(objList):
 
@@ -72,7 +72,7 @@ for i, obj in enumerate(objList):
 
     mask_sum = np.full(image_size, False)
     array_container = []
-    region_list = [0, 1, 2, 3, 4]
+    region_list = [0, 1, 2, 3, 4, 5]
     voxel_count = np.zeros(len(region_list))
     cHbeta_array = [None] * len(voxel_count)
     for idx_region in region_list:
@@ -86,51 +86,46 @@ for i, obj in enumerate(objList):
         voxel_count[idx_region] = np.sum(region_mask)
         cHbeta_array[idx_region] = (np.nanmean(image_data[region_mask]), np.nanstd(image_data[region_mask]))
 
-    # Map plot
-    defaultConf = STANDARD_PLOT.copy()
-    rcParams.update(defaultConf)
 
-    halpha_cmap = cm.gray
-    # halpha_cmap.set_under('black')
+    with rc_context(STANDARD_PLOT):
 
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(projection=WCS(image_header), slices=('x', 'y'))
+        # halpha_cmap = cm.gray
+        # halpha_cmap.set_under('black')
 
-    bg_color = colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10)
-    im = ax.imshow(flux6563_image, cmap=halpha_cmap, norm=bg_color)
+        # fig = plt.figure(figsize=(10, 10))
+        # ax = fig.add_subplot(projection=WCS(image_header), slices=('x', 'y'))
+        #
+        # bg_color = colors.SymLogNorm(linthresh=halpha_thresd_level, vmin=halpha_min_level, base=10)
+        # im = ax.imshow(flux6563_image, cmap=halpha_cmap, norm=bg_color)
+        #
+        # param_min, param_max = np.nanmin(image_data), np.nanmax(image_data)
+        # divnorm = colors.TwoSlopeNorm(vcenter=0.0, vmin=-0.05, vmax=0.5, )
+        #
+        # # im2 = ax.imshow(image_data, norm=colors.LogNorm(vmin=0.01, vmax=0.8))
+        # image_data[~mask_sum] = np.nan
+        # im2 = ax.imshow(image_data, norm=divnorm)
+        #
+        # cbar = fig.colorbar(im2, ax=ax)
+        # param_label = latex_labels[param]
+        # ax.update({'title': r'Galaxy {}, {}'.format(obj, param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
+        # ax.set_xlim(95, 210)
+        # ax.set_ylim(80, 222)
+        # plt.show()
+        # plt.savefig(objFolder/f'{obj}_extinction_map.png')
 
-    param_min, param_max = np.nanmin(image_data), np.nanmax(image_data)
-    divnorm = colors.TwoSlopeNorm(vcenter=0.0, vmin=-0.05, vmax=0.5, )
+        fig = plt.figure(dpi=600)
+        ax = fig.add_subplot()
 
-    # im2 = ax.imshow(image_data, norm=colors.LogNorm(vmin=0.01, vmax=0.8))
-    image_data[~mask_sum] = np.nan
-    im2 = ax.imshow(image_data, norm=divnorm)
+        # ax.hist(image_data[mask_sum], bins=50, log=True)
+        cmap = cm.get_cmap(name='viridis_r')
+        colorNorm = colors.Normalize(0, len(region_list))
+        colors_hist = [cmap(colorNorm(i)) for i in region_list]
 
-    cbar = fig.colorbar(im2, ax=ax)
-    param_label = latex_labels[param]
-    ax.update({'title': r'Galaxy {}, {}'.format(obj, param_label), 'xlabel': r'RA', 'ylabel': r'DEC'})
-    ax.set_xlim(95, 210)
-    ax.set_ylim(80, 222)
-    plt.show()
-    # plt.savefig(objFolder/f'{obj}_extinction_map.png')
+        cHbeta_label = [r'$cH(\beta) = {:0.2f}\pm{:0.2f}$'.format(cHbeta_array[i][0], cHbeta_array[i][1]) for i in region_list]
+        labels_hist = [f'{cHbeta_label[i]} (region {i}, {voxel_count[i]:.0f} voxels)' for i in region_list]
+        ax.hist(array_container, label=labels_hist, bins=50, log=True, stacked=True, color=colors_hist)
 
-    # Histogram plot
-    defaultConf = STANDARD_PLOT.copy()
-    rcParams.update(defaultConf)
-
-    fig = plt.figure(figsize=(10, 10), dpi=600)
-    ax = fig.add_subplot()
-
-    # ax.hist(image_data[mask_sum], bins=50, log=True)
-    cmap = cm.get_cmap(name='viridis_r')
-    colorNorm = colors.Normalize(0, len(region_list))
-    colors_hist = [cmap(colorNorm(i)) for i in region_list]
-
-    cHbeta_label = [r'$cH(\beta) = {:0.2f}\pm{:0.2f}$'.format(cHbeta_array[i][0], cHbeta_array[i][1]) for i in region_list]
-    labels_hist = [f'{cHbeta_label[i]} (region {i}, {voxel_count[i]:.0f} voxels)' for i in region_list]
-    ax.hist(array_container, label=labels_hist, bins=50, log=True, stacked=True, color=colors_hist)
-
-    ax.update({'xlabel': r'$cH(\beta)$', 'ylabel': r'Voxel count'})
-    ax.legend()
-    plt.show()
-    # plt.savefig(plotsFolder/'CGCG007_extinction_distribution.png')
+        ax.update({'xlabel': r'$cH(\beta)$', 'ylabel': r'Voxel count'})
+        # ax.legend()
+        # plt.show()
+        plt.savefig(plotsFolder/'CGCG007_extinction_distribution.png')

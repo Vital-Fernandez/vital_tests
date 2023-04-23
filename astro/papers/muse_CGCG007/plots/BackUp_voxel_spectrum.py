@@ -40,14 +40,12 @@ norm_flux = 1
 
 i = 0
 obj = 'CGCG007'
-voxel_cords = (167, 170)
-lineLabels = np.array(['Ar4_4740A', 'H1_4861A', 'O3_4959A', 'He1_4922A', 'Fe3_4987A', 'O3_5007A', 'N1_5200A', 'He2_5412A', 'Cl3_5518A',
-                       'Cl3_5538A', 'He1_5876A', 'O1_6300A', 'S3_6312A', 'Si2_6347', 'O1_6364A', 'Si2_6371', 'H1_6563A',
-                       'N2_6548A', 'N2_6584A',
+voxel_cords = (167, 167)
+lineLabels = np.array(['Ar4_4740A', 'H1_4861A', 'O3_4959A', 'He1_4922A', 'Fe3_4987A', 'O3_5007A', 'N1_5200A', 'Cl3_5518A',
+                       'Cl3_5538A', 'He1_5876A', 'O1_6300A', 'S3_6312A', 'O1_6364A', 'H1_6563A', 'N2_6548A', 'N2_6584A',
                        'He1_6678A', 'S2_6716A', 'S2_6731A',
                        'He1_7065A', 'Ar3_7136A', 'He1_7281A', 'O2_7320A', 'O2_7330A', 'S3_9069A', 'H1_8204A', 'H1_9229A',
                        'H1_9015A', 'H1_8863A', 'H1_8750A'])
-
 
 uniq, count = np.unique(lineLabels, return_counts=True)
 np.any(count > 1)
@@ -75,24 +73,15 @@ flux_err = np.sqrt(cube[:, idx_j, idx_i].var.data) / 1000
 voxel = lime.Spectrum(wave, flux_voxel, input_err=flux_err, redshift=z_objs[i])
 # voxel.plot_spectrum(spec_label=f'{obj} voxel {idx_j}-{idx_i}', log_scale=True)
 
-
-line_table = {'He2_5412A': np.array([5400, 5405, 5410, 5415, 5420, 5425]),
-              'Si2_6347': np.array([6330, 6336, 6342, 6353, 6355, 6360]),
-              'Si2_6371': np.array([6351, 6360, 6370, 6376, 6380, 6390])}
-
-for line, bands in line_table.items():
-    voxel.fit_from_wavelengths(line, bands)
-
 STANDARD_PLOT = {'figure.figsize': (16, 5),
-                 'axes.titlesize': 12,
-                 'axes.labelsize': 12,
+                 'axes.titlesize': 10,
+                 'axes.labelsize': 6,
                  'legend.fontsize': 12,
-                 'xtick.labelsize': 12,
-                 'ytick.labelsize': 12}
+                 'xtick.labelsize': 6,
+                 'ytick.labelsize': 6}
 rcParams.update(STANDARD_PLOT)
 
 fig = plt.figure(dpi=600)
-# fig = plt.figure()
 gs = fig.add_gridspec(nrows=1, ncols=1)
 gs_obj = gs[i].subgridspec(2, 1, height_ratios=[5.5, 1], hspace=0.0, wspace=0.0)
 ax_big = fig.add_subplot(gs_obj[0, :])
@@ -117,8 +106,7 @@ ax_big.update(plot_labels)
 
 # Small spectrum
 ax_small.step(voxel.wave_rest, voxel.flux, color='tab:blue', linewidth=0.25)
-low_limit, up_limit = np.median(voxel.flux) / 3, np.median(voxel.flux) * 2.5
-print(low_limit, up_limit)
+low_limit, up_limit = np.median(voxel.flux) / 4, np.median(voxel.flux) * 7
 ax_small.set_ylim(low_limit, up_limit)
 ax_small.set_yscale('log')
 # ax_small.xaxis.set_major_locator(plt.NullLocator())

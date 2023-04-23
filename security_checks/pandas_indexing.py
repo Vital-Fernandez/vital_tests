@@ -1,6 +1,26 @@
 import numpy as np
 import pandas as pd
 
+def modifying_df(in_df):
+
+    in_df['a'] = 2 * in_df['b']
+
+    in_df = pd.DataFrame()
+
+    return
+
+class XY:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+
+    def swap(self):
+        self.x, self.y = self.y, self.x
+
+my_values = XY(None, 1)
+print(my_values.x, my_values.y)
+my_values.swap()
+print(my_values.x, my_values.y)
+
 num_array = np.array([[1, 1, 3, 0, 2],
                       [4, 2, 6, 0, 8],
                       [4, 3, 9, 5, 7],
@@ -33,10 +53,10 @@ true_value = num_array[idx_pair]
 idx_j, idx_i = idx_pair
 idx_db = (obsDF.y_voxel == idx_j) & (obsDF.x_voxel == idx_i)
 
-print(true_value, obsDF.loc[idx_db, 'flux'].values)
-
-
-print(obsDF)
+# print(true_value, obsDF.loc[idx_db, 'flux'].values)
+#
+#
+# print(obsDF)
 
 
 

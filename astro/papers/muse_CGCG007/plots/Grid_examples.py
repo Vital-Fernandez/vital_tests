@@ -104,11 +104,14 @@ with fits.open(outputFits) as hdul:
                 logU_diff = (1 - logU_trace.mean()/logU)
                 diff_mean_percent[i_step] = (np.abs(OH_diff) + np.abs(NO_diff) + np.abs(logU_diff))/3 * 100
 
-                print(i_step, diff_mean_percent[i_step])
                 i_step += 1
 
 # ----------------------------- R_hat plot --------------------------------------------------------------------------
 
+
+STANDARD_PLOT['axes.labelsize'] = 20
+STANDARD_PLOT['ytick.labelsize'] = 16
+STANDARD_PLOT['xtick.labelsize'] = 16
 
 # Plot combined mask
 defaultConf = STANDARD_PLOT.copy()

@@ -95,7 +95,7 @@ for i, obj in enumerate(objList):
 
             # # Load the results
             # fit_results = sr.load_fit_results(outputFits, ext_name=ext_chem, output_format='fits')
-            # inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
+            # inLines = fit_results[f'{ext_chem}_inputs'][0]['lines_list']
             # inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
             # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
             # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']
@@ -129,7 +129,7 @@ for i, obj in enumerate(objList):
             # cHBeta = fit_results[f'{ext_chem}_outputs'][1]['cHbeta']
             # print(f'- cHBeta: {cHBeta}')
 
-            # inLines = fit_results[f'{ext_chem}_inputs'][0]['line_list']
+            # inLines = fit_results[f'{ext_chem}_inputs'][0]['lines_list']
             # inParameters = fit_results[f'{ext_chem}_outputs'][0]['parameters_list']
             # inFlux = fit_results[f'{ext_chem}_inputs'][0]['line_fluxes']
             # inErr = fit_results[f'{ext_chem}_inputs'][0]['line_err']

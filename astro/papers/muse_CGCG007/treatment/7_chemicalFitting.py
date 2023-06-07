@@ -105,7 +105,7 @@ for i, obj in enumerate(objList):
                 # # Load the results
                 # print(chem_ref)
                 # fit_pickle = sr.load_fit_results(outputDb, ext_name=chem_ref, output_format='fits')
-                # inLines = fit_pickle[f'{chem_ref}_inputs'][0]['line_list']
+                # inLines = fit_pickle[f'{chem_ref}_inputs'][0]['lines_list']
                 # inParameters = fit_pickle[f'{chem_ref}_outputs'][0]['parameters_list']
                 # inFlux = fit_pickle[f'{chem_ref}_inputs'][0]['line_fluxes']
                 # inErr = fit_pickle[f'{chem_ref}_inputs'][0]['line_err']

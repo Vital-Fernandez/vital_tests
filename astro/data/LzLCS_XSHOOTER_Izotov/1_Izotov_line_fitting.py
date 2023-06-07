@@ -115,9 +115,9 @@ for i, obj in enumerate(specNameList):
     # spec.plot_spectrum(spec_label=f'{obj}', comp_array=spec.err_flux)
 
     # # Sorting the mask to put important lines first
-    # mask = lime.load_lines_log(mask_file)
+    # mask = lime.load_lines_log(masks_file)
     # mask = ordering_mask(mask)
-    # lime.save_line_log(mask, mask_file)
+    # lime.save_line_log(mask, masks_file)
 
     # Adjust mask to object
     mask = lime.load_lines_log(mask_file)

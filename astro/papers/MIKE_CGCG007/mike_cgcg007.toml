@@ -1,0 +1,10 @@
+[folders]
+data = "D:/Dropbox/Astrophysics/Data/CGCG007_mike/data"
+treatment =  "D:/Dropbox/Astrophysics/Data/CGCG007_mike/treatment"
+parent_bands_file= "D:/Dropbox/Astrophysics/Data/CGCG007_mike/data/CGCG007_parent_bands.txt"
+redshift_order_file = "D:/Dropbox/Astrophysics/Data/CGCG007_mike/data/redshift_orders.txt"
+
+[CGCG007_025]
+redshift = 0.004691
+
+[default_line_fitting]

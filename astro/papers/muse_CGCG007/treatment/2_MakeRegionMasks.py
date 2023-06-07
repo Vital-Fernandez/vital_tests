@@ -63,8 +63,6 @@ for i, obj in enumerate(objList):
     for i in np.arange(len(flux6563_levels)):
         print(f'{i}) H1_6563A band image {invers_pertil_array[i]} percentil : flux {flux6563_levels[i]:.1f} for {np.sum(flux6563_image > flux6563_levels[i])} voxels')
 
-
-
     # Loop throught the regions
     region_dict = {}
     for idx_contour in np.arange(Halpha_idxMinPercentil):

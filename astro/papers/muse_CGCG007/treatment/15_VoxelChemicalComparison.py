@@ -69,7 +69,7 @@ def plotting_the_traces(db_address, fits_ext, output_folder, model_ext=''):
 
     # Load the results
     fit_pickle = sr.load_fit_results(db_address, ext_name=fits_ext, output_format='fits')
-    inLines = fit_pickle[f'{fits_ext}_inputs'][0]['line_list']
+    inLines = fit_pickle[f'{fits_ext}_inputs'][0]['lines_list']
     inParameters = fit_pickle[f'{fits_ext}_outputs'][0]['parameters_list']
     inFlux = fit_pickle[f'{fits_ext}_inputs'][0]['line_fluxes']
     inErr = fit_pickle[f'{fits_ext}_inputs'][0]['line_err']

@@ -804,6 +804,7 @@ def store_frame_to_fits(fits_address, fits_hdu, ext_name):
 
 
 def import_muse_fits(file_address):
+
     cube = Cube(filename=str(file_address))
     header = cube.data_header
 

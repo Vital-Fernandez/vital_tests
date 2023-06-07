@@ -11,7 +11,7 @@ def plotting_sampling_results(database_file, extension_ref, merged_lines_dicts):
 
     # Load the results
     fit_pickle = sr.load_fit_results(database_file, ext_name=extension_ref, output_format='fits')
-    inLines = fit_pickle[f'{extension_ref}_inputs'][0]['line_list']
+    inLines = fit_pickle[f'{extension_ref}_inputs'][0]['lines_list']
     inParameters = fit_pickle[f'{extension_ref}_outputs'][0]['parameters_list']
     inFlux = fit_pickle[f'{extension_ref}_inputs'][0]['line_fluxes']
     inErr = fit_pickle[f'{extension_ref}_inputs'][0]['line_err']

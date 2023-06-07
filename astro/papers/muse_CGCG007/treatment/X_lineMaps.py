@@ -76,11 +76,11 @@ import sys
 #
 #     # Generate containers for the data:
 #     images_dict, param_list = {}, []
-#     for param, line_list in param_dict.items():
+#     for param, lines_list in param_dict.items():
 #
 #         # Make sure is an array and loop throuh them
-#         line_list = np.array(line_list, ndmin=1)
-#         for line in line_list:
+#         lines_list = np.array(lines_list, ndmin=1)
+#         for line in lines_list:
 #             images_dict[f'{param}-{line}'] = np.full(image_shape, default_value)
 #             param_list.append([param, line])
 #

@@ -152,14 +152,14 @@ for i, logOH in enumerate(logOH_range):
 
             # Plot the results
             fit_pickle = sr.load_MC_fitting(outputDb, output_format='pickle')
-            inLines, inParameters = fit_pickle['inputs']['line_list'], fit_pickle['inputs']['parameter_list']
+            inLines, inParameters = fit_pickle['inputs']['lines_list'], fit_pickle['inputs']['parameter_list']
             inFlux, inErr = fit_pickle['inputs']['line_fluxes'].astype(float), fit_pickle['inputs']['line_err'].astype(float)
             traces_dict = fit_pickle['outputs']
 
             # Load the results
             # fit_fits = sr.load_MC_fitting(outputFits, output_format='fits')
             # in_header, out_header, trace_header = fit_fits['inputs'][1], fit_fits['outputs'][1], fit_fits['traces'][1]
-            # inLines, inParameters = fit_fits['inputs'][0]['line_list'], fit_fits['outputs'][0]['parameters_list']
+            # inLines, inParameters = fit_fits['inputs'][0]['lines_list'], fit_fits['outputs'][0]['parameters_list']
             # inFlux, inErr = fit_fits['inputs'][0]['line_fluxes'], fit_fits['inputs'][0]['line_err']
             # traces_dict = fit_fits['traces'][0]
 

@@ -165,7 +165,7 @@ line_list = ['O3_5007A', 'N2_6584A', 'N2_6584A', 'O2_3726A_b', 'O2_3726A_b']
 param_list = ['logNO', 'logNO', 'logU', 'logU']
 line_list = ['N2_6584A', 'O2_3726A_b', 'O2_3726A_b', 'O3_5007A']
 
-# for param, line in zip(param_list, line_list):
+# for param, line in zip(param_list, lines_list):
 #
 #     fig, ax = plt.subplots()
 #

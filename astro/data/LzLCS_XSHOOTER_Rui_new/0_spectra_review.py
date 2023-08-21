@@ -28,12 +28,12 @@ def sliceUp(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-conf_file = 'LzLCS_XSHOOTER_Rui_cfg.ini'
+conf_file = 'LzLCS_XSHOOTER_Rui_cfg.toml'
 obsCfg = lime.load_cfg(conf_file)
 
 dataFolder = Path(obsCfg['data_location']['data_folder'])
 results_fonder = Path(obsCfg['data_location']['results_folder'])
-refMask = 'D:/Dropbox/Astrophysics/Data/LzLCS_XSHOOTER_Rui/osiris_mask.txt'
+refMask = '/home/vital/Dropbox/Astrophysics/Data/LzLCS_XSHOOTER_Rui_new/osiris_mask.txt'
 
 specNameList = obsCfg['sample_data']['specName_list']
 zList = obsCfg['sample_data']['redshift_array']
@@ -66,7 +66,7 @@ for i, obj in enumerate(specNameList):
     obj_mask = obj_folder / f'{obj}_mask.txt'
 
     spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
-    spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
+    # spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
 
     # if not os.path.exists(obj_folder):
     #     os.makedirs(obj_folder)
@@ -89,9 +89,9 @@ for i, obj in enumerate(specNameList):
     # idcs_mult = matched_masks_DF.index.isin([H1_3970A, H1_4102A, ])
     # print(matched_masks_DF)
 
-    # mask = lime.load_lines_log(obj_mask)
-    # spec.plot_spectrum(match_log=mask, spec_label=f'{obj} spectrum', log_scale=False, frame='rest')
-    #
-    # for lineIntervals in sliceUp(mask.index.values, 4):
-    #     lime.MaskInspector(obj_mask, wave_joined, flux_joined, redshift=zList[i], norm_flux=norm_flux,
-    #                        n_cols=2, lines_interval=lineIntervals, y_scale='natural')
+    mask = lime.load_lines_log(obj_mask)
+    spec.plot_spectrum(match_log=mask, spec_label=f'{obj} spectrum', log_scale=False, frame='rest')
+
+    for lineIntervals in sliceUp(mask.index.values, 4):
+        lime.MaskInspector(obj_mask, wave_joined, flux_joined, redshift=zList[i], norm_flux=norm_flux,
+                           n_cols=2, lines_interval=lineIntervals, y_scale='natural')

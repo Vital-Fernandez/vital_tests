@@ -5,6 +5,7 @@ from shutil import copy as shu_copy
 from astropy.io import fits
 import os
 
+
 def open_XSHOOTER_fits(file_address):
 
     # Open the fits file
@@ -40,14 +41,7 @@ def A_and_K_calculation(log):
     center_profiles = log.center.values
     trans_waves = log.wavelength.values
 
-    ref_lines = log["profile_label"].str.split('-', expand=True)[0].values
-    wave_arr = np.empty(ref_lines.size)
-    for i, line in enumerate(log.index.values):
-        line_label = ref_lines[i]
-        if line_label != 'no':
-            ion_arr, wave_arr[i], latex_array = lime.label_decomposition(line_label, scalar_output=True)
-        else:
-            ion_arr, wave_arr[i], latex_array = lime.label_decomposition(line, scalar_output=True)
+    wave_arr = log.wavelength.to_numpy()
 
     z_peak = peak_waves/wave_arr - 1
     z_profiles = center_profiles/trans_waves -1
@@ -63,22 +57,24 @@ def sliceUp(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-conf_file = 'LzLCS_XSHOOTER_Rui_cfg.ini'
-obsCfg = lime.load_cfg(conf_file, obj_section={'sample_data': 'specName_list'}, def_cfg_sec='default_line_fitting')
+conf_file = 'LzLCS_2spectra.toml'
+obsCfg = lime.load_cfg(conf_file)#, obj_section={'sample_data': 'specName_list'}, def_cfg_sec='default_line_fitting')
 
 dataFolder = Path(obsCfg['data_location']['data_folder'])
 results_fonder = Path(obsCfg['data_location']['results_folder'])
-refMask = '/home/vital/Dropbox/Astrophysics/Data/LzLCS_XSHOOTER_Rui/osiris_mask.txt'
 
 specNameList = obsCfg['sample_data']['specName_list']
 zList = obsCfg['sample_data']['redshift_array']
 norm_flux = obsCfg['sample_data']['norm_flux']
 
+# target_lines = ['H1_4861.2582A_b', 'O3_4958.8348A_b', 'O3_5006.7664A_b', 'N2_6583.3513A_b', 'S2_6716.3386A_b']
+target_lines = ['H1_4861.2582A_b', 'O3_4958.8348A_b', 'O3_5006.7664A_b', 'N2_6583.3513A_b', 'S2_6716.3386A_b']
+
 for i, obj in enumerate(specNameList):
 
     order_list = obsCfg['sample_data'][f'order_list']
     obj_folder = results_fonder / obj
-    mask_file = obj_folder / f'{obj}_mask.txt'
+    mask_file = dataFolder / obj / f'{obj}_mask.txt'
 
     # Loop through the orders
     wave_joined, flux_joined, err_joined = np.array([]), np.array([]), np.array([])
@@ -92,7 +88,8 @@ for i, obj in enumerate(specNameList):
         wave, err = open_XSHOOTER_fits(errFileName)
 
         # Crop and join the orders
-        wmin, wmax = obsCfg['sample_data'][f'{obj}_{order_label}_limits_array'] * (1 + zList[i])
+        wlim_rest = np.array(obsCfg['sample_data'][f'{obj}_{order_label}_limits_array'])
+        wmin, wmax = wlim_rest * (1 + zList[i])
         idcs_spec = np.searchsorted(wave, (wmin, wmax))
         wave_joined = np.concatenate([wave_joined, wave[idcs_spec[0]:idcs_spec[1]]])
         flux_joined = np.concatenate([flux_joined, flux[idcs_spec[0]:idcs_spec[1]]])
@@ -100,21 +97,23 @@ for i, obj in enumerate(specNameList):
 
     # Adjust mask to object
     print(f'\n Fitting {obj}\n')
-    spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
-    # spec.plot_spectrum(spec.err_flux, spec_label=f'{obj}', frame='rest')
+    spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux,)
 
-    # Adjust mask to object
-    mask = lime.load_lines_log(mask_file)
-    obj_cfg = obsCfg[f'{obj}_line_fitting']
-    for line in mask.index:
-        print(line)
-        mask_waves = mask.loc[line, 'w1':'w6'].values
-        spec.fit_from_wavelengths(line, mask_waves, obj_cfg)
-        spec.display_results(fit_report=False, log_scale=True, output_address=obj_folder/f'{line}_gaussian_components.png')
-        try:
-            spec.plot_line_velocity(output_address=obj_folder/f'{line}_velocity_percentiles.png')
-        except:
-            print(f'This line failed {line}')
+    spec.fit.frame(mask_file, obsCfg, id_conf_prefix=f'{obj}', progress_output='counter')
+    # spec.plot.spectrum(label=f'{obj}', include_fits=True, rest_frame=True)
+
+    # Make the folder to save the data
+    objFolder = results_fonder / obj
+    if not objFolder.exists():
+        objFolder.mkdir(parents=True, exist_ok=True)
+
+    # # Make the plots
+    # for line in spec.log.index:
+    #     spec.plot.bands(line, output_address=objFolder / f'{line}_profile_fitting.png')
+    #     try:
+    #         spec.plot.velocity_profile(line, output_address=objFolder / f'{line}_velocity_percentiles.png')
+    #     except:
+    #         print(f'This line failed {line}')
 
     A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
     spec.log['A_factor'] = A_array
@@ -123,6 +122,5 @@ for i, obj in enumerate(specNameList):
     spec.log['v_r_fitelp'] = v_r_fitelp_arr
     spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
 
-    # Save line measurements
-    lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
-    lime.save_line_log(spec.log, results_fonder/f'Rui_sample_linesLog.xlsx', ext=obj)
+    spec.save_log(objFolder / f'{obj}_linesLog.txt')
+    lime.save_log(spec.log, objFolder / f'MIKE_sample_linesLog.xlsx', page=obj)

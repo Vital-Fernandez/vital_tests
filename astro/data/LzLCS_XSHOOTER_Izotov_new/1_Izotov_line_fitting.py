@@ -53,10 +53,7 @@ def A_and_K_calculation(log):
     center_profiles = log.center.values
     trans_waves = log.wavelength.values
 
-    ref_lines = log["profile_label"].str.split('-', expand=True)[0].values
-    wave_arr = np.empty(ref_lines.size)
-    for i, line_label in enumerate(ref_lines):
-        ion_arr, wave_arr[i], latex_array = lime.label_decomposition(line_label, scalar_output=True)
+    wave_arr = log.wavelength.to_numpy()
 
     z_peak = peak_waves/wave_arr - 1
     z_profiles = center_profiles/trans_waves -1
@@ -68,8 +65,8 @@ def A_and_K_calculation(log):
     return A_factor, K_factor, W_80, v_r_fitelp, v_r_err_fitelp
 
 
-conf_file = 'LzLCS_XSHOOTER_Izotov_cfg.ini'
-obsCfg = lime.load_cfg(conf_file, obj_section={'sample_data': 'specName_list'}, def_cfg_sec='default_line_fitting')
+conf_file = 'LzLCS_XSHOOTER_Izotov_cfg.toml'
+obsCfg = lime.load_cfg(conf_file)
 
 dataFolder = Path(obsCfg['data_location']['data_folder'])
 results_fonder = Path(obsCfg['data_location']['results_folder'])
@@ -77,7 +74,6 @@ results_fonder = Path(obsCfg['data_location']['results_folder'])
 specNameList = obsCfg['sample_data']['specName_list']
 zList = obsCfg['sample_data']['redshift_array']
 norm_flux = obsCfg['sample_data']['norm_flux']
-refMask = '/home/vital/Dropbox/Astrophysics/Data/LzLCS_ISIS/data/reference_mask.txt'
 
 for i, obj in enumerate(specNameList):
 
@@ -85,7 +81,7 @@ for i, obj in enumerate(specNameList):
 
     order_list = obsCfg['sample_data'][f'{obj}_order_list']
     obj_folder = results_fonder/obj
-    mask_file = obj_folder/f'{obj}_mask.txt'
+    mask_file = dataFolder/f'{obj}'/f'{obj}_mask.txt'
 
     # Loop through the orders
     wave_joined, flux_joined, err_joined = np.array([]), np.array([]), np.array([])
@@ -99,7 +95,8 @@ for i, obj in enumerate(specNameList):
         wave, err = open_XSHOOTER_fits(errFileName)
 
         # Crop and join the orders
-        wmin, wmax = obsCfg['sample_data'][f'{obj}_{order_label}_array_limits'] * (1 + zList[i])
+        wlim_rest = np.array(obsCfg['sample_data'][f'{obj}_{order_label}_array_limits'])
+        wmin, wmax = wlim_rest * (1 + zList[i])
         idcs_spec = np.searchsorted(wave, (wmin, wmax))
         wave_joined = np.concatenate([wave_joined, wave[idcs_spec[0]:idcs_spec[1]]])
         flux_joined = np.concatenate([flux_joined, flux[idcs_spec[0]:idcs_spec[1]]])
@@ -112,25 +109,19 @@ for i, obj in enumerate(specNameList):
     # LiMe spectrum
     print(f'\n Fitting {obj}\n')
     spec = lime.Spectrum(wave_joined, flux_joined, input_err=None, redshift=zList[i], norm_flux=norm_flux)
-    # spec.plot_spectrum(spec_label=f'{obj}', comp_array=spec.err_flux)
-
-    # # Sorting the mask to put important lines first
-    # mask = lime.load_lines_log(masks_file)
-    # mask = ordering_mask(mask)
-    # lime.save_line_log(mask, masks_file)
 
     # Adjust mask to object
-    mask = lime.load_lines_log(mask_file)
-    obj_cfg = obsCfg[f'{obj}_line_fitting']
-    for line in mask.index:
+    spec.fit.frame(mask_file, obsCfg, id_conf_prefix=obj)
 
-        mask_waves = mask.loc[line, 'w1':'w6'].values
-        spec.fit_from_wavelengths(line, mask_waves, obj_cfg, fit_method='least_squares')
-        spec.display_results(fit_report=False, log_scale=True, output_address=obj_folder/f'{line}_gaussian_components.png')
+    if not obj_folder.exists():
+        obj_folder.mkdir(parents=True, exist_ok=True)
+
+    for line in ['H1_4861A', 'O3_5007A', 'H1_6563A']:
+        spec.plot.bands(line, output_address=obj_folder/f'{line}_profile_fitting.png')
         try:
-            spec.plot_line_velocity(output_address=obj_folder/f'{line}_velocity_percentiles.png')
+            spec.plot.velocity_profile(line, output_address=obj_folder/f'{line}_velocity.png')
         except:
-            print(f'This line failed {line}')
+            print(f'{line} velcity plot failure')
 
     A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
     spec.log['A_factor'] = A_array
@@ -140,5 +131,5 @@ for i, obj in enumerate(specNameList):
     spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
 
     # Save line measurements
-    lime.save_line_log(spec.log, obj_folder/f'{obj}_linesLog.txt')
-    lime.save_line_log(spec.log, results_fonder/f'IZOTOV_sample_linesLog.xlsx', ext=obj)
+    lime.save_log(spec.log, obj_folder / f'{obj}_linesLog.txt')
+    lime.save_log(spec.log, results_fonder / f'Izotov_sample_linesLog.xlsx', page=obj)

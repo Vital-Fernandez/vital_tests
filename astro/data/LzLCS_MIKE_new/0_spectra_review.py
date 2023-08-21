@@ -31,12 +31,12 @@ def sliceUp(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
-conf_file = 'LzLCS_2spectra.ini'
+conf_file = 'LzLCS_2spectra.toml'
 obsCfg = lime.load_cfg(conf_file)
 
 dataFolder = Path(obsCfg['data_location']['data_folder'])
 results_fonder = Path(obsCfg['data_location']['results_folder'])
-refMask = '/home/vital/Dropbox/Astrophysics/Data/LzLCS_2spectra/reference_mask.txt'
+refMask = '/home/vital/Dropbox/Astrophysics/Data/LzLCS_MIKE_new/reference_mask.txt'
 
 specNameList = obsCfg['sample_data']['specName_list']
 zList = obsCfg['sample_data']['redshift_array']

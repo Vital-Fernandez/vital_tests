@@ -21,7 +21,7 @@ def open_XSHOOTER_fits(file_address):
 
     return wave_arr, data
 
-conf_file = 'LzLCS_XSHOOTER_Izotov_cfg.ini'
+conf_file = 'LzLCS_XSHOOTER_Izotov_cfg.toml'
 obsCfg = lime.load_cfg(conf_file)
 
 dataFolder = Path(obsCfg['data_location']['data_folder'])

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../dazer/.idea/Dazer.iml" filepath="$PROJECT_DIR$/../dazer/.idea/Dazer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../thesis_pipeline/.idea/Thesis_Pipeline.iml" filepath="$PROJECT_DIR$/../thesis_pipeline/.idea/Thesis_Pipeline.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../spectra-synthesizer/.idea/spectra-synthesizer.iml" filepath="$PROJECT_DIR$/../spectra-synthesizer/.idea/spectra-synthesizer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../spectra-synthesizer-maybe/.idea/spectra-synthesizer-maybe.iml" filepath="$PROJECT_DIR$/../spectra-synthesizer-maybe/.idea/spectra-synthesizer-maybe.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/vital_tests.iml" filepath="$PROJECT_DIR$/.idea/vital_tests.iml" />
     </modules>

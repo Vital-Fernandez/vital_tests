@@ -91,7 +91,7 @@ Te_vector = np.empty(len(Ms))
 ne_vector = np.empty(len(Ms))
 emis_dict = dict.fromkeys(emis_tab, np.empty(len(Ms)))
 
-print 'somos ', len(Ms), ' y deberiamos ser', len(Te_interval)
+print('somos ', len(Ms), ' y deberiamos ser', len(Te_interval))
 
 for i in range(len(Ms)):
     ne_vector[i] = Ms[i].ne
@@ -120,14 +120,14 @@ for i in range(len(Ms)):
 # dz.display_fig()
 
 idx_sort = np.argsort(Te_vector)
-print Te_vector[idx_sort]
+print(Te_vector[idx_sort])
 
 He1 = pn.RecAtom('He', 1)
 
 HeI_5875_emis = He1.getEmissivity(Te_vector[idx_sort], 100.2, label='5876.0')
 
-print HeI_5875_emis
-print emis_dict['HE 1 5875.64A'][idx_sort]
+print(HeI_5875_emis)
+print(emis_dict['HE 1 5875.64A'][idx_sort])
 
 
 dz.data_plot(Te_vector[idx_sort], emis_dict['HE 1 5875.64A'][idx_sort], 'Cloudy emissivities')

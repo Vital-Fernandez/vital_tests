@@ -1,0 +1,5 @@
+[default_line_fitting]
+H1_6565A_b = 'H1_6565A+N2_6585A+N2_6550A'
+N2_6550A_kinem = 'N2_6585A'
+
+N2_6550A_amp = 'expr:N2_6585A_amp/2.942'

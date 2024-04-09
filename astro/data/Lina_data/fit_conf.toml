@@ -1,0 +1,12 @@
+[default_line_fitting]
+#O3_5007A_b = 'O3_5007A+O3_5007A_k-1+O3_5007A_k-2+O3_5007A_k-3'
+
+O3-exp_5007A_b = 'O3_5007A+O3_5007A_p-e'
+O3_5007A_p-e_center = "expr:O3_5007A_center"
+
+O3-3comps_5007A_b = 'O3_5007A+O3_5007A_k-1+O3_5007A_k-2'
+O3_5007A_sigma = "min:0.5"
+O3_5007A_k-1_sigma = "expr:>2*O3_5007A_sigma"
+O3_5007A_k-2_sigma = "expr:>2*O3_5007A_k-1_sigma"
+#O3_5007A_k-2_sigma = "expr:>3*O3_5007A_k-1_sigma"
+#O3_5007A_k-3_sigma = "expr:>6*O3_5007A_k-2_sigma"

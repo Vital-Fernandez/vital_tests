@@ -8,7 +8,7 @@ from astropy.io import fits
 from matplotlib import pyplot as plt, rcParams, cm, colors
 from astropy.wcs import WCS
 
-from astro.papers.muse_CGCG007.muse_CGCG007_methods import label_Conver, target_lines, param_images, latex_Conver, dinamicLines
+from astro.papers.muse_CGCG007.muse_CGCG007_methods import label_Conver, latex_Conver,
 
 # Declare data and files location
 obsData = lm.load_cfg('../muse_CGCG007.ini')

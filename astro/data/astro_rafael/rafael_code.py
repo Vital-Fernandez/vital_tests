@@ -4,7 +4,7 @@ from pathlib import Path
 
 spec_address = './Hf2_2.fits'
 mask_plot = './Hf2_2_mask.png'
-cfgFile = './Hf2_2.toml'
+cfgFile = './muse.toml'
 spatial_mask = './Hf2_2_mask.fits'
 
 # Cargamos las lineas para leer
@@ -38,6 +38,5 @@ spec.plot.spectrum()
 
 
 # hf2.check.cube('H1_6563A', masks_file=spatial_mask_file)
-# hf2.fit.spatial_mask(spatial_mask_file, bands=bands_file, fit_conf=obs_cfg, mask_list="MASK_0",
-#                      line_detection=True, output_address=output_lines_log_file)
-
+continuum_fit.degree_list = [3, 6, 6]
+continuum_fit.emis_threshold = [5, 3, 2]

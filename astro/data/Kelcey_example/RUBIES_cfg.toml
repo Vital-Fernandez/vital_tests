@@ -1,0 +1,9 @@
+['default_line_fitting']
+O2_3727A_m = 'O2_3727A+O2_3730A'
+Ne3_3870A_m = 'Ne3_3870A+H1_3890A'
+
+['8488_line_fitting']
+H1_4342A_b = "H1_4342A+O3_4364A"
+O3_5008A_b = "O3_4960A+O3_5008A"
+
+H1_4863A_k-1_sigma = "expr:>1.0*H1_4863A_sigma"

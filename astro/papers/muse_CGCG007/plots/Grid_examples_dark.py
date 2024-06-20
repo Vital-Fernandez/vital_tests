@@ -13,15 +13,16 @@ lime.theme.set_style('dark')
 STANDARD_PLOT = lime.theme.fig_defaults()
 
 # Load the fitting configuration
-obsData = lime.load_cfg('../muse_CGCG007.ini')
-dataFolder = Path(obsData['data_location']['data_folder'])
-resultsFolder = Path(obsData['data_location']['results_folder'])
-conf_fit = lime.load_cfg(dataFolder/'HII_CHIM_TRY_grid.cfg')
-plots_folder = Path(obsData['data_location']['plots_folder'])
+# dataFolder = Path(obsData['data_location']['data_folder'])
+# resultsFolder = Path(obsData['data_location']['results_folder'])
+# plots_folder = Path(obsData['data_location']['plots_folder'])
+
+dataFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/data')
+resultsFolder = Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/treatment')
+plots_folder = Path('/home/vital/Dropbox/Astrophysics/Papers/muse_CGCG007/paper/plots')
 
 # Load the photoionization grid
 file_address = f'{dataFolder}/HII-CHI-mistry_1Myr_grid_O.txt'
-grid_3D_DF = pd.read_csv(file_address, delim_whitespace=True, header=0)
 
 # Lines for the fitting
 obs_lines = np.array(['O3_4959A', 'O3_5007A',

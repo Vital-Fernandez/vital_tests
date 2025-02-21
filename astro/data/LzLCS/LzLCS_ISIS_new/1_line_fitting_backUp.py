@@ -1,10 +1,9 @@
 import numpy as np
 import lime
-from lime.io import load_fits
+from lime.read_fits import OpenFits
 from pathlib import Path
 from shutil import copy as shu_copy
-from lime.model import PROFILE_FUNCTIONS
-from matplotlib import pyplot as plt
+
 
 def A_and_K_calculation(log):
 
@@ -52,8 +51,6 @@ refMask = '/Users/matiasrodriguez/Desktop/TESIS/VITAL/LzLCS_ISIS_new/data/refere
 
 for i, specName in enumerate(specNameList):
 
-    if i >= 6:
-
         # Loop through the orders
         wave_joined, flux_joined, err_joined = np.array([]), np.array([]), np.array([])
         for arm in arm_list:
@@ -75,38 +72,32 @@ for i, specName in enumerate(specNameList):
         if not objFolder.exists():
             objFolder.mkdir(parents=True, exist_ok=True)
 
-        # Bands file
-        bands_file = dataFolder / objList[i] / f'{objList[i]}_mask.txt'
-
         # Lime spectrum
         print(f'- ({i}) {objList[i]}:')
-
         spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
-        # spec.fit.frame(bands_file, conf_file, id_conf_prefix=objList[i], plot_fit=True)
 
-        spec.fit.bands('O3_5007A_b', bands_file, conf_file, id_conf_prefix=objList[i])
-        spec.plot.bands()
+        # Fit the lines
+        bands_df = lime.load_log(dataFolder/objList[i]/f'{objList[i]}_mask.txt')
+        spec.fit.frame(bands_df, obsCfg, id_conf_prefix=objList[i], plot_fit=False)
+        spec.fit.report()
 
-        w_limits = spec.log.loc['O3_5007A_k-1', ['w1', 'w6']].to_numpy()
-        idx1, idx6 = np.searchsorted(spec.wave, w_limits * (1 + spec.redshift))
-        x_array = spec.wave[idx1:idx6]
-        m_cont, n_cont, amp, center, sigma = spec.log.loc['O3_5007A_k-1', ['m_cont', 'n_cont', 'amp', 'center', 'sigma']]
-        cont_array = m_cont * x_array + n_cont
-        profile_array = PROFILE_FUNCTIONS['g'](x_array, amp, center, sigma)
-        y_array = profile_array + cont_array
+        # Make the plots
+        obj_cfg = obsCfg[f'{objList[i]}_line_fitting']
+        for line in bands_df.index:
+            spec.plot.bands(line, output_address=objFolder/f'{line}_profile_fitting.png')
+            try:
+                spec.plot.velocity_profile(line, output_address=objFolder/f'{line}_velocity_percentiles.png')
+            except:
+                print(f'This line failed {line}')
 
-        fig, ax = plt.subplots()
-        ax.step(spec.wave[idx1:idx6], spec.flux[idx1:idx6]-profile_array/spec.norm_flux)
-        # ax.plot(x_array, y_array/spec.norm_flux)
-        ax.set_xlabel('Wavelength')
-        ax.set_ylabel('Flux')
-        ax.set_yscale('symlog')
-        plt.show()
+        A_array, K_array, w_80_array, v_r_fitelp_arr, v_r_err_fitelp_arr = A_and_K_calculation(spec.log)
+        spec.log['A_factor'] = A_array
+        spec.log['K_array'] = K_array
+        spec.log['w_80'] = w_80_array
+        spec.log['v_r_fitelp'] = v_r_fitelp_arr
+        spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
 
-
-
-
-
-
+        spec.save_log(objFolder/f'{objList[i]}_linesLog.txt')
+        lime.save_log(spec.log, treatmentFolder/f'ISIS_sample_linesLog.xlsx', page=objList[i])
 
 

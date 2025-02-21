@@ -1,9 +1,10 @@
 import numpy as np
 import lime
-from lime.io import load_fits
+# from lime.io import load_fits
+from lime.read_fits import OpenFits
 from pathlib import Path
 from shutil import copy as shu_copy
-
+lime.theme.set_style('dark')
 
 def A_and_K_calculation(log):
 
@@ -59,13 +60,16 @@ for i, specName in enumerate(specNameList):
             file_spec = dataFolder/objList[i]/f'{specName}_{arm}_f_w_e_flux_nearest.fits'
 
             # Load the data
-            wave, data, hdr = load_fits(file_spec, instrument='ISIS', frame_idx=0)
-            flux, err = data[0][0], data[3][0]
+            # wave, data, hdr = load_fits(file_spec, instrument='ISIS', frame_idx=0)
+            wave_array, data_array, err_array, header_list, params_dict= OpenFits.isis(file_spec)
+            # flux, err = data[0][0], data[3][0]
 
+            flux_array = data_array[0][0]
+            err_array =  data_array[3][0]
             # Crop and join the orders
-            wave_joined = np.concatenate([wave_joined, wave])
-            flux_joined = np.concatenate([flux_joined, flux])
-            err_joined = np.concatenate([err_joined, err])
+            wave_joined = np.concatenate([wave_joined, wave_array])
+            flux_joined = np.concatenate([flux_joined, flux_array])
+            err_joined = np.concatenate([err_joined, err_array])
 
         # Make the folder to save the data
         objFolder = treatmentFolder/objList[i]
@@ -77,8 +81,9 @@ for i, specName in enumerate(specNameList):
         spec = lime.Spectrum(wave_joined, flux_joined, input_err=err_joined, redshift=zList[i], norm_flux=norm_flux)
 
         # Fit the lines
-        bands_df = lime.load_log(dataFolder/objList[i]/f'{objList[i]}_mask.txt')
+        bands_df = lime.load_frame(dataFolder/objList[i]/f'{objList[i]}_mask.txt')
         spec.fit.frame(bands_df, obsCfg, id_conf_prefix=objList[i], plot_fit=False)
+        spec.plot.bands('O3_5007A', rest_frame=True)
         spec.fit.report()
 
         # Make the plots
@@ -97,7 +102,7 @@ for i, specName in enumerate(specNameList):
         spec.log['v_r_fitelp'] = v_r_fitelp_arr
         spec.log['v_r_err_fitelp'] = v_r_err_fitelp_arr
 
-        spec.save_log(objFolder/f'{objList[i]}_linesLog.txt')
-        lime.save_log(spec.log, treatmentFolder/f'ISIS_sample_linesLog.xlsx', page=objList[i])
+        # spec.save_log(objFolder/f'{objList[i]}_linesLog.txt')
+        # lime.save_log(spec.log, treatmentFolder/f'ISIS_sample_linesLog.xlsx', page=objList[i])
 
 

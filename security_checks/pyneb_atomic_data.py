@@ -18,12 +18,17 @@ N2 = pn.Atom('N', 2)
 plt.show()
 print('S3 line ratio', S3.getEmissivity(8000, 1000, wave=9531) / S3.getEmissivity(8000, 1000, wave=9069))
 print('N2 line ratio', N2.getEmissivity(8000, 1000, wave=6583) / N2.getEmissivity(8000, 1000, wave=6548))
-
+print(N2.printSources())
+print('----------')
 #
 # print(pn.__version__)
 # He1.printSources()
 #
 print('O3 line ratio', O3.getEmissivity(8000, 1000, wave=5007) / O3.getEmissivity(8000, 1000, wave=4959))
+print(O3.printSources())
+print('----------')
+O3.plotGrotrian()
+plt.show()
 # print('Ar4 line ratio', Ar4.getEmissivity(15000, 100, wave=4740) / Ar4.getEmissivity(15000, 100, wave=4710))
 #
 

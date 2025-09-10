@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from uncertainties import ufloat
 from uncertainties import unumpy
-from astro.ext_lib.bces_script import bces_functions as bc
+from tools.bces_script import bces_functions as bc
 from matplotlib import pyplot as plt, rcParams, spines
 
 def load_excel_DF(frame_address):

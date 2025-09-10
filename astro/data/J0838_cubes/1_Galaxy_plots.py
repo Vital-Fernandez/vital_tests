@@ -75,7 +75,7 @@ for i, obj in enumerate(objList):
 
             plot_image_file = objFolder/f'{obj}_{lineLabel}_contours.png'
 
-            # # Extract cube slice using mpdaf defult tools.
+            # # Extract cube slice using mpdaf defult pyPopstar.
             # # This requires the input wavelengths to be on the same scale as in the cube
             # line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)
             # flux_image = line_image.data.data

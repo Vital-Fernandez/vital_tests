@@ -17,7 +17,7 @@ flux_norm = 1e20
 wave, flux_voxel = np.loadtxt(files_path/spectrum_file, unpack=True)
 flux_voxel = flux_voxel / flux_norm
 
-# Treatment tools
+# Treatment pyPopstar
 nebCalc = NebularContinua()
 lm = sr.EmissionFitting(wave, flux_voxel)
 

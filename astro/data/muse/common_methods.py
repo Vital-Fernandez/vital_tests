@@ -281,7 +281,7 @@ grid_columns = {'logZ': 'logOH',
 #     # Loop through the input wavelength regions
 #     for lineLabel, lineLimits in lineArea_dict.items():
 #
-#         # Extract cube slice using mpdaf defult tools. This requires the input wavelengths to be
+#         # Extract cube slice using mpdaf defult pyPopstar. This requires the input wavelengths to be
 #         # on the same scale as in the cube
 #         line_image = flux_cube.get_image(np.array(lineLimits) * (1 + redshift), subtract_off=True)
 #         flux_image = line_image.data.data

@@ -40,7 +40,7 @@ for i, obj in enumerate(obj_list):
     wave, flux, err, hdr = open_manga_cubes(cube_address_i)
     print(f'\n- {obj}: Cube dimensions {flux.shape}')
 
-    # Extract cube slice using mpdaf defult tools.
+    # Extract cube slice using mpdaf defult pyPopstar.
     idcs_line = np.searchsorted(wave, line_regions[ref_flux_line])
     flux4363_image = flux[idcs_line[0]:idcs_line[1], :, :].sum(axis=0)
     flux4363_levels = np.nanpercentile(flux4363_image, percentil_array)

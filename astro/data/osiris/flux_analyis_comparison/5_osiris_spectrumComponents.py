@@ -3,10 +3,8 @@ from pathlib import Path
 import src.specsiser as sr
 import atpy
 from src.specsiser.components.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from astro.ext_lib.starlight.plotstarlightfits import plot_fits_and_SFH
-import astro.ext_lib.starlight
+from tools.starlight import plot_fits_and_SFH
 
 objList = ['gp030321', 'gp101157', 'gp121903']
 conf_file_address = '../../../papers/gtc_greenpeas/gtc_greenpeas_data.ini'

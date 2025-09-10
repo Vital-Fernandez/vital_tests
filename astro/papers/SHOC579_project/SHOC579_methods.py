@@ -1,7 +1,7 @@
 import numpy as np
 from astropy.wcs import WCS
 from matplotlib import pyplot as plt, rcParams, gridspec, cm, colors
-# from src.specsiser.tools.line_measure import STANDARD_PLOT, STANDARD_AXES
+# from src.specsiser.pyPopstar.line_measure import STANDARD_PLOT, STANDARD_AXES
 from astropy.io import fits
 
 STANDARD_PLOT = {'figure.figsize': (20, 14), 'axes.titlesize': 14, 'axes.labelsize': 14, 'legend.fontsize': 12,

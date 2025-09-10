@@ -37,7 +37,7 @@ db_addresss = objFolder/f'{obj}_database.fits'
 wave, cube, header = import_muse_fits(cube_address_i)
 wave = wave / (1 + z_objs[i])
 
-# Extract cube slice using mpdaf defult tools.
+# Extract cube slice using mpdaf defult pyPopstar.
 line_image = cube.get_image(np.array(lineLimits) * (1 + z_objs[i]), subtract_off=True)
 flux_image = line_image.data.data
 levelContours = np.nanpercentile(flux_image, pertil_array)

@@ -68,7 +68,7 @@ for i, obj in enumerate(obj_list):
         plot_image_file = objFolder/f'{obj}_{lineLabel}_contours.png'
         ion, wavelength, latexLabel = lm.label_decomposition(lineLabel, scalar_output=True)
 
-        # Extract cube slice using mpdaf defult tools.
+        # Extract cube slice using mpdaf defult pyPopstar.
         idcs_line = np.searchsorted(wave, lineLimits)
         lineMap = flux[idcs_line[0]:idcs_line[1], :, :].sum(axis=0)
         levelContours = np.nanpercentile(lineMap, percentil_array)

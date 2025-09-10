@@ -5,8 +5,7 @@ import atpy
 from src.specsiser.components.starContinuum_functions import SSPsynthesizer, computeSSP_galaxy_mass
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from astro.ext_lib.starlight.plotstarlightfits import plot_fits_and_SFH
-import astro.ext_lib.starlight
+from tools.starlight import plot_fits_and_SFH
 from matplotlib import gridspec
 import matplotlib
 from matplotlib.ticker import ScalarFormatter

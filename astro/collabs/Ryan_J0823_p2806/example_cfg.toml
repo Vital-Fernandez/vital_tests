@@ -1,0 +1,46 @@
+[meta]
+
+[default_line_fitting]
+bands = "./sp_mask0_bands.txt"
+continuum.degree_list = [5,6,7]
+continuum.emis_threshold = [4, 3, 2]
+peaks_troughs.sigma_threshold = 3
+
+O2_3726A_b = 'O2_3726A+O2_3729A'
+H1_3889A_m = "H1_3889A+He1_3889A"
+Ne3_3968A_b = "Ne3_3968A+H1_3970A"
+Ar4_4711A_m = "Ar4_4711A+He1_4713A"
+N1_5198A_m = "N1_5198A+N1_5200A"
+
+map_band_vsigma.O2_3726A = 250
+map_band_vsigma.O2_3729A = 250
+map_band_vsigma.Ne3_3968A = 250
+map_band_vsigma.H1_3970A = 250
+map_band_vsigma.H1_4861A = 250
+map_band_vsigma.O3_4959A = 250
+map_band_vsigma.O3_5007A = 250
+
+[Temp_O3_99p_line_fitting]
+bands = "./Temp_O3_99p_mask_bands.txt"
+O2_3726A_b = 'O2_3726A+O2_3729A+H1_3722A+H1_3734A'
+O2_3729A_kinem = "O2_3726A"
+H1_3722A_kinem = "O2_3726A"
+H1_3734A_kinem = "O2_3726A"
+
+O3_5007A_b = 'O3_5007A+O3_5007A_k-1+He1_5016A'
+He1_5016A_kinem = 'O3_5007A'
+O3_5007A_k-1_sigma = 'expr:>1.5*O3_5007A_sigma'
+
+O3_4959A_b = 'O3_4959A+O3_4959A_k-1'
+O3_4959A_k-1_sigma = 'expr:>1.5*O3_4959A_sigma'
+
+H1_4861A_b = 'H1_4861A+H1_4861A_k-1'
+H1_4861A_k-1_sigma = 'expr:>1.5*H1_4861A_sigma'
+
+[Temp_O3_98p_line_fitting]
+bands = "./Temp_O3_98p_mask_bands.txt"
+rejected_lines = ['H1_3704A', 'H1_3722A', 'H1_3734A', 'S2_4069A', 'S2_4076A', 'He1_5016A', 'N1_5198A', 'N1_5200A']
+
+[FG_O2_60p_line_fitting]
+bands = "./FG_O2_60p_mask_bands.txt"
+rejected_lines = ['H1_3704A', 'H1_3722A', 'H1_3734A', 'S2_4069A', 'S2_4076A', 'He1_5016A', 'N1_5198A', 'N1_5200A']

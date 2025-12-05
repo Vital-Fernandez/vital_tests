@@ -1,5 +1,6 @@
 import pyneb as pn
 from matplotlib import pyplot as plt
+
 He1 = pn.RecAtom('He', 1)
 H1 = pn.RecAtom('H', 1)
 O3 = pn.Atom('O', 3)
@@ -20,6 +21,8 @@ print('S3 line ratio', S3.getEmissivity(8000, 1000, wave=9531) / S3.getEmissivit
 print('N2 line ratio', N2.getEmissivity(8000, 1000, wave=6583) / N2.getEmissivity(8000, 1000, wave=6548))
 print(N2.printSources())
 print('----------')
+N2.plotGrotrian()
+plt.show()
 #
 # print(pn.__version__)
 # He1.printSources()
@@ -27,8 +30,7 @@ print('----------')
 print('O3 line ratio', O3.getEmissivity(8000, 1000, wave=5007) / O3.getEmissivity(8000, 1000, wave=4959))
 print(O3.printSources())
 print('----------')
-O3.plotGrotrian()
-plt.show()
+
 # print('Ar4 line ratio', Ar4.getEmissivity(15000, 100, wave=4740) / Ar4.getEmissivity(15000, 100, wave=4710))
 #
 

@@ -1,5 +1,5 @@
 import numpy as np
-import pyneb as pn
+import pyneb_diagnostic_diagram as pn
 import pyCloudy as pc
 from dazer_methods import Dazer
 

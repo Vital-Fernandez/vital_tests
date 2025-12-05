@@ -1,4 +1,4 @@
-import pyneb as pn
+import pyneb_diagnostic_diagram as pn
 import numpy as np
 
 redCor1 = pn.RedCorr(E_BV=0.193, R_V=3.1, law='CCM89')

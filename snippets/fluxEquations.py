@@ -1,4 +1,4 @@
-import pyneb as pn
+import pyneb_diagnostic_diagram as pn
 import numpy as np
 import src.specsiser as sr
 

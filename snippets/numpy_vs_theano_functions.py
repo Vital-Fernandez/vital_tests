@@ -2,7 +2,7 @@ import theano
 import numpy as np
 import src.specsiser as sr
 import theano.tensor as T
-import pyneb as pn
+import pyneb_diagnostic_diagram as pn
 
 theano.config.on_unused_input = 'ignore'
 

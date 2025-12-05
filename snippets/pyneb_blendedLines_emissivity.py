@@ -1,5 +1,5 @@
 import numpy as np
-import pyneb as pn
+import pyneb_diagnostic_diagram as pn
 
 H1 = pn.RecAtom('H', 1)
 

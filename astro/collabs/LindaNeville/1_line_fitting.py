@@ -22,7 +22,17 @@ if not data.dtype.isnative:
 df = pd.DataFrame.from_records(data)
 df["source"] = df["source"].astype(str)
 df["grating"] = df["grating"].astype(str)
-df = df.loc[df.source == '100310']
+
+
+target_files = ['obj100310_slit122.0_gratG140M', 'obj200255_slit121.0_gratG235M', 'obj200255_slit121.0_gratG395M',
+                'obj200256_slit8.0_gratG235M', 'obj200309_slit8.0_gratG395M', 'objslit8 u1_slit8.0_gratG140M']
+
+# 12), obj100310_slit122.0_gratG140M
+# 22), obj200255_slit121.0_gratG235M
+# 23), obj200255_slit121.0_gratG395M
+# 25), obj200256_slit8.0_gratG235M
+# 29), obj200309_slit8.0_gratG395M 'Este'
+# 39), objslit8 u1_slit8.0_gratG140M
 
 # Loop through the objects (21 cosmic rays, 25 absorptions)
 counter = 0
@@ -51,27 +61,31 @@ for i, obj_name in enumerate(obj_list):
 
                 # Components detection
                 spec.infer.components()
+                # spec.plot.spectrum(show_components=True, log_scale=True)
+                if obj_ref in target_files:
+                    spec.retrieve.spectrum(fname=f'./spec_txt/{obj_ref}.txt')
 
-                # Get object bands
-                bands = spec.retrieve.lines_frame(automatic_grouping=True, fit_cfg=cfg, obj_cfg_prefix=obj_ref,
-                                                  components=['emission', 'doublet-em'])
-                # spec.plot.spectrum(bands=bands, log_scale=True, rest_frame=True, maximize=True, show_components=True)
 
-                if not bands_file.is_file():
-                    lime.save_frame(bands_file, bands)
-
-                # Manual Review
-                # spec.check.bands(bands_file, fit_cfg=cfg, obj_cfg_prefix=obj_ref)
-
-                # Fit the lines
-                spec.fit.frame(bands_file,  fit_cfg=cfg, obj_cfg_prefix=obj_ref)
-                # spec.fit.bands('He1_10832A', bands_file,  fit_cfg=cfg, obj_cfg_prefix=obj_ref)
-                # bands_all = spec.retrieve.lines_frame()
-                # spec.plot.spectrum(bands=bands_all, rest_frame=True)
-                fstem = f'obj-{obj_name}_slit-{slit}_grat-{grat}'
-                spec.plot.grid()
-                # spec.save_frame(fname=output_folder/f'{fstem}_measurements.txt')
-                # spec.save_frame(fname=output_folder/f'{fstem}_measurements.csv')
+                # # Get object bands
+                # bands = spec.retrieve.lines_frame(automatic_grouping=True, fit_cfg=cfg, obj_cfg_prefix=obj_ref,
+                #                                   components=['emission', 'doublet-em'])
+                # # spec.plot.spectrum(bands=bands, log_scale=True, rest_frame=True, maximize=True, show_components=True)
+                #
+                # if not bands_file.is_file():
+                #     lime.save_frame(bands_file, bands)
+                #
+                # # Manual Review
+                # # spec.check.bands(bands_file, fit_cfg=cfg, obj_cfg_prefix=obj_ref)
+                #
+                # # Fit the lines
+                # spec.fit.frame(bands_file,  fit_cfg=cfg, obj_cfg_prefix=obj_ref)
+                # # spec.fit.bands('He1_10832A', bands_file,  fit_cfg=cfg, obj_cfg_prefix=obj_ref)
+                # # bands_all = spec.retrieve.lines_frame()
+                # # spec.plot.spectrum(bands=bands_all, rest_frame=True)
+                # fstem = f'obj-{obj_name}_slit-{slit}_grat-{grat}'
+                # spec.plot.grid()
+                # # spec.save_frame(fname=output_folder/f'{fstem}_measurements.txt')
+                # # spec.save_frame(fname=output_folder/f'{fstem}_measurements.csv')
 
             # Add a counter
             counter += 1

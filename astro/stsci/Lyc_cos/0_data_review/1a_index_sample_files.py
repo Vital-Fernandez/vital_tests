@@ -8,7 +8,8 @@ from astro.stsci.tools import list_files_with_extension, add_cos_obs
 project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
 obs_folder = Path('/home/vital/Astrodata/STScI')
 LyC_obs_data = obs_folder/'LyC_leakers_COS'/'Direct_downloads'
-cfg_sample = lime.load_cfg(project_folder/'samples.toml')
+# cfg_sample = lime.load_cfg(project_folder/'samples.toml')
+cfg_sample = lime.load_cfg('../Lyc_cos.toml')
 
 # Empty dataframe
 hdrs = ['sample', 'id', 'offset_id', 'state', 'object', 'PID', 'RA', 'DEC', 'redshift',
@@ -61,3 +62,8 @@ print()
 # Save the dataframe
 lime.save_frame(project_folder/'stsci_samples_v0.csv', sample_df)
 lime.save_frame(project_folder/'stsci_samples_v0.txt', sample_df)
+
+print('Unique objects')
+target_lits = sample_df.object.unique()
+print(target_lits)
+print(f'{len(target_lits)} targets')

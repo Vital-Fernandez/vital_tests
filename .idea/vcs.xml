@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
-    <mapping directory="$PROJECT_DIR$/../spectra-synthesizer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../VoigtFit" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../aspect" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../hasp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../lime" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>

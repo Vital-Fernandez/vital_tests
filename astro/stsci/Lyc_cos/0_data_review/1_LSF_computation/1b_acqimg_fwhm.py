@@ -14,6 +14,7 @@ from astro.stsci.tools import generate_apperture_mask, image_gauss_fitting
 # Data location
 obs_folder = Path('/home/vital/Astrodata/STScI')
 project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
+fwhm_folder = project_folder/'LyC_leakers_COS/acq_im_fwhm'
 
 # Cfg file
 cfg_sample = lime.load_cfg(project_folder/'samples.toml')
@@ -25,6 +26,7 @@ sample_df = sample_df.loc[~sample_df["filecode"].str.contains(pattern, na=False)
 
 # Get list of objects
 target_list = list(cfg_sample['aper_mean_coord'].keys())
+# target_list = ['NGC4861']
 
 # Loop throught he objects and measure the FWHM
 counter = 0
@@ -78,7 +80,8 @@ for j, object in enumerate(target_list):
             # Plot the image
             print(f'{counter}) {object} {instr_im}, {grating}')
             cos_image_plotter(cutout.data, cutout.wcs, object, coord_dict, instr_im='COS', mask_points=mask_points,
-                              dec_sum=dec_sum, comps_dict=comps_dict, title=f'{subObject}')
+                              dec_sum=dec_sum, comps_dict=comps_dict, title=f'{subObject}',
+                              output_address=None)#fwhm_folder/f'{object}_apperture_figure.png')
 
             # Store the results
             fwhm_dict[subObject] = float(np.round(comps_dict['g1_fwhm'], 1))
@@ -86,8 +89,7 @@ for j, object in enumerate(target_list):
         counter += 1
 
 # Save measurements
-out_folder = project_folder/'LyC_leakers_COS/acq_image_fwhm.toml'
-lime.save_cfg(out_folder, fwhm_dict, section_name='LyC_acq_image_fwhm_pixels')
+lime.save_cfg(fwhm_folder/'acqIM_FWHM_values.txt', fwhm_dict, section_name='Object_FWHM_pixels')
 
 #     # Get the object pointing data
 #     idcs_spectra = df_obj.object.index.get_level_values('state') == 'x1dsum'

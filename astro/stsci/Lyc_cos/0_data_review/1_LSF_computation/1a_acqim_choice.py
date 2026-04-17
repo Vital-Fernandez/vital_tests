@@ -10,22 +10,22 @@ from astropy.coordinates import SkyCoord
 
 
 # Data location
-project_folder = Path('/')
+project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
 obs_folder = Path('/home/vital/Astrodata/STScI')
 
 # Sample file
 sample_df = lime.load_frame(project_folder/'stsci_samples_v0.csv', levels=['sample', 'id', 'offset_id', 'state'])
-cfg_sample = lime.load_cfg(project_folder/'samples.toml')
+cfg_sample = lime.load_cfg('../../Lyc_cos.toml')
 
-for object in sample_df.object.unique():
-    print(object, sample_df.loc[sample_df.object == object].index.get_level_values('id').unique())
+# for object in sample_df.object.unique():
+#     print(object, sample_df.loc[sample_df.object == object].index.get_level_values('id').unique())
 
 object_images = ['IZw18_SE']
-
 for j, object in enumerate(object_images):
 
-    labels = sample_df.loc[sample_df.object == object].index.get_level_values('id').unique()
+    # labels = sample_df.loc[sample_df.object == object].index.get_level_values('id').unique()
     df_obj = sample_df.loc[sample_df.object == object]
+    labels = df_obj.index.get_level_values('id').unique()
     print(object, labels)
 
     # Get the object pointing data
@@ -33,9 +33,7 @@ for j, object in enumerate(object_images):
     spec_list = df_obj.loc[idcs_spectra, 'filepath'].values
     coord_dict = {}
 
-    # Sub-identifier for group
-    sub_group = None if object not in cfg_sample['multi_target_labels'] else cfg_sample['multi_target_labels'][object]
-
+    # Loop through te spectra and get the data
     for fname in spec_list:
         fname = obs_folder/fname
         spec_hdr = fits.getheader(fname, ext=1)
@@ -52,10 +50,12 @@ for j, object in enumerate(object_images):
         print('x1dsum file name:', fname, identifier, spec_hdr["RA_APER"], spec_hdr["DEC_APER"], spec_hdr['ROOTNAME'])
 
     # Show all the images available
-    idcs_image = (df_obj.index.get_level_values('state').isin(['flt', 'cal', 'mos', 'drz']) ) & (df_obj['grating'] != 'G185M')
-    for i, idx_image in enumerate(df_obj.loc[idcs_image].index):
+    dj_images = sample_df.loc[sample_df.object == 'IZw18']
+    idcs_image = (dj_images.index.get_level_values('state').isin(['flt', 'cal', 'mos', 'drz']) ) & (dj_images['grating'] != 'G185M')
+    # idcs_image = (df_obj.index.get_level_values('state').isin(['flt', 'cal', 'mos', 'drz']) ) & (df_obj['grating'] != 'G185M')
+    for i, idx_image in enumerate(dj_images.loc[idcs_image].index):
         if i > 0:
-            image_path = obs_folder/df_obj.loc[idx_image].filepath
+            image_path = obs_folder/dj_images.loc[idx_image].filepath
             print(f'{i}) {image_path.name}')
 
             # Get figure data
@@ -99,7 +99,7 @@ for j, object in enumerate(object_images):
             # cdelt2 = pixscale_deg[1].to(u.deg).value
             # wcs_out.wcs.cdelt = np.array([-cdelt1, +cdelt2])
 
-            print('  ', df_obj.loc[idx_image].name[1], df_obj.loc[idx_image].filepath, df_obj.loc[idx_image].grating, imdata.shape)
+            print('  ', dj_images.loc[idx_image].name[1], dj_images.loc[idx_image].filepath, dj_images.loc[idx_image].grating, imdata.shape)
 
             # Plot the image
-            cos_image_plotter(imdata, wcs, object, coord_dict, subgroup=sub_group)
+            cos_image_plotter(imdata, wcs, object, coord_dict)

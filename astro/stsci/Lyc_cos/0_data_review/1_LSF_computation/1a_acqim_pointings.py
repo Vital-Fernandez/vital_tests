@@ -22,6 +22,7 @@ sample_df = sample_df.loc[~sample_df["filecode"].str.contains(pattern, na=False)
 
 # Get the images we want
 object_images = list(cfg_sample['favoured_images'].keys())
+object_images = ['UM461']
 
 counter = 0
 mean_cord_dict = {}
@@ -82,7 +83,7 @@ for j, object in enumerate(object_images):
         counter += 1
 
 if len(mean_cord_dict)> 0:
-    lime.save_cfg(project_folder/'/LyC_leakers_COS/aper_cords.toml', mean_cord_dict, section_name='aper_mean_coord')
+    lime.save_cfg(project_folder/'LyC_leakers_COS/aper_cords.toml', mean_cord_dict, section_name='aper_mean_coord')
 
 
 

@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
+    <content url="file://$USER_HOME$/Dropbox/Astrophysics/Data/STScI_projects">
+      <sourceFolder url="file://$USER_HOME$/Dropbox/Astrophysics/Data/STScI_projects" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/../VoigtFit">
+      <sourceFolder url="file://$MODULE_DIR$/../VoigtFit" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/../VoigtFit/.venv" />
+    </content>
+    <content url="file://$MODULE_DIR$/../aspect">
+      <sourceFolder url="file://$MODULE_DIR$/../aspect/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/../aspect/.venv" />
+    </content>
+    <content url="file://$MODULE_DIR$/../hasp">
+      <sourceFolder url="file://$MODULE_DIR$/../hasp" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/../lime/src" />
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.8 (base)" jdkType="Python SDK" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.12 (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="spectra-synthesizer" />
   </component>

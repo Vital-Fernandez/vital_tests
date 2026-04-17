@@ -22,10 +22,10 @@ obs_folder = Path('/home/vital/Astrodata/STScI')
 lsf_folder =  Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_file')
 lsf_fittings_path = Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_fitted')
 fwhm_total_folder = Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_total')
-project_folder = Path('/')
+project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
 
 # Cfg file
-cfg_sample = lime.load_cfg(project_folder/'samples.toml')
+cfg_sample = lime.load_cfg('../../Lyc_cos.toml')
 
 # Sample file
 sample_df = lime.load_frame(project_folder/'stsci_samples_v0.csv', levels=['sample', 'id', 'offset_id', 'state'])
@@ -34,8 +34,6 @@ sample_df = sample_df.loc[~sample_df["filecode"].str.contains(pattern, na=False)
 
 # Get the targe
 obj_fwhm_dict = cfg_sample['LyC_acq_image_fwhm_pixels']
-targ_arr = np.array(obj_fwhm_dict.keys())
-fwhm_img_arr =  np.array(obj_fwhm_dict.values())
 
 # Analysis configuraiton
 FWHM_PSF = 2 # NUV detector
@@ -49,12 +47,7 @@ for i, (targ, fwhm_img) in enumerate(obj_fwhm_dict.items()):
     fls_file_list = []
     for grat in grat_arr:
         if grat != 'G185M':
-            if ('Haro11' in targ) or ('Izw18' in targ):
-                sub_labels = cfg_sample['multi_target_labels'][targ.split('_')[0]][targ]
-                idcs = sample_df.index.get_level_values('id').isin(sub_labels)
-                idcs = idcs & (sample_df.grating == grat) & pd.notnull(sample_df.life_adj)
-            else:
-                idcs = (sample_df.object == targ) & (sample_df.grating == grat) & pd.notnull(sample_df.life_adj)
+            idcs = (sample_df.object == targ) & (sample_df.grating == grat) & pd.notnull(sample_df.life_adj)
             obj_df = sample_df.loc[idcs, ['grating', 'cenwave', 'life_adj']]
             uniq_comb = obj_df.drop_duplicates()
             for idx in uniq_comb.index:

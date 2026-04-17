@@ -1,16 +1,19 @@
-from pathlib import Path
+import re
 import numpy as np
 import pandas as pd
 import lime
-import re
+
+from pathlib import Path
+from astropy.convolution import Gaussian1DKernel, convolve
+from matplotlib import pyplot as plt
 
 # Data location
-project_folder = Path('/')
 obs_folder = Path('/home/vital/Astrodata/STScI')
-lsf_folder =  Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_file')
-lsf_fittings_path = Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_fitted')
-fwhm_total_folder = Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_total')
-convolved_lsf_folder = Path('/home/vital/Astrodata/STScI/LyC_leakers_COS/lsf_convolved')
+project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
+lsf_folder =  obs_folder/'LyC_leakers_COS/lsf_file'
+lsf_fittings_path = obs_folder/'LyC_leakers_COS/lsf_fitted'
+fwhm_total_folder = obs_folder/'LyC_leakers_COS/lsf_total'
+convolved_lsf_folder = obs_folder/'LyC_leakers_COS/lsf_convolved'
 
 # Cfg file
 cfg_sample = lime.load_cfg(project_folder/'samples.toml')
@@ -28,13 +31,8 @@ fwhm_img_arr =  np.array(obj_fwhm_dict.values())
 # Loop throught the objects
 for i, (targ, fwhm_img) in enumerate(obj_fwhm_dict.items()):
 
-    if ('Haro11' in targ) or ('Izw18' in targ):
-        sub_labels = cfg_sample['multi_target_labels'][targ.split('_')[0]][targ]
-        idcs = sample_df.index.get_level_values('id').isin(sub_labels)
-    else:
-        idcs = (sample_df.object == targ)
-
     # Get object observations
+    idcs = (sample_df.object == targ)
     idcs = idcs & (sample_df.index.get_level_values('state') == 'x1d') & pd.notnull(sample_df.life_adj)
     obj_df = sample_df.loc[idcs, ['grating', 'cenwave', 'life_adj']]
 
@@ -61,21 +59,22 @@ for i, (targ, fwhm_img) in enumerate(obj_fwhm_dict.items()):
         cos_fwhm_interp = np.interp(wave_lsf, wave_cos, fwhm_cos)
 
         # Loop throught the wavelength values
-        new_lsf = np.zeros(lsf_matrix.shape)
+        new_lsf = np.zeros(matrix_arr.shape)
         sigma_corr_arr = np.sqrt((object_fwhm_interp / 2.35482) ** 2 - (cos_fwhm_interp / 2.35482) ** 2)
-        # for j, wavelength in enumerate(wave_lsf):
-        #
-        #     ### Convolve COS LSF with FWHM_total ####
-        #     kernel = Gaussian1DKernel(stddev=sigma_corr_arr[j])
-        #     new_lsf[:, j] = convolve(lsf_matrix[:, j], kernel)
-        #
-        #     fig, ax = plt.subplots()
-        #     ax.plot(lsf_matrix[:, j], label=f'Original')
-        #     ax.plot(new_lsf[:, j], label=f'Convolved')
-        #     ax.update({'title': f'{targ} LSF convolution for wavelength {wavelength}Å \n ACQ image FWHM = {fwhm_img}, {grating}, cenwave = {cenwave},'
-        #                         f' LP{int(life_adj)}'})
-        #     ax.legend()
-        #     plt.show()
+        new_lsf[0, :] = wave_lsf
+        for j, wavelength in enumerate(wave_lsf):
+
+            ### Convolve COS LSF with FWHM_total ####
+            kernel = Gaussian1DKernel(stddev=sigma_corr_arr[j])
+            new_lsf[1:, j] = convolve(lsf_matrix[:, j], kernel)
+
+            fig, ax = plt.subplots()
+            ax.plot(lsf_matrix[:, j], label=f'Original')
+            ax.plot(new_lsf[1:, j], label=f'Convolved')
+            ax.update({'title': f'{targ} LSF convolution for wavelength {wavelength}Å \n ACQ image FWHM = {fwhm_img}, {grating}, cenwave = {cenwave},'
+                                f' LP{int(life_adj)}'})
+            ax.legend()
+            plt.show()
 
         # Save to a text file
         lsf_convolved_file = f'{targ}_aa_LSFTable_{grating}_{cenwave}_LP{int(life_adj)}_cn_convolved.dat' if grating != 'G185M' else f'{targ}_nuv_model_lsf_convolved.dat'

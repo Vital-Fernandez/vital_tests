@@ -57,7 +57,7 @@ def connect_wcs_click(ax, wcs):
 
 
 def cos_image_plotter(imdata, wcs, object_label, aper_dict=None, disp_axis=False, orientation_axis=False, dec_sum=None,
-                      comps_dict=None, instr_im=None, mask_points=None, overlay=None, title=None):
+                      comps_dict=None, instr_im=None, mask_points=None, overlay=None, title=None, output_address=False):
 
     with (rc_context(lime.theme.fig_defaults({"figure.dpi": 300, "figure.figsize": [4, 4], "legend.fontsize": 3, "legend.fontsize" : 7}))):
 
@@ -95,7 +95,7 @@ def cos_image_plotter(imdata, wcs, object_label, aper_dict=None, disp_axis=False
         # Apertures
         if aper_dict is not None:
 
-            cmap = plt.get_cmap("plasma_r")
+            cmap = plt.get_cmap("Oranges")
             color_list = cmap(np.linspace(0, 1, len(aper_dict)))
 
             for k, items in enumerate(aper_dict.items()):
@@ -207,6 +207,9 @@ def cos_image_plotter(imdata, wcs, object_label, aper_dict=None, disp_axis=False
         if dec_sum is not None:
             plt.setp(ax[0].get_xticklabels(), visible=False)
 
-        plt.show()
+        if output_address:
+            plt.savefig(output_address, bbox_inches='tight')
+        else:
+            plt.show()
 
     return

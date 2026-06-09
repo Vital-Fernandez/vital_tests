@@ -53,6 +53,7 @@ DEFAULT_logN = {"HI": 20,
                 "SII": 15,
                 "SiII": 14}
 
+
 def voigt_hjerting_approx(a, x_arr):
 
     P = x_arr * x_arr
@@ -81,9 +82,44 @@ def optical_depth_profile(wave_arr, lambda_trans, f_trans, gam_trans, N, b, reds
     # 4. Final Optical Depth
     tau_arr = cs_profile * N * voigt_hjerting_approx(damp_const, dop_displ)
 
-
     return tau_arr
 
+
+
+def instrumental_broadening(input_flux, wave_arr, kernel_in, sampling=3, kernel_nsub=6):
+
+    # Adjust the kerneal to the line range
+    if isinstance(kernel_in, float):
+        dx = np.mean(np.diff(wave_arr))
+        xmin = np.log10(wave_arr.min() - 50 * dx)
+        xmax = np.log10(wave_arr.max() + 50 * dx)
+        N = int(sampling * wave_arr.size)
+        profile_wl = np.logspace(xmin, xmax, N)
+        pxs = np.diff(profile_wl)[0] / profile_wl[0] * 299792.458
+        kernel = kernel_in / pxs / 2.35482
+
+    elif isinstance(kernel_in, np.ndarray):
+        N = int(kernel_nsub * len(wave_arr))
+        assert kernel_in.shape[0] == N
+        # evaluate on the input grid subsampled by `nsub`:
+        if kernel_nsub > 1:
+            profile_wl = np.linspace(kernel_in.min(), kernel_in.max(), N)
+        else:
+            profile_wl = kernel_in.copy()
+
+    else:
+        err_msg = "Invalid type of `kernel`: %r" % type(kernel_in)
+        raise TypeError(err_msg)
+
+    # Kernel from the LSF
+    LSF = scipy_gaussian(10*int(kernel) + 1, kernel)
+    LSF = LSF / LSF.sum()
+
+    if isinstance(kernel, float):
+        profile_broad = fftconvolve(input_flux, LSF, 'same')
+        profile_obs = np.interp(x, profile_wl, profile_broad)
+
+    return profile_int
 
 
 def profile_normflux(tau_arr, wave_arr, kernel, pxs):
@@ -94,7 +130,7 @@ def profile_normflux(tau_arr, wave_arr, kernel, pxs):
     padded = np.pad(profile_int, pad_width, mode='edge')  # extend edge values, not zeros
 
     # Kernel from the LSF
-    sigma_instrumental = kernel / 2.35482 / pxs
+    sigma_instrumental = 1
     LSF = scipy_gaussian(wave_arr.size // 2, sigma_instrumental)
     LSF = LSF / LSF.sum()
 
@@ -106,39 +142,34 @@ def profile_normflux(tau_arr, wave_arr, kernel, pxs):
     # ax.step(wave_arr, profile_int)
     # plt.show()
 
-
     return profile_int
 
 
+def absorption_spectrum(opacity_pname, spec, kernel=20, pxs=1.570539778139733):
 
-def absorption_spectrum(spec, line_list, measurements_dict, kernel=20, pxs=1.570539778139733, min_limit=0.01,
-                        plot_fit=False):
+    # Check if true
+    if not opacity_pname.is_file():
+        IOError(f'- WARNING: No opacity lines frame at {opacity_pname}')
 
     # Container for the opacity
     tau_arr = np.zeros(spec.wave.data.size)
 
     # Loop though the lines and add up the opacities
-    for line in line_list:
-        line = Line.from_transition(line)
-        for comp, measurements in measurements_dict['components']['HI'].items():
-            tau_arr += optical_depth_profile(spec.wave.data,
-                                             line.wavelength,
-                                             line.atom_data.osc_str,
-                                             line.atom_data.trans_prob,
-                                             np.power(10, measurements['logN'][0]),
-                                             measurements['b_kms'][0],
-                                             measurements['redshift'][0])
+    lines_df = lime.load_frame(opacity_pname)
+    for row in lines_df.itertuples():
+        tau_arr += optical_depth_profile(spec.wave.data,
+                                         row.wavelength,
+                                         row.osc_str,
+                                         row.trans_prob,
+                                         np.power(10, row.logN),
+                                         row.b,
+                                         row.z_line)
 
-    norm_spectrum = profile_normflux(tau_arr, spec.wave.data, kernel=kernel, pxs=pxs)
-    norm_spectrum[norm_spectrum < min_limit] = 1
+    # Compute the normalized flux
+    norm_flux = profile_normflux(tau_arr, spec.wave.data, kernel=kernel, pxs=pxs)
 
-    # Plot Normalized spectrum
-    if plot_fit:
-        spec.plot.spectrum(in_fig=None)
-        spec.plot.ax.step(spec.wave, spec.flux/norm_spectrum, linestyle='--', color=lime.theme.colors['cont'], where='mid')
-        spec.plot.show()
+    return norm_flux
 
-    return norm_spectrum
 
 def lines_frame_to_lime_lines(df, fit_cfg):
 
@@ -152,69 +183,120 @@ def lines_frame_to_lime_lines(df, fit_cfg):
     return line_list
 
 
-def build_ion_dicts(df, param_hdrs =('b', 'z', 'logN', 'var_z', 'var_b', 'var_N'), default_dict=None):
-    """
-    Return { ion -> { origin -> { col: value } } } for all ions and
-    their observed origins.
+def build_ion_dicts(df, param_hdrs=('b', 'z', 'logN', 'var_z', 'var_b', 'var_N', 'tie_z', 'tie_b'), default_dict=None):
 
-    Rules per (ion, origin, column):
-      - One unique non-NaN value  → use it.
-      - Multiple unique non-NaN values → warn, use the first.
-      - All NaN → fall back to DEFAULTS[col].
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Must contain columns: "ion", "origin", + all keys in DEFAULTS.
-
-    Returns
-    -------
-    dict  { ion_str: { origin_str: { col: value } } }
-    """
-    required = {"ion", "origin"} | set()
+    required = {"ion", "origin"}
     missing = required - set(df.columns)
     if missing:
         raise ValueError(f"DataFrame is missing columns: {missing}")
 
-    result: dict[str, dict[str, dict]] = {}
+    df = df.copy()
+
+    def _extract_params(group, ion, origin, kinem):
+        out = {}
+        for col in param_hdrs:
+            unique_vals = group[col].dropna().unique()
+            if len(unique_vals) == 0:
+                out[col] = default_dict[col] if col.startswith('var') or col.startswith('tie') else default_dict[col][ion]
+            elif len(unique_vals) == 1:
+                out[col] = unique_vals[0]
+            else:
+                warnings.warn(
+                    f"[ion={ion!r}, origin={origin!r}, kinem={kinem}] column {col!r} has "
+                    f"{len(unique_vals)} unique values {list(unique_vals)}. "
+                    f"Using first: {unique_vals[0]!r}",
+                    UserWarning, stacklevel=3,
+                )
+                out[col] = unique_vals[0]
+        return out
+
+    result = {}
 
     for ion, ion_group in df.groupby("ion", sort=False):
         result[ion] = {}
 
-        for origin, group in ion_group.groupby("origin", sort=False):
+        for origin, origin_group in ion_group.groupby("origin", sort=False):
             origin_dict = {}
 
-            for col in param_hdrs:
-                unique_vals = group[col].dropna().unique()
-
-                if len(unique_vals) == 0:
-                    if col.startswith('var'):
-                        origin_dict[col] = default_dict[col]
-                    else:
-                        origin_dict[col] = default_dict[col][ion]
-
-                elif len(unique_vals) == 1:
-                    origin_dict[col] = unique_vals[0]
-
-                else:
-                    warnings.warn(
-                        f"[ion={ion!r}, origin={origin!r}] column {col!r} has "
-                        f"{len(unique_vals)} unique values {list(unique_vals)}. "
-                        f"Using first: {unique_vals[0]!r}",
-                        UserWarning,
-                        stacklevel=2,
-                    )
-                    origin_dict[col] = unique_vals[0]
+            for kinem, kinem_group in origin_group.groupby("kinem", sort=True):
+                params = _extract_params(kinem_group, ion, origin, kinem)
+                origin_dict[f"k-{kinem}"] = {'lines_group': kinem_group.index.to_numpy(), 'params': params}
 
             result[ion][origin] = origin_dict
 
     return result
 
 
+# def build_ion_dicts(df, param_hdrs =('b', 'z', 'logN', 'var_z', 'var_b', 'var_N'), default_dict=None):
+#     """
+#     Return { ion -> { origin -> { col: value } } } for all ions and
+#     their observed origins.
+#
+#     Rules per (ion, origin, column):
+#       - One unique non-NaN value  → use it.
+#       - Multiple unique non-NaN values → warn, use the first.
+#       - All NaN → fall back to DEFAULTS[col].
+#
+#     Parameters
+#     ----------
+#     df : pd.DataFrame
+#         Must contain columns: "ion", "origin", + all keys in DEFAULTS.
+#
+#     Returns
+#     -------
+#     dict  { ion_str: { origin_str: { col: value } } }
+#     """
+#     required = {"ion", "origin"} | set()
+#     missing = required - set(df.columns)
+#     if missing:
+#         raise ValueError(f"DataFrame is missing columns: {missing}")
+#
+#     result: dict[str, dict[str, dict]] = {}
+#
+#     for ion, ion_group in df.groupby("ion", sort=False):
+#         result[ion] = {}
+#
+#         for origin, group in ion_group.groupby("origin", sort=False):
+#             origin_dict = {}
+#
+#             for col in param_hdrs:
+#                 unique_vals = group[col].dropna().unique()
+#
+#                 if len(unique_vals) == 0:
+#                     if col.startswith('var'):
+#                         origin_dict[col] = default_dict[col]
+#                     else:
+#                         origin_dict[col] = default_dict[col][ion]
+#
+#                 elif len(unique_vals) == 1:
+#                     origin_dict[col] = unique_vals[0]
+#
+#                 else:
+#                     warnings.warn(f"[ion={ion!r}, origin={origin!r}] column {col!r} has "
+#                                             f"{len(unique_vals)} unique values {list(unique_vals)}. "
+#                                             f"Using first: {unique_vals[0]!r}",
+#                                             UserWarning,
+#                                             stacklevel=2,)
+#                     origin_dict[col] = unique_vals[0]
+#
+#             result[ion][origin] = origin_dict
+#
+#     return result
+
+def _extract_params(section: dict, KEY_PARAMS=['z', 'logN', 'b', 'var_b', 'var_z', 'var_N']) -> dict:
+    """Extract only the recognised fit parameters from a config section."""
+    return {k: v for k, v in section.items() if k in KEY_PARAMS}
+
+
+
 def run_VoigtFit(fpath, spec, lines_df, fit_cfg, conv_dict, resolution=20, obj_redshift=0, output_toml=None,
-                 voigt_default_params=None, var_z=True, var_b=True, var_N=True, show_plots=False):
+                 voigt_default_params=None, lsf_file=None, show_plots=False):
 
     import VoigtFit as vf
+
+    for tie_param in ['tie_b', 'tie_z']:
+        if tie_param not in voigt_default_params:
+            voigt_default_params[tie_param] = None
 
     # Generate spectrum object
     obj_name = fpath.stem
@@ -222,7 +304,7 @@ def run_VoigtFit(fpath, spec, lines_df, fit_cfg, conv_dict, resolution=20, obj_r
     dataset.verbose = True
 
     dataset.add_data(spec.wave.data, spec.flux.data,
-                     res=resolution,
+                     res=resolution if lsf_file is None else lsf_file,
                      err=spec.err_flux.data,
                      mask=~spec.flux.mask,
                      normalized=True,
@@ -230,99 +312,174 @@ def run_VoigtFit(fpath, spec, lines_df, fit_cfg, conv_dict, resolution=20, obj_r
 
     # Loop through the lines, add the regions to the data set and check for the fitting transition configuration
     comps_params = {}
+    missing_data = {}
     print('\nInput lines:')
     for line in lines_df.index:
         line = lime.Line.from_transition(line, fit_cfg, lines_df)
-        msg = f'\n{line}' + f' {line.list_comps if len(line.list_comps) > 1 else ""}'
-        print(msg)
+        print(f'\n{line}' + f' {line.list_comps if len(line.list_comps) > 1 else ""}')
+
+        # Compute the kernel for the function
         for trans in line.list_comps:
+
+            # Compile the lines missing the atomic data
+            if (trans.atom_data.osc_str is None) or (trans.atom_data.trans_prob) is None:
+                missing_data[label_vf] = trans.label
+
+            # Identifiers
             label_vf = conv_dict[trans.core]
+            ion = trans.classic_notation(just_particle=True)
+            origin = 'none' if trans.origin is None else trans.origin
+            kinem = trans.kinem
+            z = spec.redshift if trans.redshift in [None, 'none'] else trans.redshift
+
+            # Local values
+            b = fit_cfg.get('b', {}).get(ion)
+            logN = fit_cfg.get('logN', {}).get(ion)
 
             # Add line with its region
             if label_vf not in dataset.all_lines:
                 v_blue = c_KMpS * (line.wavelength - line.mask[2]) / line.wavelength
                 v_red = c_KMpS * (line.mask[3] - line.wavelength) / line.wavelength
-                print(f'- {trans} = {label_vf} ({-v_blue:0.1f} km/s, {v_red:0.1f} km/s)')
                 dataset.add_line(line_tag=label_vf, velspan=(-v_blue, v_red))
+                print(f'- {trans} = {label_vf} ({-v_blue:0.1f} km/s, {v_red:0.1f} km/s)')
 
-            # Kinematic parameters
-            kinem = trans.kinem
+            # Get tied kinematics
+            parent = fit_cfg.get('kinem', {}).get(origin, {}).get(f'k-{kinem}_tie')
+            if parent is not None:
+                parent_line = lime.Line.from_transition(parent)
+                if parent_line.classic_notation(just_particle=True) == ion:
+                    parent = None
+            tie_z, tie_b = parent, parent
 
-            # Origin parameters
-            orig = 'none' if trans.origin is None else trans.origin
-            z_comp = spec.redshift if trans.redshift in [None, 'none'] else trans.redshift
+            # Container with the line data
+            local_params = dict(vf_label=label_vf,
+                                vf_idx = None,
+                                ion=ion,
+                                wavelength = trans.wavelength,
+                                origin = origin,
+                                kinem = kinem,
+                                z = z,
+                                b = voigt_default_params['b'][ion] if b is None else b,
+                                logN = voigt_default_params['logN'][ion] if logN is None else logN,
+                                var_z = True,
+                                var_b = True,
+                                var_N = True,
+                                tie_z = tie_z,
+                                tie_b = tie_b,
+                                idx_comp = np.nan,
+                                group_label = trans.group_label if trans.group_label else 'none',
+                                line = line,
+                                ion_lime = trans.particle.label,
+                                osc_str = trans.atom_data.osc_str,
+                                trans_prob = trans.atom_data.trans_prob)
 
-            # Ion based paramters
-            ion = trans.classic_notation(just_particle=True)
+            # Global configuration (Priority to update Origin < Kinematic < Ion)
+            grouped_params = {}
+            if 'kinem' in fit_cfg:
 
-            # Transition based parameters...
-            b = fit_cfg.get(trans, {}).get('b', np.nan)
-            logN = fit_cfg.get(trans, {}).get('logN', np.nan)
-            var_z_i = fit_cfg.get(trans, {}).get('var_z')
-            var_b_i = fit_cfg.get(trans, {}).get('var_b')
-            var_N_i = fit_cfg.get(trans, {}).get('var_N')
-            comp_label = f'{ion}_{kinem}_{orig}_{z_comp}'
-            comps_params[trans] = dict(vf_label=label_vf,
-                                       lime_label=comp_label,
-                                       line=line,
-                                       origin=orig,
-                                       kinem=kinem,
-                                       ion=ion,
-                                       b=b,
-                                       z=np.nan if z_comp is None else z_comp,
-                                       logN=logN,
-                                       var_z=var_z_i,
-                                       var_b=var_b_i,
-                                       var_N=var_N_i)
+                if origin in fit_cfg['kinem']:
+
+                    # Origin params
+                    grouped_params.update(_extract_params(fit_cfg['kinem'][origin]))
+
+                    # Kinematic group
+                    kinem_key = f'k-{kinem}'
+                    if kinem_key in fit_cfg['kinem'][origin]:
+                        grouped_params.update(fit_cfg['kinem'][origin][kinem_key])
+
+                    if ion in fit_cfg['kinem'][origin]:
+                        grouped_params.update(fit_cfg['kinem'][origin][ion])
 
 
-    # print(df_lines.to_string())
+            # Grouped parameters update transition data (in voigtfit)
+            local_params.update(grouped_params)
 
-    # Prepare default values
-    voigt_default_params = {**voigt_default_params}
-    voigt_default_params['var_z'] = var_z
-    voigt_default_params['var_b'] = var_b
-    voigt_default_params['var_N'] = var_N
+            # Store the parameters and
+            comps_params[trans] = local_params.copy()
+
+            # Create an identifier
+            identifier = f'{comps_params[trans]["ion"]}_{comps_params[trans]["kinem"]}_{comps_params[trans]["origin"]}_{comps_params[trans]["z"]}'
+            comps_params[trans]['lime_label'] = identifier
+
+    # Stop for missing data
+    if len(missing_data) > 0:
+        print(f'\n- MISSING ATOMIC DATA:')
+        for key, value in missing_data.items():
+            print(f'{key} -> {value}')
+        raise KeyError(f'Missing atomic data')
+
+    # Warn if missig atomic data
+    if (trans.atom_data.osc_str is None) or (trans.atom_data.trans_prob) is None:
+        missing_data[label_vf] = trans.label
 
     # Determine components and resolve conflicts
     df_lines = pd.DataFrame(index=comps_params.keys(), data=comps_params.values())
-    df_components = build_ion_dicts(df_lines, default_dict=voigt_default_params)
+    # df_lines['vf_idx'] = df_lines.groupby(['origin', 'kinem']).ngroup()
+    df_lines['vf_idx'] = pd.factorize(pd.MultiIndex.from_arrays([df_lines['origin'], df_lines['kinem']]))[0]
+
+    # Cleanup the tie_z
+    idcs_tie = pd.notnull(df_lines.tie_z)
+    for idx in df_lines.loc[idcs_tie].index:
+        parent = df_lines.loc[idx, 'tie_z']
+        # parent_ion, parent_order = df_lines.loc[parent, ['ion', 'kinem']]
+        parent_ion, parent_order = df_lines.loc[parent, ['ion', 'vf_idx']]
+        df_lines.loc[idx, 'tie_z'] = f'z{parent_order}_{parent_ion}'
+        df_lines.loc[idx, 'tie_b'] = f'b{parent_order}_{parent_ion}'
+
+    comps_dict = build_ion_dicts(df_lines, default_dict=voigt_default_params)
+    print(df_lines.to_string())
 
     # Check for conflicts and components
-    print(f'- Components:')
-    for ion in df_components.keys():
-        print(f'-- {ion}: ')
-        for origin, orig_params in df_components[ion].items():
-            print(f'--- {origin}: ',", ".join(f"{k}: {v}" for k, v in orig_params.items()))
-            dataset.add_component(ion=ion, **orig_params)
+    print(f'\n- Components:')
+    for ion in comps_dict.keys():
+        # print(f'-- {ion}: ')
+        idx_comp = 0
+        for origin, kinem_comps in comps_dict[ion].items():
+            for kinem_label, comp_cfg in kinem_comps.items():
+                lines_group = comp_cfg['lines_group']
+                params = comp_cfg['params']
+                # print(f'--- Component {idx_comp}) {lines_group}: ',", ".join(f"{k}: {v}" for k, v in params.items()))
+                df_lines.loc[df_lines.index.isin(lines_group), 'idx_comp'] = idx_comp
+                df_lines.loc[df_lines.index.isin(lines_group), 'z'] = params['z']
+                dataset.add_component(ion=ion, **params)
+                idx_comp += 1
 
-    print('\nInput Voigtfit lines')
-    print(dataset.lines)
+    # Missing message:
+    if len(missing_data) > 0:
+        print(f'\n- MISSING ATOMIC DATA:')
+        for key, value in missing_data.items():
+            print(f'{key} -> {value}')
 
-    print('\nInput Voigtfit components')
-    print(dataset.components)
+    for ion, comp in dataset.components.items():
+        print(ion)
+        for kine_c in comp:
+            print(f'-- {kine_c}, var_z={kine_c.var_z}, var_b={kine_c.var_b}, var_N={kine_c.var_N}, '
+                  f'             tie_z={kine_c.tie_z}, tie_b={kine_c.tie_b}, tie_N={kine_c.tie_N},')
 
     # Normalize and mask if necessary
     dataset.prepare_dataset(norm=False, mask=False)
 
     # Fit the data
-    popt, chi2 = dataset.fit(verbose=True, factor=10.)
-    dataset.save_fit_regions(filename=str(fpath.parent/f'{obj_name}_best_fit'))
+    _, _ = dataset.fit(verbose=True)
 
-    # Save to toml
-    param_dict = extract_voigtfit_params(dataset, obj_name)
+    # Save measurements in LiMe results
+    frame_path = fpath.parent/f'{obj_name}_lines_frame.txt'
+    extract_voigtfit_dataframe(frame_path, df_lines, comps_dict, dataset)
+
+    # LiMe save measurements
+    param_dict = extract_voigtfit_params(obj_name, df_lines, comps_dict, dataset)
     lime.save_cfg(output_toml, param_dict, section_name=f'{obj_name}_results', clear_section=True)
     strip_all_quotes(output_toml)
+
+    # Voigtfit measurements
+    dataset.save_fit_regions(filename=str(fpath.parent/f'{obj_name}_best_fit'))
 
     # Save the results
     if show_plots:
         dataset.plot_fit(individual=True, xunit='wl')
         plt.show(block=True)
     else:
-        dataset.plot_fit(filename=str(fpath.parent / f'{obj_name}_voigtfit_plot.pdf'), individual=False, xunit='wl')
-
-    # Generate fit plot
-    # plot_profile_components(str(fpath.parent/f'{obj_name}_comps_fitting'), obj_name, objSpec, dataset)
+        dataset.plot_fit(filename=str(fpath.parent / f'{obj_name}_voigtfit_plot.pdf'), individual=False, xunit='vel')
 
     # -- Print total column densities
     dataset.print_total()
@@ -332,110 +489,180 @@ def run_VoigtFit(fpath, spec, lines_df, fit_cfg, conv_dict, resolution=20, obj_r
     return
 
 
-def run_VoigtFit_orig(fpath, objSpec, line_list, comps_dict, conv_dict, resolution=20, obj_redshift=0, output_toml=None):
-
-    import VoigtFit as vf
-
-    # Generate spectrum object
-    obj_name = fpath.stem
-    dataset = vf.DataSet(redshift=obj_redshift, name=obj_name)
-    dataset.verbose = True
-
-    dataset.add_data(objSpec.wave.data, objSpec.flux.data,
-                     res=resolution,
-                     err=objSpec.err_flux.data,
-                     mask=~objSpec.flux.mask,
-                     normalized=True,
-                     nsub=6)
-
-    # Declare the lines
-    print('\nInput lines')
-    for i, line in enumerate(line_list):
-        label_vf = conv_dict[line.core]
-        v_blue = c_KMpS * (line.wavelength - line.mask[2]) / line.wavelength
-        v_red = c_KMpS * (line.mask[3] - line.wavelength) / line.wavelength
-        msg = (f' {line.label} = {label_vf}  {'' if len(line.list_comps) == 1 else line.list_comps} '
-               f'({-v_blue:0.1f} km/s, {v_red:0.1f} km/s)')
-        print(msg)
-        dataset.add_line(line_tag=label_vf, velspan=(-v_blue, v_red))
-
-    # Define kinematic components from reference line
-    if 'kinem_comps' in comps_dict:
-        for line_label in comps_dict['kinem_comps'].keys():
-            if line_label in line_list:
-                line_ref = line_list[line_list.index(line_label)]
-                for j, trans in enumerate(line_ref.list_comps):
-                    kin_params = {}
-                    kin_params['ion'] = trans.particle.classic_notation
-                    kin_params['z'] = objSpec.redshift if trans.redshift is None else 0
-                    for i, (param, value_list) in enumerate(comps_dict['kinem_comps'][line_ref.label].items()):
-                        kin_params[param] = value_list[j]
-                    dataset.add_component(**kin_params)
-                    print(line_label, kin_params)
-
-    # For all lines
-    else:
-        for line in line_list:
-            for j, trans in enumerate(line.list_comps):
-                # ion = trans.particle.classic_notation
-                ion = trans.classic_notation(just_particle=True)
-
-                # Check the ion data has not been introduced already
-                if len(dataset.components[ion]) == 0:
-                    z = objSpec.redshift if trans.redshift is None else 0
-                    b = comps_dict.get('b', {}).get(ion, DEFAULT_b[ion])
-                    logN = comps_dict.get('logN', {}).get(ion, DEFAULT_logN[ion])
-                    var_z = comps_dict.get('var_z', {}).get(ion, True)
-                    var_b = comps_dict.get('var_b', {}).get(ion, True)
-                    var_N = comps_dict.get('var_N', {}).get(ion, True)
-                    kin_params = {'ion':ion, 'z':z, 'b':b, 'logN':logN, 'var_z':var_z, 'var_b':var_b, 'var_N':var_N}
-                    dataset.add_component(**kin_params)
-                    print(line, kin_params)
-
-    # Map kinematic components
-    if 'kinem_export' in comps_dict:
-        for line_label in comps_dict['kinem_export'].keys():
-            if line_label in line_list:
-                line_ref = line_list[line_list.index(line_label)]
-                export_dict = comps_dict['kinem_export'][line_ref.label]
-                parent_ion = line_ref.particle.classic_notation
-                for j, child_ion in enumerate(export_dict['to_ion']):
-                    dataset.copy_components(from_ion=parent_ion, to_ion=child_ion,
-                                            tie_b=export_dict['tie_b'][j], tie_z=export_dict['tie_z'][j])
-
-    print('\nInput Voigtfit lines')
-    print(dataset.lines)
-
-    print('\nInput Voigtfit components')
-    print(dataset.components)
-
-
-    # Normalize and mask if necessary
-    dataset.prepare_dataset(norm=False, mask=False)
-
-    # Fit the data
-    popt, chi2 = dataset.fit(verbose=True, factor=10.)
-    dataset.save_fit_regions(filename=str(fpath.parent/f'{obj_name}_best_fit'))
-
-    # Save to toml
-    param_dict = extract_voigtfit_params(dataset, obj_name)
-    lime.save_cfg(output_toml, param_dict, section_name=f'{obj_name}_results', clear_section=True)
-    strip_all_quotes(output_toml)
-
-    # Save the results
-    dataset.plot_fit(filename=str(fpath.parent/f'{obj_name}_voigtfit_plot.pdf'), individual=False, xunit='wl')
-    # dataset.plot_fit(individual=True, xunit='wl')
-    # plt.show(block=True)
-
-    # Generate fit plot
-    # plot_profile_components(str(fpath.parent/f'{obj_name}_comps_fitting'), obj_name, objSpec, dataset)
-
-    # -- Print total column densities
-    dataset.print_total()
-    dataset.save_parameters(str(fpath.parent/f'{obj_name}_voigtfit_parameters'))
-    # dataset.save_cont_parameters_to_file(str(fpath.parent/f'{obj_name}_voigtfit_cont'))
-
-    return
+# def run_VoigtFit(fpath, spec, lines_df, fit_cfg, conv_dict, resolution=20, obj_redshift=0, output_toml=None,
+#                  voigt_default_params=None, lsf_file=None, show_plots=False):
+#
+#     import VoigtFit as vf
+#
+#     # Generate spectrum object
+#     obj_name = fpath.stem
+#     dataset = vf.DataSet(redshift=obj_redshift, name=obj_name)
+#     dataset.verbose = True
+#
+#     dataset.add_data(spec.wave.data, spec.flux.data,
+#                      res=resolution if lsf_file is None else lsf_file,
+#                      err=spec.err_flux.data,
+#                      mask=~spec.flux.mask,
+#                      normalized=True,
+#                      nsub=6)
+#
+#     # Loop through the lines, add the regions to the data set and check for the fitting transition configuration
+#     comps_params = {}
+#     missing_data = {}
+#     print('\nInput lines:')
+#     for line in lines_df.index:
+#         line = lime.Line.from_transition(line, fit_cfg, lines_df)
+#         msg = f'\n{line}' + f' {line.list_comps if len(line.list_comps) > 1 else ""}'
+#         print(msg)
+#
+#         # Compute the kernel for the function
+#         for trans in line.list_comps:
+#             label_vf = conv_dict[trans.core]
+#
+#             # Add line with its region
+#             if label_vf not in dataset.all_lines:
+#                 v_blue = c_KMpS * (line.wavelength - line.mask[2]) / line.wavelength
+#                 v_red = c_KMpS * (line.mask[3] - line.wavelength) / line.wavelength
+#                 print(f'- {trans} = {label_vf} ({-v_blue:0.1f} km/s, {v_red:0.1f} km/s)')
+#                 dataset.add_line(line_tag=label_vf, velspan=(-v_blue, v_red))
+#
+#             # Kinematic parameters
+#             kinem = trans.kinem
+#
+#             # Origin parameters
+#             orig = 'none' if trans.origin is None else trans.origin
+#             z_comp = fit_cfg.get(trans, {}).get('z')
+#             if z_comp is None:
+#                 z_comp = spec.redshift if trans.redshift in [None, 'none'] else trans.redshift
+#
+#             # Ion based paramters
+#             ion = trans.classic_notation(just_particle=True)
+#
+#             # Transition based parameters...
+#             b = fit_cfg.get(trans, {}).get('b', np.nan)
+#             logN = fit_cfg.get(trans, {}).get('logN', np.nan)
+#             var_z_i = fit_cfg.get(trans, {}).get('var_z')
+#             var_b_i = fit_cfg.get(trans, {}).get('var_b')
+#             var_N_i = fit_cfg.get(trans, {}).get('var_N')
+#
+#             # Ion based parameters
+#             if np.isnan(b) and 'b' in fit_cfg.get(trans.particle.label, {}):
+#                 b = fit_cfg[trans.particle.label]['b']
+#             if np.isnan(logN) and 'logN' in fit_cfg.get(trans.particle.label, {}):
+#                 logN = fit_cfg[trans.particle.label]['logN']
+#
+#             comp_label = f'{ion}_{kinem}_{orig}_{z_comp}'
+#             comps_params[trans] = dict(vf_label=label_vf,
+#                                        idx_comp=np.nan,
+#                                        wavelength=trans.wavelength,
+#                                        lime_label=comp_label,
+#                                        group_label=trans.group_label if trans.group_label else 'none',
+#                                        line=line,
+#                                        origin=orig,
+#                                        kinem=kinem,
+#                                        ion=ion,
+#                                        ion_lime=trans.particle.label,
+#                                        b=b,
+#                                        z=np.nan if z_comp is None else z_comp,
+#                                        logN=logN,
+#                                        var_z=var_z_i,
+#                                        var_b=var_b_i,
+#                                        var_N=var_N_i,
+#                                        osc_str=trans.atom_data.osc_str,
+#                                        trans_prob=trans.atom_data.trans_prob,
+#                                        )
+#
+#             # Warn if missig atomic data
+#             if (trans.atom_data.osc_str is None) or (trans.atom_data.trans_prob) is None:
+#                 missing_data[label_vf] = trans.label
+#
+#     # Prepare default values
+#     voigt_default_params = {**voigt_default_params}
+#     voigt_default_params['var_z'] = fit_cfg.get('var_z', True)
+#     voigt_default_params['var_b'] = fit_cfg.get('var_b', True)
+#     voigt_default_params['var_N'] = fit_cfg.get('var_N', True)
+#
+#     # Determine components and resolve conflicts
+#     df_lines = pd.DataFrame(index=comps_params.keys(), data=comps_params.values())
+#     comps_dict = build_ion_dicts(df_lines, default_dict=voigt_default_params)
+#     for ion, ion_conf in comps_dict.items():
+#         print(f'Ion: {ion}')
+#         for origin, origin_conf in ion_conf.items():
+#             print(f'- Origin: {origin}')
+#             for kinem, k in origin_conf.items():
+#                 print(f'-- {kinem}: {k}')
+#
+#     # Check for conflicts and components
+#     print(f'- Components:')
+#     for ion in comps_dict.keys():
+#         print(f'-- {ion}: ')
+#         idx_comp = 0
+#         for origin, kinem_comps in comps_dict[ion].items():
+#             for kinem_label, comp_cfg in kinem_comps.items():
+#                 lines_group = comp_cfg['lines_group']
+#                 params = comp_cfg['params']
+#                 print(f'--- Component {idx_comp}) {lines_group}: ',", ".join(f"{k}: {v}" for k, v in params.items()))
+#                 df_lines.loc[df_lines.index.isin(lines_group), 'idx_comp'] = idx_comp
+#                 dataset.add_component(ion=ion, **params)
+#                 idx_comp += 1
+#
+#     # Add tied up components
+#     if 'kinem' in fit_cfg:
+#         if 'ion' in fit_cfg['kinem']:  # Tied by species:
+#             for ion, tied_species in fit_cfg['kinem']['ion'].items():
+#                 for child_ion in tied_species:
+#                     if dataset.has_ion(ion):
+#                         print(f'Replacing components for {child_ion} with those from {ion}')
+#                     dataset.copy_components(child_ion, ion, logN=voigt_default_params['logN'][child_ion], tie_z=True, tie_b=False)
+#
+#
+#
+#     print('\nInput Voigtfit lines')
+#     print(dataset.lines)
+#
+#     print('\nInput Voigtfit components')
+#     for ion, comp_list in dataset.components.items():
+#         print(f'Ion {ion}')
+#         for comp in comp_list:
+#             print(f'-- z={comp.z} var_z={comp.var_z}; z={comp.b} var_b={comp.var_b}; logN={comp.logN} var_N={comp.var_N}')
+#
+#     # Missing message:
+#     if len(missing_data) > 0:
+#         print(f'\n- MISSING ATOMIC DATA:')
+#         for key, value in missing_data.items():
+#             print(f'{key} -> {value}')
+#
+#     # Normalize and mask if necessary
+#     dataset.prepare_dataset(norm=False, mask=False)
+#
+#     # Fit the data
+#     popt, chi2 = dataset.fit(verbose=True, factor=10.)
+#
+#     # Save measurements in LiMe results
+#     frame_path = fpath.parent/f'{obj_name}_lines_frame.txt'
+#     extract_voigtfit_dataframe(frame_path, df_lines, comps_dict, dataset)
+#
+#     # LiMe save measurements
+#     param_dict = extract_voigtfit_params(obj_name, df_lines, comps_dict, dataset)
+#     lime.save_cfg(output_toml, param_dict, section_name=f'{obj_name}_results', clear_section=True)
+#     strip_all_quotes(output_toml)
+#
+#     # Voigtfit measurements
+#     dataset.save_fit_regions(filename=str(fpath.parent/f'{obj_name}_best_fit'))
+#
+#     # Save the results
+#     if show_plots:
+#         dataset.plot_fit(individual=True, xunit='wl')
+#         plt.show(block=True)
+#     else:
+#         dataset.plot_fit(filename=str(fpath.parent / f'{obj_name}_voigtfit_plot.pdf'), individual=False, xunit='wl')
+#
+#     # -- Print total column densities
+#     dataset.print_total()
+#     dataset.save_parameters(str(fpath.parent/f'{obj_name}_voigtfit_parameters'))
+#     # dataset.save_cont_parameters_to_file(str(fpath.parent/f'{obj_name}_voigtfit_cont'))
+#
+#     return
 
 
 def plot_profile_components(output_fpath, object_label, spec, dataset):
@@ -467,7 +694,7 @@ def plot_profile_components(output_fpath, object_label, spec, dataset):
                 except:
                     label = 'Milky way'
 
-    norm_profile = profile_normflux(tau_arr, spec.wave.data, kernel=20, pxs=1.570539778139733)
+    norm_profile = instrumental_broadening(tau_arr, spec.wave.data, kernel=20, pxs=1.570539778139733)
     spec.plot.ax.plot(spec.wave.data, norm_profile, linestyle='--', linewidth=2, label=label)
 
     spec.plot.ax.legend(loc=9)
@@ -479,23 +706,22 @@ def plot_profile_components(output_fpath, object_label, spec, dataset):
     return
 
 
-def extract_voigtfit_params(dataset, prefix, velocity=False):
+def extract_voigtfit_params(obj_label, inputs_df, input_comps, dataset, velocity=False):
+
     """
     Convert best-fit parameters to a single dictionary section
     named after the variable prefix.
     """
+
     z_sys = dataset.redshift
 
     # Everything goes into this one dictionary
-    combined_data = {
-        "z_sys": float(z_sys),
-        "chi2": float(dataset.chi2),
-        "n_free": int(dataset.minimizer.result.nfree)
-    }
+    combined_data = {"z_sys": float(z_sys), "chi2": float(dataset.chi2), "n_free": int(dataset.minimizer.result.nfree)}
 
     # Add the components to the same dictionary
     for ion in sorted(dataset.components.keys()):
         for i in range(len(dataset.components[ion])):
+            best_fit = dataset.best_fit
             z = dataset.best_fit[f'z{i}_{ion}']
             logN = dataset.best_fit[f'logN{i}_{ion}']
             b = dataset.best_fit[f'b{i}_{ion}']
@@ -511,13 +737,86 @@ def extract_voigtfit_params(dataset, prefix, velocity=False):
                 err = z.stderr if z.stderr else 0.0
                 param_name = "redshift"
 
-            # Dot notation keys added directly to the main dict
-            combined_data[f"components.{ion}.{i}.{param_name}"] = [float(val), float(err)]
-            combined_data[f"components.{ion}.{i}.b_kms"] = [float(b.value), float(b.stderr) if b.stderr else 0.0]
-            combined_data[f"components.{ion}.{i}.logN"] = [float(logN.value), float(logN.stderr) if logN.stderr else 0.0]
+            # # Dot notation keys added directly to the main dict
+            # combined_data[f"components.{ion}.{i}.{param_name}"] = [float(val), float(err)]
+            # combined_data[f"components.{ion}.{i}.b_kms"] = [float(b.value), float(b.stderr) if b.stderr else 0.0]
+            # combined_data[f"components.{ion}.{i}.logN"] = [float(logN.value), float(logN.stderr) if logN.stderr else 0.0]
+
+
+    # Dataframe with the results
 
     # Return as a nested dict so TOML creates one header: [prefix]
     return combined_data
+
+
+def extract_voigtfit_dataframe(fname, inputs_df, input_comps, dataset, velocity=False):
+
+    """
+    Convert best-fit parameters to a single dictionary section
+    named after the variable prefix.
+    """
+    # Results container
+    results_dict = {}
+
+    # Global parameters
+    chi2 = dataset.chi2
+    z_sys = dataset.redshift
+    n_free = dataset.minimizer.result.nfree
+    success_check = dataset.minimizer.result.success
+
+    # Add the components to the same dictionary
+    for ion in sorted(dataset.components.keys()):
+        results_dict[ion] = {}
+        for i in range(len(dataset.components[ion])):
+            z = dataset.best_fit[f'z{i}_{ion}']
+            logN = dataset.best_fit[f'logN{i}_{ion}']
+            b = dataset.best_fit[f'b{i}_{ion}']
+
+            # Handle Redshift vs Velocity
+            v_r = (z.value - z_sys) / (z_sys + 1) * 299792.458
+            v_r_err = (z.stderr / (z_sys + 1) * 299792.458) if z.stderr else np.nan
+
+            results_dict[ion][i] = {}
+            results_dict[ion][i]['b'] = b.value
+            results_dict[ion][i]['b_err'] = float(b.stderr) if b.stderr else np.nan
+
+            results_dict[ion][i]['logN'] = logN.value
+            results_dict[ion][i]['logN_err'] = float(logN.stderr) if logN.stderr else np.nan
+
+            results_dict[ion][i]['z_line'] = z.value
+            results_dict[ion][i]['z_line_err'] = z.stderr if z.stderr else np.nan
+
+            results_dict[ion][i]['v_r'] = v_r
+            results_dict[ion][i]['v_r_err'] = v_r_err
+
+    # Parse the original lines to their components
+    columns = ['wavelength', 'ion', 'idx_comp', 'osc_str', 'trans_prob', 'group_label',
+               'b', 'b_err', 'logN', 'logN_err', 'v_r', 'v_r_err', 'z_line', 'z_line_err']
+    common_hdrs = ['wavelength', 'osc_str', 'trans_prob', 'group_label']
+    results_hdrs = ['b', 'b_err', 'logN', 'logN_err', 'v_r', 'v_r_err', 'z_line', 'z_line_err']
+
+    out_df = pd.DataFrame(columns=columns)
+    for line in inputs_df.index:
+        ion, origin = inputs_df.loc[line, ['ion', 'origin']]
+        idx_comp = int(inputs_df.loc[line, 'idx_comp'])
+        idcs_rows = (inputs_df.ion == ion) & (inputs_df.origin == origin)
+
+        out_df.loc[line, common_hdrs] = inputs_df.loc[line, common_hdrs]
+        out_df.loc[line, 'ion'] = inputs_df.loc[line, 'ion_lime']
+        out_df.loc[line, 'idx_comp'] = inputs_df.loc[line, 'idx_comp']
+
+        for hdr in results_hdrs:
+            out_df.loc[idcs_rows, hdr] = results_dict[ion][idx_comp][hdr]
+
+    # Global parameters
+    out_df['observations'] = 'none' if success_check else 'failed_convergence'
+    out_df['chi2'] = chi2
+
+    # Save to a frame file
+    lime.save_frame(fname, out_df, **{'z_sys': z_sys})
+    print(out_df.to_string())
+
+    return
 
 # def extract_voigtfit_params(dataset, prefix, velocity=False):
 #     """
@@ -952,6 +1251,46 @@ def move_files(file_list, src_root_path, dest_path):
             shutil.copy(src_path, dest_path / src_path.name)
         else:
             print(f"-------- File not found: {src_path}")
+
+    return
+
+
+def add_opacity_profile(spec, opacity_pname, kernel=20, pxs=1.570539778139733, voigtfit_pname=None):
+
+    # Check if true
+    if not opacity_pname.is_file():
+        print(f'- WARNING: No opacity lines frame at {opacity_pname}')
+        spec.plot.show()
+
+    else:
+        norm_flux_profile = absorption_spectrum(opacity_pname, spec, kernel=kernel, pxs=pxs)
+
+        # # Container for the opacity
+        # tau_arr = np.zeros(spec.wave.data.size)
+        #
+        # # Loop though the lines and add up the opacities
+        # lines_df = lime.load_frame(opacity_pname)
+        # for row in lines_df.itertuples():
+        #     print(row.Index, f'idx={int(row.idx_comp)}', row.wavelength, row.osc_str, row.trans_prob, row.logN, row.b, row.z_line)
+        #     tau_arr += optical_depth_profile(spec.wave.data,
+        #                                      row.wavelength,
+        #                                      row.osc_str,
+        #                                      row.trans_prob,
+        #                                      np.power(10, row.logN),
+        #                                      row.b,
+        #                                      row.z_line)
+        #
+        # norm_flux_profile = profile_normflux(tau_arr, spec.wave.data, kernel=kernel, pxs=pxs)
+
+        # spec.plot.ax.step(spec.wave, norm_flux_profile, linestyle='--', color=lime.theme.colors['cont'], where='mid',
+        #                   label='LiMe')
+
+        if voigtfit_pname.is_file():
+            v_wave, v_nflux, v_nerr, v_bestfit, v_mask = np.loadtxt(voigtfit_pname, unpack=True)
+            spec.plot.ax.plot(v_wave, v_bestfit, linestyle=':', color='yellow', label='Voigtfit')
+            # spec.plot.ax.step(v_wave, v_nflux, linestyle=':', color='yellow', where='mid')
+
+        spec.plot.show()
 
     return
 

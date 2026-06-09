@@ -7,7 +7,7 @@ from lime.fitting.lines import c_KMpS
 from lime.io import check_fit_conf
 from astropy.io import fits
 from astro.stsci.tools import (on_click, IntervalSelector, run_VoigtFit, lines_frame_to_lime_lines,
-                               unpack_lines, optical_depth_profile, vfdb_df, profile_normflux, absorption_spectrum)
+                               unpack_lines, optical_depth_profile, vfdb_df, instrumental_broadening, absorption_spectrum)
 from matplotlib.widgets import SpanSelector
 
 lime.theme.set_style('dark')
@@ -23,6 +23,7 @@ def onselect(xmin, xmax):
 obs_folder = Path('/home/vital/Astrodata/STScI')
 project_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects')
 output_folder = project_folder/'LyC_leakers_COS'/'metals_line_fitting'
+lyman_alpha_folder = project_folder/'LyC_leakers_COS'/'Lyman_alpha_fitting'
 
 # Cfg file
 cfg_sample = lime.load_cfg('../Lyc_cos.toml')
@@ -47,7 +48,7 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
 # Loop through the targets and generate the HASP files
 for i, obj in enumerate(target_list):
 
-    if i == 10:
+    if i == 0:
 
         # Object folders the files
         print(f'{i}) Galaxy {obj}, z = {cfg_sample['Galaxy_redshifts'][obj]}')
@@ -56,6 +57,7 @@ for i, obj in enumerate(target_list):
 
         HI_cfg = lyAlpha_data[f'{obj}_LyAlpha_results']
         metals_cfg = cfg_sample['voigtfit_metals_params'][obj]
+        opacityLymanAlpha_df_path = lyman_alpha_folder/f'{obj}_LyAlpha_lines_frame.txt'
 
         # Index the files
         idcs_out = (sample_df.object == obj) & (sample_df.index.get_level_values('state') == 'aspec_manual')
@@ -69,9 +71,10 @@ for i, obj in enumerate(target_list):
         spec = spec.retrieve.rebinned(pixel_number=6, return_spectrum=True)
 
         # Divide by the HI profile
-        norm_profile = absorption_spectrum(spec, ['H1_1216A'], HI_cfg, plot_fit=False)
-        spec.flux = spec.flux /norm_profile
-        spec.err_flux = spec.err_flux /norm_profile
+        norm_Lyman_alpha = absorption_spectrum(opacityLymanAlpha_df_path, spec)
+        norm_Lyman_alpha[norm_Lyman_alpha < 0.01] = 1
+        spec.flux = spec.flux /norm_Lyman_alpha
+        spec.err_flux = spec.err_flux /norm_Lyman_alpha
 
         spec.plot.spectrum(in_fig=None, show_cont=True)
         span = SpanSelector(spec.plot.ax, onselect, direction='horizontal', useblit=True, button=3,
@@ -80,10 +83,6 @@ for i, obj in enumerate(target_list):
         # spec.plot.ax.plot((spec.wave.min(), spec.wave.max()), (1, 1), linestyle='--', color='yellow')
         plt.tight_layout()
         spec.plot.show()
-
-        # Normalization
-        spec = spec.retrieve.normalization(**metals_cfg['normalization'])
-        spec.plot.spectrum()
 
 
 

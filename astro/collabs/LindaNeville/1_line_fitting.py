@@ -60,11 +60,14 @@ for i, obj_name in enumerate(obj_list):
                 spec.unit_conversion('AA')
 
                 # Components detection
-                spec.infer.components()
-                # spec.plot.spectrum(show_components=True, log_scale=True)
-                if obj_ref in target_files:
-                    spec.retrieve.spectrum(fname=f'./spec_txt/{obj_ref}.txt')
+                print(spec.infer.model_mgr.model_address)
 
+                spec.infer.components(plot_steps=True)
+
+                spec.plot.spectrum(show_components=True, log_scale=True)
+                # if obj_ref in target_files:
+                #     spec.retrieve.spectrum(fname=f'./spec_txt/{obj_ref}.txt')
+                #
 
                 # # Get object bands
                 # bands = spec.retrieve.lines_frame(automatic_grouping=True, fit_cfg=cfg, obj_cfg_prefix=obj_ref,

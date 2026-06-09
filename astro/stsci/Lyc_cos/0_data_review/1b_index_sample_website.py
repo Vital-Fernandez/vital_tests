@@ -31,14 +31,16 @@ print()
 
 # Add the columns with additional spectra files
 sample_df['LyAlpha_fitting'] = 'none'
+sample_df['metals_fitting'] = 'none'
 for index in sample_df['object'].index:
         sample_df.loc[index, 'filepath'] = f'LyC_leakers_COS/{Path(sample_df.loc[index, 'filepath']).name}'
         sample_df.loc[index, 'LyAlpha_fitting'] = f'LyC_leakers_COS/{sample_df.loc[index].object}_LyAlpha_spec.txt'
+        sample_df.loc[index, 'metals_fitting'] = f'LyC_leakers_COS/{sample_df.loc[index].object}_metals_spec.txt'
 
 # Save the dataframe
 lime.save_frame(project_folder/'stsci_LyC_HST_specsy_v0.csv', sample_df)
 lime.save_frame(project_folder/'stsci_LyC_HST_specsy_v0.txt', sample_df)
-
+print(f'Saving at {project_folder/'stsci_LyC_HST_specsy_v0.csv'}')
 print('Unique objects')
 target_lits = sample_df.object.unique()
 print(target_lits)

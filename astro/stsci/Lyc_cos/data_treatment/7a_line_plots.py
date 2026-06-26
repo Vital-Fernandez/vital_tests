@@ -8,99 +8,100 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+from matplotlib.pyplot import rc_context
 
+lime.theme.set_style('dark')
 
-def plot_logN_grid(df: pd.DataFrame) -> plt.Figure:
-    """
-    df : MultiIndex DataFrame with levels ["object", "line"].
-         Must have columns: "particle", "logN", "logN_err".
+def plot_logN_grid(df: pd.DataFrame, exclude_list=None) -> plt.Figure:
 
-    Color rules per line suffix:
-        ends with "_o-MW"  → blue
-        ends with "_Second component"   → red
-        anything else      → orange
-    """
-    COLORS = {"Milky way": "#2196F3", "Second component": "#E53935", "First component": "#FB8C00"}
-    MARKERS = {"Milky way": "o",       "Second component": "s",       "First component": "^"}
+    # Function to exclude parameters
+    exclude_list = [] if exclude_list is None else exclude_list
 
-    def _category(line_label: str) -> str:
-        if str(line_label).endswith("_o-MW"):
-            return "Milky way"
-        if str(line_label).endswith("_k-1"):
-            return "Second component"
-        return "First component"
+    with rc_context():
 
-    particles = sorted(df["particle"].unique())
-    n = len(particles)
-    ncols = math.ceil(math.sqrt(n))
-    nrows = math.ceil(n / ncols)
+        """
+        df : MultiIndex DataFrame with levels ["object", "line"].
+             Must have columns: "particle", "logN", "logN_err".
+    
+        Color rules per line suffix:
+            ends with "_o-MW"  → blue
+            ends with "_Second component"   → red
+            anything else      → orange
+        """
+        COLORS = {"Milky way": "#2196F3", "Second component": "#E53935", "First component": "#FB8C00"}
+        MARKERS = {"Milky way": "o",       "Second component": "s",       "First component": "^"}
 
-    fig, axes = plt.subplots(
-        nrows, ncols,
-        figsize=(ncols * 4, nrows * 3.5),
-        constrained_layout=True,
-    )
-    axes_flat = [axes] if n == 1 else list(
-        axes.flat if hasattr(axes, "flat") else [axes]
-    )
+        def _category(line_label: str) -> str:
+            if str(line_label).endswith("_o-MW"):
+                return "Milky way"
+            if str(line_label).endswith("_k-1"):
+                return "Second component"
+            return "First component"
 
-    objects = df.index.get_level_values("object").unique()
-    obj_positions = {obj: i for i, obj in enumerate(objects)}
+        particles = sorted(df["particle"].unique())
+        n = len(particles)
+        ncols = math.ceil(math.sqrt(n))
+        nrows = math.ceil(n / ncols)
 
-    for ax, particle in zip(axes_flat, particles):
-        sub = df[df["particle"] == particle]
+        fig, axes = plt.subplots(
+            nrows, ncols,
+            figsize=(ncols * 4, nrows * 3.5),
+            constrained_layout=True,
+        )
+        axes_flat = [axes] if n == 1 else list(
+            axes.flat if hasattr(axes, "flat") else [axes]
+        )
 
-        for obj, grp in sub.groupby(level="object"):
-            x = obj_positions[obj]
-            lines = grp.index.get_level_values("line")
+        objects = df.index.get_level_values("object").unique()
+        obj_positions = {obj: i for i, obj in enumerate(objects)}
 
-            for cat in ("Milky way", "Second component", "First component"):
-                mask = [_category(l) == cat for l in lines]
-                if not any(mask):
-                    continue
+        for ax, particle in zip(axes_flat, particles):
+            sub = df[df["particle"] == particle]
 
-                # keep unique (logN, logN_err) pairs for this category
-                unique_rows = (
-                    grp.loc[mask]
-                    .drop_duplicates(subset=["logN", "logN_err"])
-                )
-                for _, row in unique_rows.iterrows():
-                    ax.errorbar(
-                        x, row["logN"],
-                        yerr=row["logN_err"],
-                        fmt=MARKERS[cat],
-                        color=COLORS[cat],
-                        capsize=3,
-                        markersize=6,
-                        elinewidth=1,
-                        alpha=0.85,
-                    )
+            for obj, grp in sub.groupby(level="object"):
+                x = obj_positions[obj]
+                lines = grp.index.get_level_values("line")
 
-        ax.set_title(particle, fontsize=11, pad=4)
-        ax.set_xticks(range(len(objects)))
-        ax.set_xticklabels(list(objects), rotation=80, ha="center", fontsize=8)
-        ax.set_ylabel("log N", fontsize=9)
-        ax.set_xlim(-0.6, len(objects) - 0.4)
-        ax.grid(axis="y", linewidth=0.4, alpha=0.5)
+                for cat in ("Milky way", "Second component", "First component"):
+                    mask = [_category(l) == cat for l in lines]
+                    if not any(mask):
+                        continue
 
-    # hide unused axes
-    for ax in axes_flat[n:]:
-        ax.set_visible(False)
+                    # Continue if not object masked by user
+                    id_label = f'{obj}_logN{particle}_{cat}'
+                    if id_label not in exclude_list:
+                        # keep unique (logN, logN_err) pairs for this category
+                        unique_rows = (grp.loc[mask] .drop_duplicates(subset=["logN", "logN_err"]))
+                        for _, row in unique_rows.iterrows():
 
-    # global legend
-    legend_handles = [
-        mlines.Line2D([], [], color=COLORS[cat], marker=MARKERS[cat],
-                      linestyle="None", markersize=7, label=cat)
-        for cat in ("Milky way", "Second component", "First component")
-    ]
-    fig.legend(
-        handles=legend_handles,
-        loc="lower center",
-        ncol=3,
-        fontsize=10,
-        frameon=True,
-        bbox_to_anchor=(0.5, -0.02),
-    )
+                            ax.errorbar(x, row["logN"], yerr=row["logN_err"], fmt=MARKERS[cat], color=COLORS[cat],
+                                        capsize=3, markersize=6, elinewidth=1, alpha=0.85)
+
+            ax.set_title(particle, fontsize=11, pad=4)
+            ax.set_xticks(range(len(objects)))
+            ax.set_xticklabels(list(objects), rotation=80, ha="center", fontsize=8)
+            ax.set_ylabel("log N", fontsize=9)
+            ax.set_xlim(-0.6, len(objects) - 0.4)
+            ax.grid(axis="y", linewidth=0.4, alpha=0.5)
+
+        # hide unused axes
+        for ax in axes_flat[n:]:
+            ax.set_visible(False)
+
+        # global legend
+        legend_handles = [
+            mlines.Line2D([], [], color=COLORS[cat], marker=MARKERS[cat],
+                          linestyle="None", markersize=7, label=cat)
+            for cat in ("Milky way", "Second component", "First component")
+        ]
+        fig.legend(
+            handles=legend_handles,
+            loc="lower center",
+            ncol=3,
+            fontsize=10,
+            frameon=True,
+            bbox_to_anchor=(0.5, -0.02),
+        )
 
     return fig
 
@@ -250,10 +251,11 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
                'Haro11_A', 'Haro11_B', 'Haro11_C']
 
 
-version = 'v1'
+version = 'v2'
 data_df = lime.load_frame(results_folder/f'LyC_voigtprofiles_{version}.txt', levels=['object', 'line'])
 
-fig = plot_logN_grid(data_df)
+exclude_grid_logN = ['NGC2366_logNS2_Milky way', 'Haro2_logNC2*_Second component', 'SBS1415437_logNS3_Milky way']
+fig = plot_logN_grid(data_df, exclude_list=exclude_grid_logN)
 fig.savefig(results_folder/f"species_logN_grid_{version}.pdf", bbox_inches="tight")
 
 fig = plot_param_grid(data_df, parameter='v_r', include_ow_mw=False)

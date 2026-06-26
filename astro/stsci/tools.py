@@ -806,7 +806,8 @@ def extract_voigtfit_dataframe(fname, inputs_df, input_comps, dataset, velocity=
         out_df.loc[line, 'idx_comp'] = inputs_df.loc[line, 'idx_comp']
 
         for hdr in results_hdrs:
-            out_df.loc[idcs_rows, hdr] = results_dict[ion][idx_comp][hdr]
+            # out_df.loc[idcs_rows, hdr] = results_dict[ion][idx_comp][hdr]
+            out_df.loc[line, hdr] = results_dict[ion][idx_comp][hdr]
 
     # Global parameters
     out_df['observations'] = 'none' if success_check else 'failed_convergence'

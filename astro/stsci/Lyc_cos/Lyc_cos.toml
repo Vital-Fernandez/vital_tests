@@ -1,6 +1,10 @@
 [Identifyers]
 LyC_COS_PID = 'PID17515'
 
+[Notes]
+p_cygni_profiles = ['Haro 2 CII* lines',]
+
+
 [galaxy_sample]
 sn_sort_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox186',
                'UGCA281', 'NGC1705',  'NGC4861',  'Haro2', 'He2-10', 'MRK1450',         # Codo
@@ -723,10 +727,6 @@ SBS0335052.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_13
 SBS0335052.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
 SBS0335052.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
 
-IZw18.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-IZw18.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
-IZw18.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
-
 SBS1159545.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
 SBS1159545.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
 SBS1159545.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
@@ -735,63 +735,24 @@ UM461.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A
 UM461.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
 UM461.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
 
-Pox186.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-Pox186.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
-Pox186.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
-Pox186.LyC_lines.fit_cfg.kinem.none.CII.b = 100
-Pox186.LyC_lines.fit_cfg.kinem.none.CIIa.b = 100
-Pox186.LyC_lines.fit_cfg.kinem.none.CII.logN = 15
-Pox186.LyC_lines.fit_cfg.kinem.none.CIIa.logN = 14
-
-NGC4861.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-NGC4861.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
-NGC4861.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
-
-#Haro2.LyC_lines.map_band_vsigma.C2_1335A = 150
-#Haro2.LyC_lines.map_band_vsigma.C2_1336A = 150
-#Haro2.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-#Haro2.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A+C2_1335A_k-1+C2_1336A_k-1+C2_1335.7A_k-1'
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1_tie = "C2_1335A_k-1"
-##
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.var_z = true
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.00360178618
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.var_z = true
-#Haro2.LyC_lines.fit_cfg.kinem.none.CII.logN = 15
-#Haro2.LyC_lines.fit_cfg.kinem.none.CIIa.logN = 14
-
-Haro2.LyC_lines.map_band_vsigma.C2_1335A = 150
-Haro2.LyC_lines.map_band_vsigma.C2_1336A = 150
-Haro2.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-Haro2.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A+C2_1335A_k-1+C2_1336A_k-1+C2_1335.7A_k-1'
-
-Haro2.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0045
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-Haro2.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.00350
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
-Haro2.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
-Haro2.LyC_lines.fit_cfg.kinem.none.k-1_tie = "C2_1335A_k-1"
-Haro2.LyC_lines.fit_cfg.kinem.none.CII.b = 101
-Haro2.LyC_lines.fit_cfg.kinem.none.CIIa.b = 102
-Haro2.LyC_lines.fit_cfg.kinem.none.CII.logN = 15
-Haro2.LyC_lines.fit_cfg.kinem.none.CIIa.logN = 14.5
-
 He2-10.LyC_lines.map_band_vsigma.C2_1335A = 100
 He2-10.LyC_lines.map_band_vsigma.C2_1335A_o-MW = 70
 He2-10.LyC_lines.map_band_vsigma.C2_1336A = 70
 
 He2-10.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
 He2-10.LyC_lines.map_origin.MW.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
-He2-10.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A+C2_1335A_o-MW+C2_1336A_o-MW+C2_1335.7A_o-MW'
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "C2_1335A_o-MW"
+He2-10.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A+C2_1335A_k-1+C2_1336A_k-1+C2_1335.7A_k-1+C2_1335A_o-MW+C2_1336A_o-MW+C2_1335.7A_o-MW'
+
 He2-10.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
 He2-10.LyC_lines.fit_cfg.kinem.none.k-1_tie = "C2_1335A_k-1"
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.002912
-He2-10.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.002500
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.z = 0.0003776
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = false
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "C2_1335A_o-MW"
 
-
+He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0026054
+He2-10.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
+He2-10.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0020570
+He2-10.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.z = 0.00020
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = true
 
 UGC4483.LyC_lines.map_origin.none.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
 UGC4483.LyC_lines.map_origin.MW.line_list = ['C2_1335A', 'C2_1336A', 'C2_1335.7A']
@@ -809,67 +770,6 @@ NGC2366.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
 NGC2366.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "C2_1335A_o-MW"
 
 [voigtfit_sulfur_params]
-
-IZw18.LyC_lines.map_band_vsigma.Si2_1527A_o-MW = 120
-IZw18.LyC_lines.map_band_vsigma.S3_1190A_o-MW = 200
-IZw18.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.00252140
-IZw18.LyC_lines.fit_cfg.kinem.none.k-0.var_z = 0.00252140
-
-
-IZw18.LyC_lines.map_origin.none.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A', 'S2_1251A', 'Si2_1527A']
-IZw18.LyC_lines.map_origin.MW.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A', 'S2_1251A', 'Si2_1527A']
-IZw18.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
-IZw18.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_o-MW+Si2_1260A_o-MW'
-IZw18.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A+S2_1251A_o-MW+S2_1254A_o-MW'
-IZw18.LyC_lines.fit_cfg.Si2_1527A_b = 'Si2_1527A+Si2_1527A_o-MW'
-IZw18.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1527A"
-IZw18.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "Si2_1527A_o-MW"
-
-#IZw18.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SIII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SIII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.logN = 16.2001
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.logN = 15.6103
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.var_N = false
-
-
-#IZw18.LyC_lines.map_band_vsigma.S3_1190A_o-MW = 200
-#IZw18.LyC_lines.map_origin.none.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A']
-#IZw18.LyC_lines.map_origin.MW.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A']
-#IZw18.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
-#IZw18.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_o-MW+Si2_1260A_o-MW'
-#IZw18.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A+S2_1251A_o-MW+S2_1254A_o-MW'
-#IZw18.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "S3_1190A_o-MW"
-#IZw18.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.00252140
-#IZw18.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SIII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SIII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.logN = 16.2001
-#IZw18.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.b = 10.54
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.var_b = false
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.logN = 15.6103
-#IZw18.LyC_lines.fit_cfg.kinem.none.SII.var_N = false
-
-#SBS1415437.LyC_lines.map_origin.none.line_list = ['S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A']
-#SBS1415437.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A'
-#SBS1415437.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A'
-#
-#SBS1415437.LyC_lines.map_band_vsigma.S2_1260A = 30
-#SBS1415437.LyC_lines.fit_cfg.kinem.none.k-0_tie = "S2_1254A"
-#SBS1415437.LyC_lines.fit_cfg.kinem.none.SiII.b = 11.78
-#SBS1415437.LyC_lines.fit_cfg.kinem.none.SiII.var_b = false
-#SBS1415437.LyC_lines.fit_cfg.kinem.none.SiII.logN = 16.5535
-#SBS1415437.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-
-
 NGC4861.LyC_lines.map_origin.none.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A']
 NGC4861.LyC_lines.map_origin.MW.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A']
 NGC4861.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
@@ -883,65 +783,6 @@ NGC4861.LyC_lines.fit_cfg.kinem.none.SiII.logN = 13.8557
 NGC4861.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
 NGC4861.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "S3_1190A_o-MW"
 
-
-#NGC4861.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.00013195
-#NGC4861.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-#NGC4861.LyC_lines.fit_cfg.kinem.MW.k-0.z = -0.00020063
-#NGC4861.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = false
-#NGC4861.LyC_lines.fit_cfg.kinem.none.SiII.logN = 14.0220
-#NGC4861.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-#NGC4861.LyC_lines.fit_cfg.kinem.MW.SiII.logN = 17.0651
-#NGC4861.LyC_lines.fit_cfg.kinem.MW.SiII.var_N = false
-#
-#NGC4861.LyC_lines.fit_cfg.kinem.none.SIII.logN = 15
-#NGC4861.LyC_lines.fit_cfg.kinem.MW.SIII.logN = 16
-
-
-#UGCA281.LyC_lines.map_origin.none.line_list = ['S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A']
-#UGCA281.LyC_lines.map_origin.MW.line_list = ['S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A']
-#UGCA281.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A+S2_1251A_o-MW+S2_1254A_o-MW'
-#UGCA281.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_o-MW+Si2_1260A_o-MW'
-#
-#UGCA281.LyC_lines.fit_cfg.kinem.none.SiII.b = 37.84
-#UGCA281.LyC_lines.fit_cfg.kinem.none.SiII.var_b = false
-#UGCA281.LyC_lines.fit_cfg.kinem.none.SiII.logN = 13.8256
-#UGCA281.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-#UGCA281.LyC_lines.fit_cfg.kinem.MW.SiII.b = 13.87
-#UGCA281.LyC_lines.fit_cfg.kinem.MW.SiII.var_b = false
-#UGCA281.LyC_lines.fit_cfg.kinem.MW.SiII.logN = 17.0390
-#UGCA281.LyC_lines.fit_cfg.kinem.MW.SiII.var_N = false
-
-#Haro2.LyC_lines.map_origin.none.line_list = ['S2_1260A', 'Si2_1260A']
-#Haro2.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_k-1+Si2_1260A_k-1+S2_1260A_k-2+Si2_1260A_k-2'
-#
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0045099
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0041752
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-2.z = 0.0035759
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-2.var_z = false
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0_tie = "S2_1260A"
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1_tie = "S2_1260A_k-1"
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-2_tie = "S2_1260A_k-2"
-#Haro2.LyC_lines.fit_cfg.kinem.none.SII.b = 100
-
-
-NGC2366.LyC_lines.map_origin.none.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A']
-NGC2366.LyC_lines.map_origin.MW.line_list = ['S3_1190A', 'Si2_1190A', 'Si2_1193A']
-NGC2366.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
-NGC2366.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.00013195
-NGC2366.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-NGC2366.LyC_lines.fit_cfg.kinem.MW.k-0.z = -0.00020063
-NGC2366.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = false
-NGC2366.LyC_lines.fit_cfg.kinem.none.SiII.logN = 14.0220
-NGC2366.LyC_lines.fit_cfg.kinem.none.SiII.var_N = false
-NGC2366.LyC_lines.fit_cfg.kinem.MW.SiII.logN = 17.0651
-NGC2366.LyC_lines.fit_cfg.kinem.MW.SiII.var_N = false
-
-NGC2366.LyC_lines.fit_cfg.kinem.none.SIII.logN = 15
-NGC2366.LyC_lines.fit_cfg.kinem.MW.SIII.logN = 16
-
-
 Haro2.LyC_lines.map_origin.none.line_list = ['S2_1260A', 'Si2_1260A']
 Haro2.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_k-1+Si2_1260A_k-1'
 Haro2.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1251A_k-1'
@@ -951,69 +792,36 @@ Haro2.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
 Haro2.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0034897
 Haro2.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
 
-Haro2.LyC_lines.fit_cfg.kinem.none.k-0.b = 96.66
+Haro2.LyC_lines.fit_cfg.kinem.none.k-0.b = 101.38
 Haro2.LyC_lines.fit_cfg.kinem.none.k-0.var_b = false
-Haro2.LyC_lines.fit_cfg.kinem.none.k-1.b = 98.64
+Haro2.LyC_lines.fit_cfg.kinem.none.k-1.b = 72.72
 Haro2.LyC_lines.fit_cfg.kinem.none.k-1.var_b = false
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0_tie = "S2_1260A"
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1_tie = "S2_1260A_k-1"
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.SiII.logN = 14.4790
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-0.SiII.var_N = false
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.SiII.logN = 13.9349
-#Haro2.LyC_lines.fit_cfg.kinem.none.k-1.SiII.var_N = false
-
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.002912
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.z = 0.0003776
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = false
-
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1260A_o-MW"
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "Si2_1260A"
-He2-10.LyC_lines.map_origin.none.line_list = ['S2_1260A', 'Si2_1260A', ]
-He2-10.LyC_lines.map_origin.MW.line_list = ['S2_1260A', 'Si2_1260A', ]
-He2-10.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_o-MW+Si2_1260A_o-MW'
-
-#He2-10.LyC_lines.map_origin.none.line_list = ['S2_1260A', 'Si2_1260A', ]
-#He2-10.LyC_lines.map_origin.MW.line_list = ['S2_1260A', 'Si2_1260A', ]
-#He2-10.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_o-MW+Si2_1260A_o-MW'
-#He2-10.LyC_lines.fit_cfg.kinem.none.SII.logN = 15.5
-#He2-10.LyC_lines.fit_cfg.kinem.none.SII.b = 100
-
-
-
+Haro2.LyC_lines.fit_cfg.kinem.none.k-0.SiII.logN = 14.4815
+Haro2.LyC_lines.fit_cfg.kinem.none.k-0.SiII.var_N = false
+Haro2.LyC_lines.fit_cfg.kinem.none.k-1.SiII.logN = 13.8635
+Haro2.LyC_lines.fit_cfg.kinem.none.k-1.SiII.var_N = false
 
 Haro11_A.LyC_lines.map_band_vsigma.Si2_1527A = 120
-Haro11_A.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0203853
+Haro11_A.LyC_lines.map_band_vsigma.Si2_1304A = 95
+Haro11_A.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0204210
 Haro11_A.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-Haro11_A.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0198228
+Haro11_A.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0201
 Haro11_A.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
-Haro11_A.LyC_lines.map_origin.none.line_list = [
-#                                                'S2_1251A',
-                                                'S2_1254A',
+Haro11_A.LyC_lines.map_origin.none.line_list = ['S2_1254A',
                                                 'S2_1260A', 'Si2_1260A',
+                                                'Si2_1304A',
                                                 'Si2_1527A']
 
 Haro11_A.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_k-1+Si2_1260A_k-1'
 Haro11_A.LyC_lines.fit_cfg.Si2_1527A_b = 'Si2_1527A+Si2_1527A_k-1'
-Haro11_A.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1527A"
-Haro11_A.LyC_lines.fit_cfg.kinem.none.k-1_tie = "Si2_1527A_k-1"
-Haro11_A.LyC_lines.grouped_lines = ['Fe2_1142A_b', 'Fe2_1608A_b', 'Al2_1671A_b', 'S2_1260A_b', 'C2_1335A_b', 'Si2_1527A_b']
+Haro11_A.LyC_lines.fit_cfg.Si2_1304A_b = 'Si2_1304A+Si2_1304A_k-1'
+Haro11_A.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1304A"
+Haro11_A.LyC_lines.fit_cfg.kinem.none.k-1_tie = "Si2_1304A_k-1"
+Haro11_A.LyC_lines.grouped_lines = ['Fe2_1142A_b', 'Fe2_1608A_b', 'Al2_1671A_b', 'S2_1260A_b', 'C2_1335A_b', 'Si2_1304A_b', 'Si2_1527A_b']
 
-
-Haro11_C.LyC_lines.map_band_vsigma.S2_1260A = 120
-Haro11_C.LyC_lines.map_band_vsigma.Si2_1527A = 150
-Haro11_C.LyC_lines.map_origin.none.line_list = [
-#                                                'S2_1251A', 'S2_1254A',
-                                                'S2_1260A', 'Si2_1260A',
-                                                'Si2_1527A'
-                                                ]
-
-Haro11_C.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A'
-Haro11_C.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1260A"
-Haro11_C.LyC_lines.fit_cfg.kinem.none.SII.var_z = false
-Haro11_C.LyC_lines.fit_cfg.kinem.none.SII.logN = 15.5
-Haro11_C.LyC_lines.fit_cfg.kinem.none.SII.b = 100
-
+#
+#v = +10.9 ± 3.3             13.25 ±   1.40      16.4557 ±  0.1991
+#v = -80.0 ± 7.0            155.46 ±   5.61      13.7079 ±  0.0483
 
 [voigtfit_metals_params]
 
@@ -1045,13 +853,13 @@ SBS0335052.mask_bands.adjust_central_band = true
 SBS0335052.ISM.line_list = ['Fe2_1097A', 'Fe2_1134A','N1_1134A', 'N1_1134.4A', 'N1_1135A',
                             'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                             'Si2_1190A', 'Si3_1206A', 'S2_1251A', 'S2_1254A', 'S2_1260A',
-                            'Fe2_1260A', 'Si2_1260A', 'C2_1335A', 'C2_1336A', 'Si2_1193A', 'P2_1153A', 'O1_1302A', 'Si2_1304A', 'Ni2_1370A', 'Si2_1527A',
+                            'Si2_1260A', 'C2_1335A', 'C2_1336A', 'Si2_1193A', 'P2_1153A', 'O1_1302A', 'Si2_1304A', 'Ni2_1370A', 'Si2_1527A',
                             'Al2_1671A']
 
 SBS0335052.MW.line_list = ['C2_1036A', 'N2_1084A', 'Fe2_1097A', 'Fe2_1122A','Fe2_1125A','Fe2_1127A','Fe2_1134A',
                            'N1_1134A', 'N1_1134.4A', 'N1_1135A', 'Fe2_1142A', 'Fe2_1143A','Fe2_1145A', 'S3_1190A',
                            'Si2_1190A', 'Si2_1193A', 'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A', 'S2_1251A',
-                           'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A', 'Si2_1304A', 'C2_1335A',
+                           'S2_1254A', 'S2_1260A', 'Si2_1260A', 'Si2_1264A', 'Si2_1304A', 'C2_1335A',
                            'C2_1336A', 'C2_1335.7A', 'Ni2_1370A', 'Si4_1394A', 'Si4_1403A', 'Si2_1527A', 'Si2_1533A',
                            'Fe2_1608A', 'Al2_1671A']
 
@@ -1120,7 +928,7 @@ IZw18.ISM.line_list = ['C2_1036A', 'Fe2_1097A', 'Fe2_1107A', 'Fe2_1112A',
                       'P2_1153A', 'P2_1154A',
                       'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                       'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                      'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                      'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A',
                       'Si2_1304A', 'Si3_1206A',
                       'C2_1335A', 'C2_1336A',
                       'Ni2_1370A',
@@ -1134,7 +942,7 @@ IZw18.MW.line_list = ['C2_1036A', 'C4_1548A', 'C4_1551A', 'Fe2_1097A', 'Fe2_1107
                     'P2_1153A', 'P2_1154A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',  'Si2_1260A', 'Si2_1264A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Ni2_1370A',
@@ -1178,11 +986,11 @@ IZw18.LyC_lines.map_origin.none.line_list = ['Fe2_1143A', 'Fe2_1145A',
                                              'Fe2_1608A',
                                              'Al2_1671A']
 
-IZw18.LyC_lines.map_origin.MW.line_list = [
-                                           'O3_5007A',
-                                            ]
+IZw18.LyC_lines.map_origin.MW.line_list = ['O3_5007A']
 
 IZw18.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
+IZw18.LyC_lines.fit_cfg.kinem.none.CII.logN = 12.0
+
 IZw18.LyC_lines.grouped_lines = ['Fe2_1143A_b','S3_1190A_b','C2_1335A_b','Si2_1527A_b','Fe2_1608A_b']
 IZw18.LyC_lines.fit_cfg.Fe2_1143A_b = 'Fe2_1143A+Fe2_1145A'
 IZw18.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
@@ -1202,9 +1010,6 @@ IZw18.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
 #IZw18.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A'
 #IZw18.LyC_lines.fit_cfg.Si2_1527A_b = 'Si2_1527A+Si2_1527A_o-MW'
 #IZw18.LyC_lines.fit_cfg.Fe2_1608A_b = 'Fe2_1608A+Fe2_1608A_o-MW'
-#IZw18.LyC_lines.fit_cfg.kinem.none.SIII.logN = 14.7479
-
-
 
 
 # ----- SBS1415437
@@ -1237,7 +1042,7 @@ SBS1415437.ISM.line_list = ['Fe2_1097A',
                             'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                             'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                             'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                            'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                            'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A',
                             'O1_1302A', 'Si2_1304A', 'Si3_1206A',
                             'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                             'Ni2_1370A',
@@ -1248,7 +1053,7 @@ SBS1415437.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A',
                            'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                            'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                            'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                           'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                           'S2_1251A', 'S2_1254A', 'S2_1260A', 'Si2_1260A',
                            'Si2_1304A',
                            'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                            'Ni2_1370A',
@@ -1340,7 +1145,7 @@ SBS1159545.MW.line_list = ['Fe2_1097A',
                         'Fe2_1143A','Fe2_1145A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                         'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',  'Si2_1260A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Si4_1394A', 'Si4_1403A',
                         'Fe2_1608A', 'Al2_1671A']
@@ -1400,7 +1205,7 @@ UM461.ISM.line_list = ['Fe2_1097A',
               'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A',
-              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'Si2_1304A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1410,7 +1215,7 @@ UM461.MW.line_list = ['Fe2_1097A',
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
 
@@ -1481,7 +1286,7 @@ Pox186.ISM.line_list = ['Fe2_1097A', 'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'Fe2_1122A','Fe2_1125A','Fe2_1134A', 'N1_1134A', 'N1_1134.4A', 'N1_1135A',
               'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'O1_1302A', 'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Al2_1671A']
@@ -1491,7 +1296,7 @@ Pox186.MW.line_list = ['Fe2_1097A',
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si4_1394A', 'Si4_1403A', 'Fe2_1608A',
                     'Si2_1527A', 'Al2_1671A']
@@ -1556,7 +1361,7 @@ UGCA281.ISM.line_list = ['Fe2_1097A',
               'Fe2_1142A', 'Fe2_1143A', 'Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'O1_1302A', 'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1566,7 +1371,7 @@ UGCA281.MW.line_list = ['Fe2_1097A',
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si4_1394A', 'Si4_1403A',
                     'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1584,7 +1389,7 @@ UGCA281.LyC_lines.line_list = ['Fe2_1097A',
                              'S3_1190A', 'Si2_1190A', 'Si2_1193A',
 #                             'Si3_1206A',
                              'S2_1251A', 'S2_1254A',
-                             'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                             'S2_1260A',   'Si2_1260A',
                              'Si2_1304A',
                              'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                              'Si2_1527A',
@@ -1659,7 +1464,7 @@ NGC1705.ISM.line_list = ['Fe2_1097A', 'Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3
                           'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                           'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A', 'Si2_1195A',
                           'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                          'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                          'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                           'Si2_1304A', 'Si3_1206A',
                           'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                           'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1669,7 +1474,7 @@ NGC1705.MW.line_list = ['Fe2_1097A', 'Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_
                         'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A', 'Si2_1195A',
                         'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                         'Si2_1304A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Si4_1394A', 'Si4_1403A',
@@ -1752,7 +1557,7 @@ NGC4861.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2
               'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1761,7 +1566,7 @@ NGC4861.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_
                         'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                         'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                         'Si2_1304A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Si4_1394A', 'Si4_1403A',
@@ -1833,7 +1638,7 @@ Haro2.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_1
                       'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                       'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                       'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                      'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1265A',
+                      'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1265A',
                       'Si2_1304A', 'Si3_1206A',
                       'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                       'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1842,7 +1647,7 @@ Haro2.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_11
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si4_1394A', 'Si4_1403A',
@@ -1918,7 +1723,7 @@ He2-10.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_
               'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1265A',
+              'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1265A',
               'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -1927,7 +1732,7 @@ He2-10.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_1
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A', 'Si2_1265A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A', 'Si2_1265A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si4_1394A', 'Si4_1403A',
@@ -1943,54 +1748,50 @@ He2-10.nebular.line_list = ['H1_1216A', 'C4_1548A', 'C4_1551A', 'He2_1640A', 'O3
 
 
 He2-10.LyC_lines.map_band_vsigma.S2_1251A = 70
+He2-10.LyC_lines.map_band_vsigma.Si2_1193A = 110
+He2-10.LyC_lines.map_band_vsigma.Si2_1304A = 95
+He2-10.LyC_lines.map_band_vsigma.Si2_1304A_o-MW = 25
 He2-10.LyC_lines.map_band_vsigma.S2_1251A_o-MW = 70
 He2-10.LyC_lines.map_origin.none.rejected_lines = ['C3_1176A']
 He2-10.LyC_lines.map_origin.MW.rejected_lines = ['C3_1176A']
 
 He2-10.LyC_lines.map_origin.none.line_list = [#'Fe2_1097A',
                                              'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
-                                             'S3_1190A', 'Si2_1190A', 'Si2_1193A',
+#                                             'S3_1190A', 'Si2_1190A',
+#                                             'Si2_1193A',
 #                                             'Si3_1206A',
-#                                             'S2_1251A', 'S2_1254A',
-#                                             'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
-#                                             'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
-#                                             'Si2_1304A',
-                                             'C2_1335A', 'C2_1336A', 'C2_1335.7A',
-#                                             'Si2_1527A',
-#                                             'Fe2_1608A',
+                                             'S2_1251A', 'S2_1254A',
+#                                            'S2_1260A', 'Si2_1260A',
+                                             'Si2_1304A',
                                              'Al2_1671A']
 
 He2-10.LyC_lines.map_origin.MW.line_list = [
                                             'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
-                                            'S3_1190A', 'Si2_1190A', 'Si2_1193A',
-#                                            'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
-                                            'C2_1335A', 'C2_1336A', 'C2_1335.7A',
+#                                            'S3_1190A', 'Si2_1190A', 'Si2_1193A',
+                                            'S2_1251A', 'S2_1254A',
+#                                             'S2_1260A', 'Si2_1260A',
+                                            'Si2_1304A',
                                             'Al2_1671A']
 
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1193A"
-#He2-10.LyC_lines.fit_cfg.kinem.none.k-1_tie = "Si2_1193A_k-1"
-He2-10.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "Si2_1193A_o-MW"
-He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.002912
-He2-10.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.002500
+He2-10.LyC_lines.fit_cfg.kinem.none.k-0_tie = "Si2_1304A"
+He2-10.LyC_lines.fit_cfg.kinem.none.k-1_tie = "Si2_1304A_k-1"
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0_tie = "Fe2_1143A_o-MW"
 
+He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.0026054
+He2-10.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
+He2-10.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.0020570
+He2-10.LyC_lines.fit_cfg.kinem.none.k-1.var_z = false
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.z = 0.00020
+He2-10.LyC_lines.fit_cfg.kinem.MW.k-0.var_z = true
+
+He2-10.LyC_lines.fit_cfg.kinem.none.SiIII.logN = 12.0
 He2-10.LyC_lines.fit_cfg.Fe2_1142A_b = 'Fe2_1142A+Fe2_1143A+Fe2_1145A+Fe2_1142A_k-1+Fe2_1143A_k-1+Fe2_1145A_k-1+Fe2_1142A_o-MW+Fe2_1143A_o-MW+Fe2_1145A_o-MW'
 He2-10.LyC_lines.fit_cfg.S3_1190A_b = 'S3_1190A+Si2_1190A+Si2_1193A+S3_1190A_k-1+Si2_1190A_k-1+Si2_1193A_k-1+S3_1190A_o-MW+Si2_1190A_o-MW+Si2_1193A_o-MW'
-He2-10.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A+S2_1260A+Fe2_1260A+Si2_1260A+S2_1251A_o-MW+S2_1254A_o-M+S2_1260A_o-M+Fe2_1260A_o-M+Si2_1260A_o-M'
-He2-10.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A+C2_1335A_k-1+C2_1336A_k-1+C2_1335.7A_k-1+C2_1335A_o-MW+C2_1336A_o-MW+C2_1335.7A_o-MW'
+He2-10.LyC_lines.fit_cfg.S2_1251A_b = 'S2_1251A+S2_1254A+S2_1251A_k-1+S2_1254A_k-1+S2_1251A_o-MW+S2_1254A_o-MW'
+He2-10.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A+S2_1260A_k-1+Si2_1260A_k-1+S2_1260A_o-MW+Si2_1260A_o-MW'
+He2-10.LyC_lines.fit_cfg.Si2_1304A_b = 'Si2_1304A+Si2_1304A_k-1+Si2_1304A_o-MW'
+He2-10.LyC_lines.grouped_lines = ['Fe2_1142A_b', 'S3_1190A_b', 'S2_1251A_b', 'S2_1260A_b', 'Si2_1304A_b']
 
-He2-10.LyC_lines.grouped_lines = ['Fe2_1142A_b', 'S3_1190A_b', 'Si3_1206A_b', 'S2_1251A_b', 'S2_1260A_b',
-                                 'C2_1335A_b', 'Si2_1527A_b', 'Fe2_1608A_b']
-
-#He2-10.LyC_lines.fit_cfg.kinem.none.z = 0.002593
-#He2-10.LyC_lines.fit_cfg.kinem.none.var_z = false
-#He2-10.LyC_lines.fit_cfg.logN.CII = 15
-#He2-10.LyC_lines.fit_cfg.logN.CIIa = 15
-#He2-10.LyC_lines.fit_cfg.kinem.none.k-0.z = 0.002912
-#He2-10.LyC_lines.fit_cfg.kinem.none.k-0.var_z = false
-#He2-10.LyC_lines.fit_cfg.kinem.none.k-1.z = 0.002
-#He2-10.LyC_lines.fit_cfg.kinem.none.k-1.var_z = true
-#
-#He2-10.LyC_lines.fit_cfg.kinem.MW.var_z = true
 
 # ----- MRK1450
 MRK1450.from_file.crop_flux = [0, 99]
@@ -2019,7 +1820,7 @@ MRK1450.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2
                          'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                          'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                          'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                         'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1265A',
+                         'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1265A',
                          'Si2_1304A', 'Si3_1206A',
                          'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                          'Ni2_1370A',
@@ -2029,7 +1830,7 @@ MRK1450.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_
                         'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                         'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                         'Si2_1304A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2102,7 +1903,7 @@ UGC4483.mask_bands.adjust_central_band = true
 UGC4483.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_1134A', 'N1_1134A', 'N1_1134.4A', 'N1_1135A',
               'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A', 'Si3_1206A',
-              'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Ni2_1370A',
@@ -2112,7 +1913,7 @@ UGC4483.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_
                     'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2137,7 +1938,7 @@ UGC4483.LyC_lines.map_origin.none.line_list = [
 				             'S3_1190A', 'Si2_1190A', 'Si2_1193A',
 #				             'Si3_1206A',
 				             'S2_1251A', 'S2_1254A',
-				             'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+				             'S2_1260A',   'Si2_1260A',
 #				             'Si2_1304A',
 #				             'C2_1335A', 'C2_1336A', 'C2_1335.7A',
 #				             'Si2_1527A',
@@ -2149,7 +1950,7 @@ UGC4483.LyC_lines.map_origin.MW.line_list = ['Fe2_1142A', 'Fe2_1143A','Fe2_1145A
                                              'S3_1190A', 'Si2_1190A', 'Si2_1193A',
 #                                             'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                                              'S2_1251A', 'S2_1254A',
-                                             'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                                             'S2_1260A',   'Si2_1260A',
                                              'Al2_1671A'
                                               ]
 
@@ -2186,7 +1987,7 @@ VIIZw403.mask_bands.adjust_central_band = true
 VIIZw403.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A',
               'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
-              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1265A',
+              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1265A',
               'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Ni2_1370A',
@@ -2195,7 +1996,7 @@ VIIZw403.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A',
 VIIZw403.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A',
                         'Fe2_1142A', 'Fe2_1143A','Fe2_1145A', 'C3_1176A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A', 'Si2_1265A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A', 'Si2_1265A',
                         'Si2_1304A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2272,7 +2073,7 @@ NGC2366.ISM.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2
                          'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                          'P2_1153A', 'P2_1154A',
                          'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A', 'Si3_1206A',
-                         'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                         'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                          'Si2_1304A', 'Si3_1206A',
                          'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                          'Ni2_1370A',
@@ -2282,7 +2083,7 @@ NGC2366.MW.line_list = ['Fe2_1122A','Fe2_1125A', 'Fe2_1127A', 'Fe3_1128A', 'Fe2_
                         'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                         'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                         'Si3_1206A',
-                        'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                        'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                         'Si2_1304A',
                         'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                         'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2369,7 +2170,7 @@ Haro11_A.ISM.line_list = ['Fe2_1097A', 'Fe2_1107A', 'Fe2_1112A',
               'P2_1153A', 'P2_1154A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'O1_1302A', 'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Si2_1527A', 'Fe2_1608A', 'Al2_1671A']
@@ -2381,7 +2182,7 @@ Haro11_A.MW.line_list = ['Fe2_1097A', 'Fe2_1107A', 'Fe2_1112A',
                     'P2_1153A', 'P2_1154A',
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Si4_1394A', 'Si4_1403A',
@@ -2484,7 +2285,7 @@ Haro11_B.ISM.line_list = ['Fe2_1107A', 'Fe2_1112A',
                           'P2_1153A', 'P2_1154A',
                           'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                           'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                          'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+                          'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
                           'O1_1302A', 'Si2_1304A', 'Si3_1206A',
                           'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                           'Ni2_1370A',
@@ -2498,7 +2299,7 @@ Haro11_B.MW.line_list = ['Fe2_1107A', 'Fe2_1112A',
 
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2583,7 +2384,7 @@ Haro11_C.ISM.line_list = ['Fe2_1107A', 'Fe2_1112A',
               'P2_1153A', 'P2_1154A',
               'C3_1176A', 'S3_1190A', 'Si2_1190A', 'Si2_1193A',
               'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A',
+              'H1_1216A', 'NV_1238.821A', 'NV_1242.804A', 'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A',
               'O1_1302A', 'Si2_1304A', 'Si3_1206A',
               'C2_1335A', 'C2_1336A', 'C2_1335.7A',
               'Ni2_1370A',
@@ -2597,7 +2398,7 @@ Haro11_C.MW.line_list = ['Fe2_1107A', 'Fe2_1112A',
 
                     'S3_1190A', 'Si2_1190A', 'Si2_1193A',
                     'N1_1200A', 'N1_1201A', 'N1_1200.2A', 'Si3_1206A',
-                    'S2_1251A', 'S2_1254A', 'S2_1260A', 'Fe2_1260A', 'Si2_1260A', 'Si2_1264A',
+                    'S2_1251A', 'S2_1254A', 'S2_1260A',   'Si2_1260A', 'Si2_1264A',
                     'Si2_1304A',
                     'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                     'Ni2_1370A', 'Si4_1394A', 'Si4_1403A',
@@ -2623,7 +2424,7 @@ Haro11_C.LyC_lines.map_origin.MW.rejected_lines = ['C3_1176A']
 
 
 Haro11_C.LyC_lines.map_origin.none.line_list = ['Fe2_1125A',
-                                                'Fe2_1142A',
+                                                'Fe2_1142A', 'Fe2_1143A','Fe2_1145A',
                                                 'C2_1335A', 'C2_1336A', 'C2_1335.7A',
                                                 'S2_1260A', 'Si2_1260A',
 #                                                'Si2_1527A',
@@ -2635,7 +2436,7 @@ Haro11_C.LyC_lines.fit_cfg.Fe2_1142A_b = 'Fe2_1142A+Fe2_1143A+Fe2_1145A'
 Haro11_C.LyC_lines.fit_cfg.C2_1335A_b = 'C2_1335A+C2_1336A+C2_1335.7A'
 Haro11_C.LyC_lines.fit_cfg.S2_1260A_b = 'S2_1260A+Si2_1260A'
 
-Haro11_C.LyC_lines.grouped_lines = ['C2_1335A_b', 'S2_1260A_b']
+Haro11_C.LyC_lines.grouped_lines = ['Fe2_1142A_b', 'C2_1335A_b', 'S2_1260A_b']
 
 Haro11_C.LyC_lines.fit_cfg.kinem.none.k-0_tie = "C2_1335A"
 #Haro11_C.LyC_lines.fit_cfg.kinem.none.CII.logN = 15.5
@@ -2779,3 +2580,24 @@ HaroA_empty_files = ['lecm05azq_x1d.fits', 'lecm04utq_x1d.fits', 'lecm04uyq_x1d.
 SBS1159_empty_files = ['leek04l4q_x1d.fits', 'leek04l6q_x1d.fits', 'leek03hsq_x1d.fits']
 SBS1415437_empty_files = ['ldn708hsq_x1d.fits', 'ldn708hvq_x1d.fits']
 UM461_empty_files = ['lfhb03c3q_x1d.fits']
+
+[SSP_masks]
+SBS0335052 = []
+IZw18 = []
+SBS1415437 = []
+SBS1159545 = []
+UM461 = []
+Pox186 = []
+UGCA281 = []
+NGC1705 = []
+NGC4861 = []
+Haro2 = []
+He2-10 = []
+MRK1450 = []
+UGC4483 = []
+VIIZw403 = []
+NGC2366 = []
+Haro11_A = []
+Haro11_B = []
+Haro11_C = []
+IZw18_SE = []

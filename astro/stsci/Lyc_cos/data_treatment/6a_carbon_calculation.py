@@ -33,33 +33,31 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
                'Haro11_A', 'Haro11_B', 'Haro11_C',
                'IZw18_SE']
 
+# target_list = ['NGC1705', 'NGC4861', 'He2-10', 'Haro11_B']
+
 # Loop through the targets and generate the HASP files
 for i, obj in enumerate(target_list):
 
-    if i == 15:
+    # if i == 3:
+    if obj == 'He2-10':
 
         # Object folders the files
         print(f'{i}) Galaxy {obj}, z = {cfg_sample['Galaxy_redshifts'][obj]}')
         input_folder_single = obs_folder / 'LyC_leakers_COS' / 'objects_x1d' / f'{obj}'
         output_folder_single = obs_folder / 'LyC_leakers_COS' / 'obj_hasp' / f'{obj}'
         opacityLymanAlpha_df_path = lyman_alpha_folder/f'{obj}_LyAlpha_lines_frame.txt'
-        opacity_df_path = output_folder/f'{obj}_metals_lines_frame.txt'
         obj_lsf_file = f"{lsf_obj_folder}/{obj}_hasp_lsf.txt"
 
         HI_cfg = lyAlpha_data[f'{obj}_LyAlpha_results']
         metals_cfg = cfg_sample['voigtfit_metals_params'][obj]
 
-        if obj in cfg_sample['voigtfit_sulfur_params']:
-            sulfur_cfg = cfg_sample['voigtfit_sulfur_params'][obj]
-            voigfit_reg = output_folder / f'{obj}_sulfur_best_fit.reg'
-            opacity_df_path = output_folder / f'{obj}_sulfur_lines_frame.txt'
+        if obj in cfg_sample['voigtfit_carbon_params']:
+            carbon_cfg = cfg_sample['voigtfit_carbon_params'][obj]
+            voigfit_reg = output_folder / f'{obj}_carbon_best_fit.reg'
+            opacity_df_path = output_folder / f'{obj}_carbon_lines_frame.txt'
 
             # Index the files
             idcs_out = (sample_df.object == obj) & (sample_df.index.get_level_values('state') == 'aspec_manual')
-
-            fname = '/home/vital/Astrodata/STScI/LyC_leakers_COS/obj_hasp/Haro11_A/hst_haro11-a_aspec.fits'
-            spec = lime.Spectrum.from_file(fname, instrument='cos', redshift=cfg_sample['Galaxy_redshifts'][obj])
-            spec = lime.Spectrum.from_file(fname, instrument='cos', redshift=cfg_sample['Galaxy_redshifts'][obj])
 
             # Load the files
             pname = obs_folder / sample_df.loc[idcs_out].filepath[0]
@@ -89,7 +87,7 @@ for i, obj in enumerate(target_list):
                                                      mask_groups=['airglow', 'MW', 'nebular', 'stellar'])
 
             # Get line list extra lines
-            bands_target = spec.retrieve.lines_frame(band_vsigma=70, **sulfur_cfg['LyC_lines'])
+            bands_target = spec.retrieve.lines_frame(band_vsigma=70, **carbon_cfg['LyC_lines'])
 
             # Plot inputs
             fig_cfg = {"legend.fontsize": 10,}
@@ -97,7 +95,7 @@ for i, obj in enumerate(target_list):
             add_opacity_profile(spec, opacity_df_path, voigtfit_pname=voigfit_reg)
 
             # Run Voigtfit
-            run_VoigtFit(output_folder/f'{obj}_sulfur', spec, bands_target, fit_cfg=sulfur_cfg['LyC_lines']['fit_cfg'],
+            run_VoigtFit(output_folder/f'{obj}_carbon', spec, bands_target, fit_cfg=carbon_cfg['LyC_lines']['fit_cfg'],
                          conv_dict=lime_voigtfit_conv, output_toml=output_folder/'metals_results.toml',
                          obj_redshift=spec.redshift, voigt_default_params=cfg_sample['voigt_default_params'],
                          lsf_file=obj_lsf_file)

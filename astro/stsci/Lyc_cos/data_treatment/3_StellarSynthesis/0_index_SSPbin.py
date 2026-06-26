@@ -7,7 +7,7 @@ hdrs = ['z', 'age', 'imf', 'Mmin', 'Mmax',  'fname']
 bin_df = DataFrame(columns=hdrs)
 
 ssp_folder = Path('/home/vital/Astrodata/BPASS_v2.3/spectra-bin_byrne23')
-out_folder = Path('/home/vital/Dropbox/Astrophysics/Data/STScI_projects/LyC_leakers_COS/SSPs')
+out_folder = Path('/LyC_leakers_COS/SSPs')
 
 # Loop through the files
 bin_list = list(ssp_folder.glob('*.dat'))

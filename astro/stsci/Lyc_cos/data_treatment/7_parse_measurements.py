@@ -91,6 +91,7 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
                'UGC4483', 'VIIZw403',  'NGC2366',                                       # Dent
                'Haro11_A', 'Haro11_B', 'Haro11_C']
 
+
 survey_dict = {}
 for i, obj in enumerate(target_list):
 
@@ -139,14 +140,6 @@ for i, obj in enumerate(target_list):
         list_science, list_masked = unpack_lines(spec, metals_cfg, science_groups=['ISM'],
                                                  mask_groups=['airglow', 'MW', 'nebular', 'stellar'])
 
-        # # Get line list extra lines
-        # bands_target = spec.retrieve.lines_frame(band_vsigma=70, **metals_cfg['LyC_lines'])
-        #
-        # # Plot inputs
-        # fig_cfg = {"legend.fontsize": 10,}
-        # spec.plot.spectrum(bands=bands_target, line_list=list_masked + list_science, rest_frame=False, in_fig=None, fig_cfg=fig_cfg, ax_cfg={'title': obj})
-        # add_opacity_profile(spec, opacity_df_path, voigtfit_pname=voigfitz_reg)
-
         # Lyman alpha data
         fname = lyman_alpha_folder/f'{obj}_LyAlpha_lines_frame.txt'
         obj_dict = {'alpha': lime.load_frame(fname)}
@@ -166,8 +159,10 @@ LyA_frame.index = LyA_frame.index.set_names(["object", "line"])
 LyA_frame.index = LyA_frame.index.set_names(["object", "line"])
 LyA_frame = LyA_frame.rename(columns={'ion': 'particle'})
 
-idcs_fine_cIIa = LyA_frame.index.get_level_values('line').isin(['C2_1336A', 'C2_1335.7A'])
+idcs_fine_cIIa = LyA_frame.index.get_level_values('line').isin(['C2_1336A', 'C2_1335.7A',
+                                                                'C2_1336A_k-1', 'C2_1335.7A_k-1',
+                                                                'C2_1336A_o-MW', 'C2_1335.7A_o-MW'])
 LyA_frame.loc[idcs_fine_cIIa, 'particle'] = 'C2*'
 
-version = 'v1'
+version = 'v2'
 lime.save_frame(results_folder/f'LyC_voigtprofiles_{version}.txt', LyA_frame)

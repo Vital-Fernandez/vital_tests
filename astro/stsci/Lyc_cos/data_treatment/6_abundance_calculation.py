@@ -38,7 +38,7 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
 # Loop through the targets and generate the HASP files
 for i, obj in enumerate(target_list):
 
-    if i == 15:
+    # if obj == 'SBS0335052':
 
         # Object folders the files
         print(f'{i}) Galaxy {obj}, z = {cfg_sample['Galaxy_redshifts'][obj]}')
@@ -62,25 +62,22 @@ for i, obj in enumerate(target_list):
 
         # Rebinned
         spec = spec.retrieve.rebinned(pixel_number=6, return_spectrum=True)
-        spec.save_spectrum(fname=output_folder/f'{obj}_rebinned_LymanAlphaCorrected.txt')
 
         # Divide by the HI profile
         norm_Lyman_alpha = absorption_spectrum(opacityLymanAlpha_df_path, spec)
         norm_Lyman_alpha[norm_Lyman_alpha < 0.01] = 1
         spec.flux = spec.flux /norm_Lyman_alpha
         spec.err_flux = spec.err_flux /norm_Lyman_alpha
-        spec.save_spectrum(fname=output_folder/f'{obj}_metals_spec.txt')
+        spec.save_spectrum(fname=output_folder/f'{obj}_rebinned_LymanAlphaCorrected.txt')
 
 
         # Normalization
         spec = spec.retrieve.normalization(**metals_cfg['normalization'])
+        spec.save_spectrum(fname=output_folder/f'{obj}_normalized_spec.txt')
 
         # Spectra masking
         if 'Metals_retrieve' in metals_cfg:
             spec = spec.retrieve.spectrum(**metals_cfg['Metals_retrieve'])
-
-        # Save the spectrum
-        spec.save_spectrum(fname=output_folder/f'{obj}_metals_spec.txt')
 
         # Sort the line selection line lists
         list_science, list_masked = unpack_lines(spec, metals_cfg, science_groups=['ISM'],
@@ -89,16 +86,16 @@ for i, obj in enumerate(target_list):
         # Get line list extra lines
         bands_target = spec.retrieve.lines_frame(band_vsigma=70, **metals_cfg['LyC_lines'])
 
-        # Plot inputs
-        fig_cfg = {"legend.fontsize": 10,}
-        spec.plot.spectrum(bands=bands_target, line_list=list_masked + list_science, rest_frame=False, in_fig=None, fig_cfg=fig_cfg, ax_cfg={'title': obj})
-        add_opacity_profile(spec, opacity_df_path, voigtfit_pname=voigfitz_reg)
-
-        # Run Voigtfit
-        run_VoigtFit(output_folder/f'{obj}_metals', spec, bands_target, fit_cfg=metals_cfg['LyC_lines']['fit_cfg'],
-                     conv_dict=lime_voigtfit_conv, output_toml=output_folder/'metals_results.toml',
-                     obj_redshift=spec.redshift, voigt_default_params=cfg_sample['voigt_default_params'],
-                     lsf_file=obj_lsf_file)
+        # # Plot inputs
+        # fig_cfg = {"legend.fontsize": 10,}
+        # spec.plot.spectrum(bands=bands_target, line_list=list_masked + list_science, rest_frame=False, in_fig=None, fig_cfg=fig_cfg, ax_cfg={'title': obj})
+        # add_opacity_profile(spec, opacity_df_path, voigtfit_pname=voigfitz_reg)
+        #
+        # # Run Voigtfit
+        # run_VoigtFit(output_folder/f'{obj}_metals', spec, bands_target, fit_cfg=metals_cfg['LyC_lines']['fit_cfg'],
+        #              conv_dict=lime_voigtfit_conv, output_toml=output_folder/'metals_results.toml',
+        #              obj_redshift=spec.redshift, voigt_default_params=cfg_sample['voigt_default_params'],
+        #              lsf_file=obj_lsf_file)
 
 #         # # Plot inputs
 #         # spec.plot.spectrum(bands=bands_target, line_list=list_masked + list_science, rest_frame=False, in_fig=None)

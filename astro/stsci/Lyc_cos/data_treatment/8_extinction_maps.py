@@ -9,7 +9,7 @@ from astropy.visualization.mpl_normalize import ImageNormalize
 from matplotlib import pyplot as plt, rc_context
 from astropy.visualization import LogStretch
 import dustmaps
-from dustmaps.planck import PlanckQuery
+from dustmaps.planck import PlanckQuery, PlanckGNILCQuery
 
 lime.theme.set_style('dark')
 
@@ -21,9 +21,10 @@ def latex_sci(x, precision=2):
 
 
 # Extinction functions
-# import dustmaps.planck
-# dustmaps.planck.fetch()
-planck = PlanckQuery()
+import dustmaps.planck
+dustmaps.planck.fetch()
+# planck = PlanckQuery(component='radiance')
+planck = PlanckGNILCQuery()
 
 # Data location
 obs_folder = Path('/home/vital/Astrodata/STScI')
@@ -39,11 +40,12 @@ hdr = fits.getheader(density_map_fname, ext=0)
 wcs = WCS(hdr)
 
 ext_dict = {}
+print("\n[planck_extinction_GNILC]")
 for obj, coord_deg in cfg_sample['aper_mean_coord'].items():
     coord = SkyCoord(ra=coord_deg[0] * u.deg, dec=coord_deg[1] * u.deg, frame='icrs')
     ebv = planck(coord)
     ext_dict[obj] = float(ebv)
-    print(obj, ebv)
+    print(f"{obj} = {ebv}")
 
 # with rc_context(lime.theme.fig_defaults()):
 #

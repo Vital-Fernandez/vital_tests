@@ -7,10 +7,11 @@ from matplotlib import pyplot as plt
 import toml
 import re
 
-from hasp import wrapper
+# from hasp import wrapper
+# from regions import CircleSkyRegion
+
 from lmfit.models import GaussianModel, LinearModel
 from astropy.coordinates import SkyCoord
-from regions import CircleSkyRegion
 
 import shutil
 from scipy.constants import m_e
@@ -20,6 +21,7 @@ import lime
 from lime import Line
 from lime.fitting.lines import c_KMpS
 import warnings
+from sesamme.models import get_model
 
 vf_database_path = '/home/vital/Dropbox/Astrophysics/Tools/LiMe/LinesDatabase/linelist_voigtfit.dat'
 vfdb_df = pd.read_csv(vf_database_path, names=['label', 'ion', 'wl', 'f_trans', 'gam_trans', 'mass_u'], index_col=0,
@@ -53,6 +55,10 @@ DEFAULT_logN = {"HI": 20,
                 "SII": 15,
                 "SiII": 14}
 
+
+CORNER_CFG = dict(quantiles=[.16, .50, .84], smooth=0.5, smooth1d=0.5, title_kwargs={"fontsize": 14, 'weight': 'semibold'},
+                  label_kwargs={"fontsize": 14, 'weight': 'semibold'}, hist2d_kwargs={"fontsize": 14, 'weight': 'semibold'},
+                  labels = ["log(age/yr)", r"log(Z/Z$_{\odot}$)", "E(B-V)", "log(A)"])
 
 def voigt_hjerting_approx(a, x_arr):
 
@@ -1307,6 +1313,290 @@ def on_click(event):
     if event.button == 3 and event.inaxes is not None:
         print(f"x = {event.xdata:.3f}")
         return
+
+
+def gordon09_alav(wave_angstrom, R_V):
+    """A(lambda)/A(V) from Gordon et al. 2009 (erratum-corrected),
+    valid 3.3 <= 1/lambda <= 11 /micron  (i.e. ~909–3030 Angstrom)."""
+    wave_micron = np.asarray(wave_angstrom, dtype=float) / 1e4
+    x = 1.0 / wave_micron                              # inverse microns
+
+    if np.any((x < 3.3) | (x > 11.0)):
+        raise ValueError("outside 3.3–11 /micron validity range "
+                         "(~909–3030 Angstrom)")
+
+    a = 1.894 - 0.373*x - 0.0101/((x - 4.57)**2 + 0.0384)
+    b = -3.490 + 2.057*x + 0.706/((x - 4.59)**2 + 0.169)
+
+    fuv = x >= 5.9
+    dx = x[fuv] - 5.9
+    a[fuv] += -0.110*dx**2 - 0.0100*dx**3
+    b[fuv] +=  0.531*dx**2 + 0.0544*dx**3
+
+    return a + b / R_V
+
+
+def deredden(R_V, ebv, wave_angstrom, flux, err_flux):
+    A_V = R_V * ebv
+    A_lambda = gordon09_alav(wave_angstrom, R_V) * A_V
+    red_corr = 10**(0.4 * A_lambda)
+
+    return flux * red_corr, err_flux *red_corr
+
+
+def get_masked_bands(mask, wave):
+    mask = np.asarray(mask, dtype=bool)
+    if not mask.any():
+        return []
+
+    padded = np.concatenate(([False], mask, [False]))
+    edges = np.diff(padded.astype(int))
+    starts = np.where(edges == 1)[0]
+    ends = np.where(edges == -1)[0] - 1
+
+    return [[wave[s], wave[e]] for s, e in zip(starts, ends)]
+
+def plot_chains(grid_samples, stats, labels=["log(age/yr)", r"log(Z/Z$_{\odot}$)", "E(B-V)", "log(A)"],
+                fname=None, figsize=(9, 7)):
+    """
+    Plot MCMC chains for each parameter.
+
+    Parameters
+    ----------
+    grid_samples : ndarray, shape (n_steps, n_walkers, n_params)
+        Sampler chain array.
+    stats : ndarray
+        Array whose ndim gives the number of parameters to plot.
+    labels : list of str, optional
+        Y-axis labels for each parameter. Defaults to generic names.
+    figsize : tuple, optional
+        Figure size.
+
+    Returns
+    -------
+    fig, axes
+    """
+    n_params = stats.ndim
+
+    if labels is None:
+        labels = [f"param {i}" for i in range(n_params)]
+
+    fig, axes = plt.subplots(n_params, figsize=figsize, sharex=True)
+
+    for i in range(n_params):
+        ax = axes[i]
+        ax.plot(grid_samples[:, :, i], "k", alpha=0.3)
+        ax.set_xlim(0, len(grid_samples))
+        ax.set_ylabel(labels[i])
+        ax.yaxis.set_label_coords(-0.1, 0.5)
+
+    axes[-1].set_xlabel("step number")
+
+    if fname is not None:
+        plt.savefig(fname)
+    else:
+        plt.show()
+
+    return
+
+
+import warnings
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+# Inside sesamme/vis.py get_model is already in scope; keep this import if the function lives elsewhere
+# from sesamme.models import get_model
+
+
+def plot_sesamme_samples(x, y, windowlist, flat_samples, add_nebular=True, plot_median=True, median_params=None,
+                 plot_random_draws=True, n_draws=50, model_cube=None, ion_table=None, title=None, savefile_name=None):
+    """
+    A plotting function for examining the goodness-of-fit for models in the final sampler object after the MCMC run.
+
+    Parameters
+    ----------
+    x : array-like
+        Wavelength array
+    y : array-like
+        Flux array
+    windowlist : list or array
+        List of (low, high) regions to mask
+    flat_samples : np.ndarray
+        Flattened MCMC chain
+    add_nebular : Boolean
+        Determines whether to include nebular continuum emission in plotted models; optional.
+    plot_median : Boolean
+        Determines whether to plot a single model as a "best fit"; optional.
+    median_params : list or array
+        Model parameters for plot_median. The median of flat_samples is used if None; optional.
+    plot_random_draws : Boolean
+        Generates and plots random curves sampled from the flattened MCMC chain; optional.
+    n_draws : int
+        Number of random draws to plot; optional.
+    model_cube : dict
+        SSP cube. Falls back on the module level "modelcube" if None; optional.
+    ion_table : object
+        Ionization table. Falls back on the module level "iontable" if None; optional.
+    title : str
+        Set figure title; optional
+    savefile_name : str
+        Output file name if savefile set to True; optional
+    """
+
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    flat_samples = np.atleast_2d(np.asarray(flat_samples, dtype=float))
+
+    # Fall back on the module level objects if the caller does not provide them
+    model_cube = globals().get('modelcube') if model_cube is None else model_cube
+    ion_table = globals().get('iontable') if ion_table is None else ion_table
+
+    # Posterior median unless the caller specifies the parameters
+    if median_params is None:
+        median_params = np.median(flat_samples, axis=0)
+
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(10, 6), gridspec_kw={'height_ratios': [3, 1]})
+
+    ### Plot the data
+    ax[0].step(x, y, color='black', lw=1, label="Data", zorder=1)
+
+    ### Mark intervals that were masked during fitting (axvspan spans the axis, so it does not depend on the flux units)
+    for low, high in np.atleast_2d(windowlist):
+        ax[0].axvspan(low, high, alpha=0.5, color='lightgrey', lw=0)
+        ax[1].axvspan(low, high, alpha=0.5, color='lightgrey', lw=0)
+
+    ### Optionally plot random draws from the final walker ensemble
+    if plot_random_draws and (flat_samples.shape[0] > 1):
+        rng = np.random.default_rng(99)
+        idcs = rng.choice(flat_samples.shape[0], size=min(n_draws, flat_samples.shape[0]), replace=False)
+
+        for idx in idcs:
+            draw_model = get_model(flat_samples[idx], x, model_cube, ion_table, add_nebular)
+            ax[0].step(x, draw_model, alpha=0.15, lw=1, ls=':', color='teal', zorder=0)
+            ax[1].step(x, (y - draw_model) / y, ls=':', alpha=0.05, lw=1, color='teal', zorder=1)
+
+    ### Optionally plot an individual model (typically a "best fit")
+    total_model = None
+    if plot_median:
+        total_model = get_model(median_params, x, model_cube, ion_table, add_nebular)
+        ax[0].step(x, total_model, color='royalblue', lw=1, label='Optimal Model', zorder=500)
+        ax[1].step(x, (y - total_model) / y, color='royalblue', lw=1, zorder=2)
+
+    ### Formatting the upper panel and setting the plot title
+    ax[1].set_xlabel(r"Wavelength ($\AA$)")
+
+    y_ref = y[np.isfinite(y) & (y != 0.)]
+    ylim_high = 2 * np.median(y_ref) if y_ref.size > 0 else 1.
+    ax[0].set_ylim(0, ylim_high)
+    ax[0].set_ylabel(r"L$_{\odot}$ $\AA^{-1}$")
+
+    ### Warn if the model is off the scale of the data, otherwise the curve is drawn outside the axes
+    if total_model is not None:
+        model_ref = total_model[np.isfinite(total_model) & (total_model != 0.)]
+        if (model_ref.size > 0) and (y_ref.size > 0):
+            ratio = np.median(model_ref) / np.median(y_ref)
+            if not (0.01 < ratio < 100):
+                warnings.warn(f'The model/data median ratio is {ratio:.3e}: the model curve falls outside the plot '
+                              f'limits. Check that the observation and the SSP cube share the same flux units.')
+
+    if title is not None:
+        ax[0].set_title(title, weight='semibold')
+
+    ### Legend, adding an entry for the random draws
+    handles, labels = ax[0].get_legend_handles_labels()
+    if plot_random_draws and (flat_samples.shape[0] > 1):
+        handles.append(Line2D([0], [0], label='Random Draw from PDF', ls=":", alpha=0.5, lw=1, color='teal'))
+    ax[0].legend(loc='best', handles=handles)
+
+    ### Lower panel formatting
+    ax[1].axhline(0, color='black')
+    ax[1].set_ylabel("Residuals")
+    ax[1].set_ylim(-0.7, 0.7)
+
+    plt.tight_layout()
+
+    ### Save the file?
+    if savefile_name:
+        plt.savefig(savefile_name, bbox_inches='tight')
+    else:
+        plt.show()
+
+    return fig, ax
+
+def plot_ssp_params(results_dict, names, metallicity_grid=None, fname=None):
+
+    # parameter row label -> (y-axis label, log-scale?)
+    params = {
+        "log(age/yr)": (r"$\log(\mathrm{age}/\mathrm{yr})$", False),
+        "log(Z/Z$_{\\odot}$)": (r"$\log(Z/Z_\odot)$", False),
+        "E(B-V)": (r"$E(B-V)$  [mag]", False),
+        "log(A)": (r"$\log(A)$", False),
+    }
+    C_FIT = "#2b6cb0"
+
+    xi = {n: i for i, n in enumerate(names)}
+    x = np.arange(len(names))
+
+    n_p = len(params)
+    ncols = 2
+    nrows = int(np.ceil(n_p / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(13.5, 4.4 * nrows), squeeze=False)
+    axes = axes.flatten()
+
+    for ax, (pname, (ylabel, logscale)) in zip(axes, params.items()):
+        xs, vals, err_lo, err_hi = [], [], [], []
+        for n in names:
+            df = results_dict.get(n)
+            if df is None or pname not in df.index:
+                continue
+            p16, p50, p84 = df.loc[pname, "16th"], df.loc[pname, "50th"], df.loc[pname, "84th"]
+            xs.append(xi[n])
+            vals.append(p50)
+            err_lo.append(max(p50 - p16, 0.0))
+            err_hi.append(max(p84 - p50, 0.0))
+
+        # metallicity grid lines -- plotted exactly as given, no conversion
+        if pname == "log(Z/Z$_{\\odot}$)":
+            for z in metallicity_grid:
+                ax.axhline(np.log10(z), color="0.6", ls="--", lw=0.9, zorder=1)
+
+        ax.errorbar(xs, vals, yerr=[err_lo, err_hi], fmt="o", ms=7,
+                    color=C_FIT, mec="white", mew=1.1, ecolor=C_FIT,
+                    elinewidth=1.6, capsize=3, zorder=4)
+
+        for n in names:
+            df = results_dict.get(n)
+            if df is None or pname not in df.index:
+                y0, y1 = ax.get_ylim()
+                ax.annotate("no fit", xy=(xi[n], (y0 + y1) / 2),
+                            ha="center", va="center", fontsize=7.5, color="0.5",
+                            bbox=dict(boxstyle="round,pad=0.25", fc="white",
+                                      ec="0.7", lw=0.8, alpha=0.9))
+
+        if logscale:
+            ax.set_yscale("log")
+        ax.set_xlim(-0.7, len(names) - 0.3)
+        ax.set_xticks(x)
+        ax.set_xticklabels(names, rotation=55, ha="right", fontsize=8.5)
+        ax.set_ylabel(ylabel, fontsize=11)
+        ax.grid(axis="y", ls=":", lw=0.7, color="0.8", zorder=0)
+        for i in x[1::2]:
+            ax.axvspan(i - 0.5, i + 0.5, color="0.5", alpha=0.05, zorder=0, lw=0)
+        ax.set_title(pname, fontsize=12, loc="left")
+
+    for ax in axes[n_p:]:
+        ax.axis("off")
+
+    fig.tight_layout()
+
+    if fname is not None:
+        fig.savefig(fname, dpi=200)
+    else:
+        plt.show()
+
+    return
 
 
 class IntervalSelector:

@@ -38,7 +38,7 @@ target_list = ['SBS0335052', 'IZw18', 'SBS1415437', 'SBS1159545', 'UM461', 'Pox1
 # Loop through the targets and generate the HASP files
 for i, obj in enumerate(target_list):
 
-    # if obj == 'SBS0335052':
+    if i == 6:
 
         # Object folders the files
         print(f'{i}) Galaxy {obj}, z = {cfg_sample['Galaxy_redshifts'][obj]}')
@@ -62,29 +62,32 @@ for i, obj in enumerate(target_list):
 
         # Rebinned
         spec = spec.retrieve.rebinned(pixel_number=6, return_spectrum=True)
+        spec.save_spectrum(fname=output_folder/f'{obj}_rebinned.txt')
+        spec.plot.spectrum(ax_cfg={'title': obj})
 
         # Divide by the HI profile
         norm_Lyman_alpha = absorption_spectrum(opacityLymanAlpha_df_path, spec)
         norm_Lyman_alpha[norm_Lyman_alpha < 0.01] = 1
         spec.flux = spec.flux /norm_Lyman_alpha
         spec.err_flux = spec.err_flux /norm_Lyman_alpha
+        spec.plot.spectrum(ax_cfg={'title': obj})
+        print(output_folder/f'{obj}_rebinned_LymanAlphaCorrected.txt')
         spec.save_spectrum(fname=output_folder/f'{obj}_rebinned_LymanAlphaCorrected.txt')
 
-
-        # Normalization
-        spec = spec.retrieve.normalization(**metals_cfg['normalization'])
-        spec.save_spectrum(fname=output_folder/f'{obj}_normalized_spec.txt')
-
-        # Spectra masking
-        if 'Metals_retrieve' in metals_cfg:
-            spec = spec.retrieve.spectrum(**metals_cfg['Metals_retrieve'])
-
-        # Sort the line selection line lists
-        list_science, list_masked = unpack_lines(spec, metals_cfg, science_groups=['ISM'],
-                                                 mask_groups=['airglow', 'MW', 'nebular', 'stellar'])
-
-        # Get line list extra lines
-        bands_target = spec.retrieve.lines_frame(band_vsigma=70, **metals_cfg['LyC_lines'])
+        # # Normalization
+        # spec = spec.retrieve.normalization(**metals_cfg['normalization'])
+        # spec.save_spectrum(fname=output_folder/f'{obj}_normalized_spec.txt')
+        #
+        # # Spectra masking
+        # if 'Metals_retrieve' in metals_cfg:
+        #     spec = spec.retrieve.spectrum(**metals_cfg['Metals_retrieve'])
+        #
+        # # Sort the line selection line lists
+        # list_science, list_masked = unpack_lines(spec, metals_cfg, science_groups=['ISM'],
+        #                                          mask_groups=['airglow', 'MW', 'nebular', 'stellar'])
+        #
+        # # Get line list extra lines
+        # bands_target = spec.retrieve.lines_frame(band_vsigma=70, **metals_cfg['LyC_lines'])
 
         # # Plot inputs
         # fig_cfg = {"legend.fontsize": 10,}

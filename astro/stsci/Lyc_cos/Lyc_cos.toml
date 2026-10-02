@@ -27,6 +27,8 @@ C2_1335A_m = 'C2_1335A+C2_1336A+C2_1335.7A'
 C3_1907A_b = 'C3_1907A+C3_1909A'
 C3_1909A_kinem = 'C3_1907A'
 
+stellar_lines = ['C3_1176A','N5_1239A','C3_1247A','O5_1371A','Si4_1394A','Si4_1403A','C4_1548A','C4_1551A','He2_1640A','N4_1719A']
+
 [Galaxy_redshifts]
 Haro11_A =  0.02038431 #0.02083
 Haro11_B =  0.02038431 #0.02058
@@ -45,7 +47,7 @@ NGC2366 = 0.0002#0.000344
 UM461 = 0.003465
 UGC4483 = 0.000519
 UGCA281 = 0.000882#0.000932
-VIIZw403 = -0.0005 #.0001 #0.000309912
+VIIZw403 = 0.000309912 #.0001 #0.000309912 -0.0005
 MRK1450 =  0.003386#0.003171 #
 
 [hydrogen_column_density_MW]
@@ -69,7 +71,34 @@ NGC4861 = 19.978
 UGCA281 = 20.125
 He2-10 = 20.941
 
-[planck_extinction_values]
+[galaxy_distances]
+# Distance in Mpc. Selection rule: cz = c*z (heliocentric) >= 1000 km/s -> NED
+# heliocentric-z distance (flat wCDM: h=0.727, Om=0.266, w0=-0.96) is used,
+# since the Hubble flow dominates over peculiar velocities.
+# cz < 1000 km/s -> NED mean redshift-independent distance is used instead,
+# since peculiar velocities are no longer negligible relative to cz.
+# Value after # gives cz [km/s] and the source used for that row.
+Haro11_A    = 86.29  # cz=6111, NED_z
+Haro11_B    = 86.29  # cz=6111, NED_z
+Haro11_C    = 86.29  # cz=6111, NED_z
+SBS0335052  = 56.34  # cz=4054, NED_z
+SBS1159545  = 49.87  # cz=3552, NED_z
+Haro2       = 19.85  # cz=1299, NED_z
+Pox186      = 16.84  # cz=1211, NED_z
+UM461       = 14.33  # cz=1040, NED_z (borderline)
+MRK1450     = 13.11  # cz=1015, NED_z (borderline)
+He2-10      = 9.36   # cz=873,  NED_mean
+IZw18       = 18.44  # cz=782,  NED_mean
+NGC4861     = 7.51   # cz=764,  NED_mean
+IZw18_SE    = 18.44  # cz=751,  NED_mean
+NGC1705     = 5.32   # cz=589,  NED_mean
+SBS1415437  = 13.67  # cz=571,  NED_mean
+UGCA281     = 5.47   # cz=264,  NED_mean
+UGC4483     = 3.43   # cz=156,  NED_mean
+VIIZw403    = 4.14   # cz=93,   NED_mean (NED z < 0, unusable)
+NGC2366     = 3.19   # cz=60,   NED_mean
+
+[planck_extinction] # E(B-V) value
 Haro11_A = 0.016438599675893784
 Haro11_B = 0.016438599675893784
 Haro11_C = 0.016438599675893784
@@ -89,6 +118,53 @@ UM461 = 0.02103571593761444
 NGC4861 = 0.015333977527916431
 UGCA281 = 0.020988432690501213
 He2-10 = 0.12479636818170547
+
+[planck_extinction_radiance]
+Haro11_A = 0.04358673468232155
+Haro11_B = 0.04358673468232155
+Haro11_C = 0.04358673468232155
+SBS0335052 = 0.05160050466656685
+IZw18 = 0.04388914629817009
+IZw18_SE = 0.04388914629817009
+Haro2 = 0.05038861557841301
+SBS1159545 = 0.017895737662911415
+NGC1705 = 0.022886624559760094
+SBS1415437 = 0.013017740100622177
+Pox186 = 0.0735461637377739
+UGC4483 = 0.038332823663949966
+VIIZw403 = 0.04527919739484787
+NGC2366 = 0.06981419026851654
+MRK1450 = 0.015229792334139347
+UM461 = 0.021034955978393555
+NGC4861 = 0.031359024345874786
+UGCA281 = 0.02098962478339672
+He2-10 = 0.2743922770023346
+
+[p0_SESAMME]
+Haro11_B = [7.0, -2.5, 0.075, -1.0]
+
+[galaxy_extinction]
+# A_V in mag, from NED's Schlafly & Finkbeiner (2011) Galactic foreground
+# extinction, as reported directly by NED (no conversion applied).
+He2-10      = 0.3062
+Pox186      = 0.1257
+SBS0335052  = 0.1267
+VIIZw403    = 0.1025
+IZw18       = 0.0911
+IZw18_SE    = 0.0911
+NGC2366     = 0.1000
+UGC4483     = 0.0930
+UM461       = 0.0471
+UGCA281     = 0.0403
+Haro2       = 0.0328
+SBS1159545  = 0.0452
+Haro11_A    = 0.0308
+Haro11_B    = 0.0308
+Haro11_C    = 0.0308
+NGC4861     = 0.0292
+MRK1450     = 0.0275
+NGC1705     = 0.0221
+SBS1415437  = 0.0254
 
 [LiMe_voigtfit_conversion]
 H1_1216A = 'HI_1215'
@@ -139,6 +215,8 @@ Si4_1403A = "SiIV_1402"
 Si2_1527A = "SiII_1526"
 Fe2_1608A = 'FeII_1608'
 Al2_1671A = "AlII_1670"
+
+[stellar_lin]
 
 [LyC_target_lines]
 H1_950A = "HI_949"
